@@ -1,6 +1,9 @@
 package de.zaunkoenigweg.biography.core.util;
 
 import java.io.File;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -17,7 +20,9 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class BiographyFileUtils {
 
-	/**
+    private final static DateTimeFormatter FILE_FORMAT_TIMESTAMP = DateTimeFormatter.ofPattern("yyyy-MM-dd--HH-mm-ss-SSS");
+
+    /**
 	 * Reads all media folders in baseFolder and returns a list containing
 	 * all media folders ordered by date, oldest folders first.
 	 * @param baseFolder Biography base folder to search
@@ -43,6 +48,54 @@ public class BiographyFileUtils {
 			});
 		});
 		return mediaFolders;
+	}
+	
+    /**
+	 * Reads all media folders in baseFolder and returns a list containing
+	 * all files therein, ordered by date, oldest files first.
+	 * @param baseFolder Biography base folder to search
+	 * @return list of media files.
+	 */
+	public static List<File> getMediaFiles(File baseFolder) {
+		List<File> mediaFiles = new ArrayList<>();
+		if(baseFolder==null) {
+			return mediaFiles;
+		}
+		if(!baseFolder.exists()) {
+			return mediaFiles;
+		}
+		if(!baseFolder.isDirectory()) {
+			return mediaFiles;
+		}
+		List<File> mediaFolders = getMediaFolders(baseFolder);
+		mediaFolders.stream().forEach((mediaFolder) -> {
+			File[] files = mediaFolder.listFiles();
+			Arrays.stream(files).filter(isMediaFileName()).sorted().forEach((file) -> {
+				mediaFiles.add(file);
+			});
+		}); 
+		return mediaFiles;
+	}
+	
+	public static boolean isMediaFileName(File file) {
+		return isMediaFileName().test(file);
+	}
+
+	private static Predicate<File> isMediaFileName() {
+		return (file) -> {
+			if(file==null) {
+				return false;
+			}
+			if(!StringUtils.endsWithIgnoreCase(file.getName(), ".jpg")) {
+				return false;
+			}
+			try {
+				FILE_FORMAT_TIMESTAMP.parse(StringUtils.removeEndIgnoreCase(file.getName(), ".jpg"));
+				return true;
+			} catch (DateTimeParseException e) {
+				return false;
+			}
+		};
 	}
 
 	private static Predicate<File> isDirectory() {
