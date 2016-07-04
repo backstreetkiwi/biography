@@ -6,20 +6,17 @@ import org.apache.logging.log4j.Logger;
 import de.zaunkoenigweg.biography.core.config.BiographyConfig;
 import de.zaunkoenigweg.biography.core.db.Database;
 
-public class Main {
+public class Status {
+    
+    private static final Logger LOG = LogManager.getLogger(Status.class);
 
-	private static final Logger LOG = LogManager.getLogger(Main.class);
-
-	public static void main(String[] args) {
-		LOG.info("Rebuild database...");
+    public static void main(String[] args) {
     	Database database = new Database();
     	database.setBiographyConfig(new BiographyConfig());
     	database.init();
-    	database.rebuild();
-        LOG.info(String.format("Biography database containing %d files.", database.getFileCount()));
+    	long databaseFileCount = database.getFileCount();
     	database.close();
-		LOG.info("Database successfully rebuilt.");
-		
-	}
+        LOG.info(String.format("Biography database containing %d files.", databaseFileCount));
+    }
 
 }
