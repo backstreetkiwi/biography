@@ -11,15 +11,24 @@ public class Main {
 	private static final Logger LOG = LogManager.getLogger(Main.class);
 
 	public static void main(String[] args) {
+
+		LOG.info("Reading Configuration...");
+		BiographyConfig config;
+		try {
+			config = new BiographyConfig();
+		} catch (RuntimeException e) {
+			LOG.error("Configuration could not be read!");
+			return;
+		}
+		LOG.info("Configuration successfully read...");
+
 		LOG.info("Rebuild database...");
-    	Database database = new Database();
-    	database.setBiographyConfig(new BiographyConfig());
-    	database.init();
-    	database.rebuild();
-        LOG.info(String.format("Biography database containing %d files.", database.getFileCount()));
-    	database.close();
+		Database database = new Database();
+		database.setBiographyConfig(config);
+		database.init();
+		database.rebuild();
+		database.close();
 		LOG.info("Database successfully rebuilt.");
-		
 	}
 
 }
