@@ -1,6 +1,8 @@
 package de.zaunkoenigweg.biography.core.util;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -9,6 +11,7 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -78,6 +81,24 @@ public class BiographyFileUtils {
 	
 	public static boolean isMediaFileName(File file) {
 		return isMediaFileName().test(file);
+	}
+	
+	public static String sha1(File file) {
+		if(file==null) {
+			return null;
+		}
+		
+		if(!file.exists() || file.isDirectory()) {
+			return null;
+		}
+
+    	byte[] allBytes;
+		try {
+			allBytes = Files.readAllBytes(file.toPath());
+		} catch (IOException e) {
+			return null;
+		}
+    	return DigestUtils.sha1Hex(allBytes);
 	}
 
 	private static Predicate<File> isMediaFileName() {

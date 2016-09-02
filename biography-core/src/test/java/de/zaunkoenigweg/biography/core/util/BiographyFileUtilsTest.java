@@ -3,6 +3,7 @@ package de.zaunkoenigweg.biography.core.util;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -17,6 +18,7 @@ public class BiographyFileUtilsTest {
     
     private File biographyArchiveFolder;
     private File notExistingFolder;
+    private File notExistingFile;
     private File someFile;
     
     @Before
@@ -24,6 +26,7 @@ public class BiographyFileUtilsTest {
         biographyArchiveFolder = Files.createTempDirectory("biographyArchiveFolder").toFile();
         biographyArchiveFolder.deleteOnExit();
         notExistingFolder = new File("./thisfolderdoesnotexist");
+        notExistingFile = new File(biographyArchiveFolder, "i-do-not-exist");
         someFile = new File(biographyArchiveFolder, "someFile.txt");
         someFile.createNewFile();
     }
@@ -133,5 +136,21 @@ public class BiographyFileUtilsTest {
     	assertFalse(BiographyFileUtils.isMediaFileName(new File("2016-13-32--25-60-60-999.jpg")));
     	assertTrue(BiographyFileUtils.isMediaFileName(new File("2016-05-11--12-40-14-352.jpg")));
     }
+    
+    @Test
+    public void testSha1NoFile() {
+    	assertNull(BiographyFileUtils.sha1(null));
+    }
+    
+    @Test
+    public void testSha1NotExistingFile() {
+    	assertNull(BiographyFileUtils.sha1(notExistingFile));
+    }
+    
+    @Test
+    public void testSha1() {
+    	assertEquals("318b2e153846b058b088ca20bd995287c71e64bf", BiographyFileUtils.sha1(new File(getClass().getResource("/exifdatatest/NikonD60.jpg").getFile())));
+    }
+    
 
 }
