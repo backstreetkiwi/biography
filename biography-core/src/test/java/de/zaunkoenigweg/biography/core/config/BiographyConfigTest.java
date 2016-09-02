@@ -1,5 +1,7 @@
 package de.zaunkoenigweg.biography.core.config;
 
+import static org.junit.Assert.assertNotNull;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -70,6 +72,7 @@ public class BiographyConfigTest {
     	System.setProperty(BiographyConfig.KEY_IMPORT_FOLDER, existingImportFolder.getAbsolutePath());
     	System.setProperty(BiographyConfig.KEY_ARCHIVE_FOLDER, existingArchiveFolder.getAbsolutePath());
         sut = new BiographyConfig();
+        assertNotNull(sut);
     }
     
 }
