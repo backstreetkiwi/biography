@@ -11,6 +11,7 @@ import org.bson.Document;
 import com.mongodb.Block;
 import com.mongodb.MongoClient;
 import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
 import de.zaunkoenigweg.biography.core.config.BiographyConfig;
@@ -20,8 +21,9 @@ public class Database {
 
 	private static final Logger LOG = LogManager.getLogger(Database.class);
 
+	// TODO Read from Configuration
 	private static final String DATABASE_NAME = "biography";
-	private static final String COLLECTION_NAME = "files";
+	private static final String COLLECTION_NAME = "media";
 
 	private BiographyConfig biographyConfig = null;
 	
@@ -65,19 +67,21 @@ public class Database {
 	 * which might be destroyed by a full rebuild.
 	 */
 	public void rebuild() {
-		database.getCollection(COLLECTION_NAME).drop();
+		MongoCollection<Document> collection = database.getCollection(COLLECTION_NAME);
+		collection.drop();
 		List<File> mediaFiles = BiographyFileUtils.getMediaFiles(this.biographyConfig.getArchiveFolder());
 		mediaFiles.stream().map(fileToDocumentMapper).forEach( document -> {
-			database.getCollection(COLLECTION_NAME).insertOne(document);
+			collection.insertOne(document);
 			LOG.info(String.format("Inserted %s into database.", document.get("_id")));
 		});
+		LOG.info(String.format("Database rebuilt, containing %d media files.", collection.count()));
 	}
 
 	/**
 	 * Refreshes database.
 	 */
 	public void refresh() {
-		
+		// not implemented yet
 	}
 	
 	public void foo() {
