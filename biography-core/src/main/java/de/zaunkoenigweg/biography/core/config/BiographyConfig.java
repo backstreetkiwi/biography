@@ -26,22 +26,32 @@ public class BiographyConfig {
 		String archiveFolderProperty = System.getProperty(KEY_ARCHIVE_FOLDER);
 		
 		if(importFolderProperty==null) {
-			throw new IllegalArgumentException("Import folder property not set.");
+			String msg = String.format("Import folder property ('%s') not set.", KEY_IMPORT_FOLDER);
+			LOG.error(msg);
+			throw new IllegalArgumentException(msg);
 		}
 		if(archiveFolderProperty==null) {
-			throw new IllegalArgumentException("Archive folder property not set.");
+			String msg = String.format("Archive folder property ('%s') not set.", KEY_ARCHIVE_FOLDER);
+			LOG.error(msg);
+			throw new IllegalArgumentException(msg);
 		}
 		
 		importFolder = new File(importFolderProperty);
 		archiveFolder = new File(archiveFolderProperty);
 		if(importFolder==null || !importFolder.exists() || !importFolder.isDirectory()) {
-			throw new IllegalArgumentException(String.format("Import folder '%s' does not exist.", importFolderProperty));
+			String msg = String.format("Import folder '%s' does not exist.", importFolderProperty);
+			LOG.error(msg);
+			throw new IllegalArgumentException(msg);
 		}
 		if(archiveFolder==null || !archiveFolder.exists() || !archiveFolder.isDirectory()) {
-			throw new IllegalArgumentException(String.format("Archive folder '%s' does not exist.", archiveFolderProperty));
+			String msg = String.format("Archive folder '%s' does not exist.", archiveFolderProperty);
+			LOG.error(msg);
+			throw new IllegalArgumentException(msg);
 		}
 		if(importFolder.equals(archiveFolder)) {
-			throw new IllegalArgumentException(String.format("Import folder '%s' must not be same as archive folder.", archiveFolderProperty));
+			String msg = String.format("Import folder '%s' must not be same as archive folder.", archiveFolderProperty);
+			LOG.error(msg);
+			throw new IllegalArgumentException(msg);
 		}
 		LOG.info(String.format("Biography configuration: import-folder='%s', archive-folder='%s'", this.importFolder, this.archiveFolder));
 	}
@@ -53,9 +63,5 @@ public class BiographyConfig {
 	public File getArchiveFolder() {
 		return archiveFolder;
 	}
-    
-    
-	
-
 	
 }
