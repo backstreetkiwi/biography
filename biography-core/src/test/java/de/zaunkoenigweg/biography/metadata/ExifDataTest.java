@@ -73,7 +73,7 @@ public class ExifDataTest {
     	File file = new File(getClass().getResource("/exifdatatest/NikonD60.jpg").getFile());
     	ExifData exifData = ExifData.from(file);
     	assertNotNull(exifData);
-    	LocalDateTime expectedDateTimeOriginal = LocalDateTime.of(2005, 2, 22, 13, 51, 15);
+    	LocalDateTime expectedDateTimeOriginal = LocalDateTime.of(2005, 2, 22, 13, 51, 32, toNanos(80));
     	assertEquals(expectedDateTimeOriginal, exifData.getDateTimeOriginal());
     }
     
