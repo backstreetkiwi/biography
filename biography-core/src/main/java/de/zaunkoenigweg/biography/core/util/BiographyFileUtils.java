@@ -23,7 +23,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class BiographyFileUtils {
 
-    private final static Pattern FILE_FORMAT = Pattern.compile("\\d{4}-\\d{2}-\\d{2}--\\d{2}-\\d{2}-\\d{2}---\\p{XDigit}{40}.jpg");
+    private final static Pattern FILE_FORMAT = Pattern.compile("\\d{4}-\\d{2}-\\d{2}--\\d{2}-\\d{2}-\\d{2}---\\p{XDigit}{40}.(jpg|mov)");
 
     /**
 	 * Reads all media folders in baseFolder and returns a list containing
