@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
 import org.apache.commons.codec.digest.DigestUtils;
@@ -22,7 +23,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class BiographyFileUtils {
 
-    private final static DateTimeFormatter FILE_FORMAT_TIMESTAMP = DateTimeFormatter.ofPattern("yyyy-MM-dd--HH-mm-ss-SSS");
+    private final static Pattern FILE_FORMAT = Pattern.compile("\\d{4}-\\d{2}-\\d{2}--\\d{2}-\\d{2}-\\d{2}---\\p{XDigit}{40}.jpg");
 
     /**
 	 * Reads all media folders in baseFolder and returns a list containing
@@ -106,15 +107,7 @@ public class BiographyFileUtils {
 			if(file==null) {
 				return false;
 			}
-			if(!StringUtils.endsWithIgnoreCase(file.getName(), ".jpg")) {
-				return false;
-			}
-			try {
-				FILE_FORMAT_TIMESTAMP.parse(StringUtils.removeEndIgnoreCase(file.getName(), ".jpg"));
-				return true;
-			} catch (DateTimeParseException e) {
-				return false;
-			}
+			return FILE_FORMAT.matcher(file.getName()).matches();
 		};
 	}
 
