@@ -2,36 +2,36 @@ package de.zaunkoenigweg.biography.core;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
+import java.time.ZoneOffset;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.drew.imaging.ImageMetadataReader;
-import com.drew.imaging.ImageProcessingException;
-import com.drew.metadata.Directory;
-import com.drew.metadata.Metadata;
-import com.drew.metadata.Tag;
-import com.drew.metadata.exif.ExifSubIFDDirectory;
+import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
+import de.zaunkoenigweg.biography.metadata.ExifData;
 
 public class Importer {
 
-    private static final Logger LOG = LogManager.getLogger(Importer.class);
+    private static final String EXTENSION_JPG = ".jpg";
+    private static final String EXTENSION_MOV = ".mov";
+
+	private static final Logger LOG = LogManager.getLogger(Importer.class);
 
     private File importFolder;
     private File archive;
 
-    private final static DateTimeFormatter EXIF_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss:SSS");;
-
     private boolean isInitialized() {
+    	// TODO: Use BiographyConfig
         if (this.importFolder == null) {
             LOG.trace("importFolder is null");
             return false;
@@ -98,102 +98,61 @@ public class Importer {
      * @return Map (filename in archive -> file in import folder)
      */
     private Map<Path, File> buildImportMap() {
+    	
         Map<Path, File> importMap = new HashMap<>();
 
-        File[] imageFiles = importFolder.listFiles(new FileFilter() {
-            @Override
-            public boolean accept(File pathname) {
-                String name = pathname.getName();
-                if (name.endsWith(".jpg")) {
-                    return true;
-                }
-                if (name.endsWith(".JPG")) {
-                    return true;
-                }
-                return false;
-            }
-        });
-        File imageFile = null;
-        Path archiveFilename;
-        for (int i = 0; i < imageFiles.length; i++) {
-            imageFile = imageFiles[i];
-            archiveFilename = getArchiveFilename(imageFile);
-            if (importMap.containsKey(archiveFilename)) {
-                LOG.error(String.format("2 files seem to contain the same image: #1: %s, #2: %s.", imageFile.getName(), importMap.get(archiveFilename).getName()));
-                throw new RuntimeException("Import cancelled. At least one pair of image files in the import folder seem to contain the same image.");
-            }
-            importMap.put(archiveFilename, imageFile);
-        }
-
+        addFilesToImportMap(EXTENSION_JPG, importMap, dateTimeOriginalFromExif, dateTimeOriginalFromFilesystem);
+        addFilesToImportMap(EXTENSION_MOV, importMap, dateTimeOriginalFromFilesystem);
+        
         return importMap;
     }
 
-    private Path getArchiveFilename(File imageFile) {
-
-        Metadata metadata = null;
-        try {
-            metadata = ImageMetadataReader.readMetadata(imageFile);
-        } catch (ImageProcessingException | IOException e) {
-            LOG.error(String.format("Error reading EXIF data of %s", imageFile.getAbsolutePath()));
-            LOG.error(e);
-            throw new IllegalStateException(String.format("Error reading EXIF data of %s", imageFile.getAbsolutePath()));
-        }
-
-        LocalDateTime dateTimeOriginal = getDateTimeOriginal(metadata, imageFile.getName());
-        String relativeFolderInArchive = String.format("%04d/%02d", dateTimeOriginal.getYear(), dateTimeOriginal.getMonthValue());
-        String fileName = String.format("%04d-%02d-%02d--%02d-%02d-%02d-%03d.jpg", dateTimeOriginal.getYear(), dateTimeOriginal.getMonthValue(), dateTimeOriginal.getDayOfMonth(),
-                dateTimeOriginal.getHour(), dateTimeOriginal.getMinute(), dateTimeOriginal.getSecond(), (dateTimeOriginal.getNano() / 1000000));
-        Path imagePathInArchive = Paths.get(this.archive.getPath(), relativeFolderInArchive, fileName);
-        LOG.trace(String.format("The archive filename of '%s' will be %s", imageFile, imagePathInArchive));
-        return imagePathInArchive;
-    }
-
-    private LocalDateTime getDateTimeOriginal(Metadata metadata, String filename) {
-        LocalDateTime dateTimeOriginal = null;
-        if (metadata == null) {
-            LOG.trace(String.format("File %s: metadata is null", filename));
-            return null;
-        }
-        ExifSubIFDDirectory exifSubIFDDirectory = metadata.getFirstDirectoryOfType(ExifSubIFDDirectory.class);
-        if (exifSubIFDDirectory == null) {
-            LOG.trace(String.format("File %s: exifSubIFDDirectory is null", filename));
-            LOG.trace("exifSubIFDDirectory is null");
-            return null;
-        }
-        Object objectDateTimeOriginal = exifSubIFDDirectory.getObject(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL);
-        if (objectDateTimeOriginal == null) {
-            LOG.trace(String.format("File %s: exifSubIFDDirectory has no TAG_DATETIME_ORIGINAL", filename));
-            return null;
-        }
-        if (!(objectDateTimeOriginal instanceof String)) {
-            LOG.trace(String.format("File %s: TAG_DATETIME_ORIGINAL does not contain a string", filename));
-            return null;
-        }
-        Object objectSubsecondTimeOriginal = exifSubIFDDirectory.getObject(ExifSubIFDDirectory.TAG_SUBSECOND_TIME_ORIGINAL);
-        if (!(objectSubsecondTimeOriginal instanceof String)) {
-            LOG.trace(String.format("File %s: TAG_SUBSECOND_TIME_ORIGINAL does not contain a string", filename));
-            objectSubsecondTimeOriginal = "000";
-        }
-        String dateString = String.format("%s:%03d", objectDateTimeOriginal, Integer.parseInt((String) objectSubsecondTimeOriginal));
-        try {
-            dateTimeOriginal = LocalDateTime.parse(dateString, EXIF_DATE_TIME_FORMATTER);
-        } catch (DateTimeParseException e) {
-            LOG.trace(String.format("Date '%s' could not be parsed.", objectDateTimeOriginal));
-        }
-        return dateTimeOriginal;
-    }
-
-    private void dumpExif(Metadata metadata) {
-        for (Directory directory : metadata.getDirectories()) {
-            for (Tag tag : directory.getTags()) {
-                LOG.trace(String.format("[%s] - %s = %s", directory.getName(), tag.getTagName(), tag.getDescription()));
+	private void addFilesToImportMap(String extension, Map<Path, File> importMap, Function<File, LocalDateTime>... extractorFuctions) {
+        File[] imageFiles = importFolder.listFiles(extensionFileFilter(extension));
+        File imageFile = null;
+        Path archiveFilename = null;
+        for (int i = 0; i < imageFiles.length; i++) {
+            imageFile = imageFiles[i];
+            Optional<LocalDateTime> dateTimeOriginal = extractDateTimeOriginal(imageFile, extractorFuctions);
+            if(!dateTimeOriginal.isPresent()) {
+            	LOG.error(String.format("Date/Time Original could not be extracted for %s. File will be skipped.", imageFile.getAbsolutePath()));
+            	continue;
             }
-            if (directory.hasErrors()) {
-                for (String error : directory.getErrors()) {
-                    LOG.error(String.format("ERROR: %s", error));
-                }
+            String sha1 = BiographyFileUtils.sha1(imageFile);
+            archiveFilename = buildArchiveFilename(dateTimeOriginal.get(), sha1, extension);
+            if (importMap.containsKey(archiveFilename)) {
+                LOG.error(String.format("2 files seem to contain the same image: #1: %s, #2: %s.", imageFile.getName(), importMap.get(archiveFilename).getName()));
             }
+            importMap.put(archiveFilename, imageFile);
         }
+    }
+    
+	private FileFilter extensionFileFilter(final String extension) {
+		return (FileFilter) pathname -> {
+			return StringUtils.endsWithIgnoreCase(pathname.getName(), extension);
+		};
+	}
+
+	private Function<File, LocalDateTime> dateTimeOriginalFromExif = (imageFile) -> {
+		ExifData exifData = ExifData.from(imageFile);
+		return exifData.getDateTimeOriginal();
+	};
+	
+	private Function<File, LocalDateTime> dateTimeOriginalFromFilesystem = (imageFile) -> {
+		return LocalDateTime.ofEpochSecond(imageFile.lastModified()/1000, 0, ZoneOffset.UTC);
+	};
+	
+	private Optional<LocalDateTime> extractDateTimeOriginal(final File imageFile, Function<File, LocalDateTime>... extractorFuctions) {
+		return Arrays.stream(extractorFuctions).map(extractorFunction -> {
+			return extractorFunction.apply(imageFile);
+		}).filter(dateTimeOriginal -> dateTimeOriginal!=null).findFirst();
+	}
+	
+    private Path buildArchiveFilename(LocalDateTime dateTimeOriginal, String sha1, String extension) {
+    	String folderInArchive = String.format("%04d/%02d", dateTimeOriginal.getYear(), dateTimeOriginal.getMonthValue());    	    	
+        String fileName = String.format("%04d-%02d-%02d--%02d-%02d-%02d---%s%s", dateTimeOriginal.getYear(), dateTimeOriginal.getMonthValue(), dateTimeOriginal.getDayOfMonth(),
+                dateTimeOriginal.getHour(), dateTimeOriginal.getMinute(), dateTimeOriginal.getSecond(), sha1, extension);
+        return Paths.get(this.archive.getPath(), folderInArchive, fileName);
     }
     
     public File getImportFolder() {
