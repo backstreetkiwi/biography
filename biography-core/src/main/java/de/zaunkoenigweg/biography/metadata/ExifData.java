@@ -54,7 +54,6 @@ public class ExifData {
             LOG.error(e);
             return null;
         }
-		
 		ExifData exifData = new ExifData();
 		
 		exifData.dateTimeOriginal = readDateTimeOriginal(metadata, file); 
