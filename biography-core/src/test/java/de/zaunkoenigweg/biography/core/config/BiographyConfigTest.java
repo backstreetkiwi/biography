@@ -8,6 +8,7 @@ import java.nio.file.Files;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.BeanInitializationException;
 
 public class BiographyConfigTest {
 
@@ -19,8 +20,6 @@ public class BiographyConfigTest {
 
     @Before
     public void setUp() throws IOException {
-    	System.clearProperty(BiographyConfig.KEY_IMPORT_FOLDER);
-    	System.clearProperty(BiographyConfig.KEY_ARCHIVE_FOLDER);
         existingImportFolder = Files.createTempDirectory("biographyImportFolder").toFile();
         existingImportFolder.deleteOnExit();
         nonExistingImportFolder = new File("./thisfolderdoesnotexistA");
@@ -29,49 +28,56 @@ public class BiographyConfigTest {
         nonExistingArchiveFolder = new File("./thisfolderdoesnotexistB");
     }
 
-    @Test(expected=IllegalArgumentException.class)
+    @Test(expected=BeanInitializationException.class)
     public void testConfigNoPropertiesSet() {
         sut = new BiographyConfig();
+        sut.init();
     }
 
-    @Test(expected=IllegalArgumentException.class)
+    @Test(expected=BeanInitializationException.class)
     public void testNoArchiveFolderSet() {
-    	System.setProperty(BiographyConfig.KEY_IMPORT_FOLDER, existingImportFolder.getAbsolutePath());
         sut = new BiographyConfig();
+        sut.setImportFolderProperty(existingImportFolder.getAbsolutePath());
+        sut.init();
     }
     
-    @Test(expected=IllegalArgumentException.class)
+    @Test(expected=BeanInitializationException.class)
     public void testArchiveFolderNotExisting() {
-    	System.setProperty(BiographyConfig.KEY_IMPORT_FOLDER, existingImportFolder.getAbsolutePath());
-    	System.setProperty(BiographyConfig.KEY_ARCHIVE_FOLDER, nonExistingArchiveFolder.getAbsolutePath());
         sut = new BiographyConfig();
+        sut.setImportFolderProperty(existingImportFolder.getAbsolutePath());
+        sut.setArchiveFolderProperty(nonExistingArchiveFolder.getAbsolutePath());
+        sut.init();
     }
     
-    @Test(expected=IllegalArgumentException.class)
+    @Test(expected=BeanInitializationException.class)
     public void testNoImportFolderSet() {
-    	System.setProperty(BiographyConfig.KEY_ARCHIVE_FOLDER, existingArchiveFolder.getAbsolutePath());
         sut = new BiographyConfig();
+        sut.setArchiveFolderProperty(existingArchiveFolder.getAbsolutePath());
+        sut.init();
     }
     
-    @Test(expected=IllegalArgumentException.class)
+    @Test(expected=BeanInitializationException.class)
     public void testImportFolderNotExisting() {
-    	System.setProperty(BiographyConfig.KEY_ARCHIVE_FOLDER, existingArchiveFolder.getAbsolutePath());
-    	System.setProperty(BiographyConfig.KEY_IMPORT_FOLDER, nonExistingImportFolder.getAbsolutePath());
         sut = new BiographyConfig();
+        sut.setImportFolderProperty(nonExistingImportFolder.getAbsolutePath());
+        sut.setArchiveFolderProperty(existingArchiveFolder.getAbsolutePath());
+        sut.init();
     }
     
-    @Test(expected=IllegalArgumentException.class)
+    @Test(expected=BeanInitializationException.class)
     public void testImportFolderSameAsArchiveFolder() {
-    	System.setProperty(BiographyConfig.KEY_IMPORT_FOLDER, existingImportFolder.getAbsolutePath());
-    	System.setProperty(BiographyConfig.KEY_ARCHIVE_FOLDER, existingImportFolder.getAbsolutePath());
         sut = new BiographyConfig();
+        sut.setImportFolderProperty(existingImportFolder.getAbsolutePath());
+        sut.setArchiveFolderProperty(existingImportFolder.getAbsolutePath());
+        sut.init();
     }
     
     @Test
     public void testAllSet() {
-    	System.setProperty(BiographyConfig.KEY_IMPORT_FOLDER, existingImportFolder.getAbsolutePath());
-    	System.setProperty(BiographyConfig.KEY_ARCHIVE_FOLDER, existingArchiveFolder.getAbsolutePath());
         sut = new BiographyConfig();
+        sut.setImportFolderProperty(existingImportFolder.getAbsolutePath());
+        sut.setArchiveFolderProperty(existingArchiveFolder.getAbsolutePath());
+        sut.init();
         assertNotNull(sut);
     }
     
