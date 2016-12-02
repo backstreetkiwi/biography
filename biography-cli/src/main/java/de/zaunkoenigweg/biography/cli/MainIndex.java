@@ -5,20 +5,20 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.support.AbstractApplicationContext;
 
-import de.zaunkoenigweg.biography.core.importer.Importer;
+import de.zaunkoenigweg.biography.core.index.Index;
 
-public class MainImport {
+public class MainIndex {
     
-    private final static Log LOG = LogFactory.getLog(MainImport.class);
+    private final static Log LOG = LogFactory.getLog(MainIndex.class);
 
     public static void main(String[] args) {
-        LOG.info("Biography importer started...");
+        LOG.info("Biography index started...");
         AbstractApplicationContext springContext = new AnnotationConfigApplicationContext(SpringContext.class);
         LOG.info("Spring context successfully initialized.");
-        Importer importer = springContext.getBean(Importer.class);
-        importer.importAll(true);
+        Index index = springContext.getBean(Index.class);
+        index.index();
         springContext.close();
-        LOG.info("Biography importer finished.");
+        LOG.info("Biography index finished.");
     }
 
 }

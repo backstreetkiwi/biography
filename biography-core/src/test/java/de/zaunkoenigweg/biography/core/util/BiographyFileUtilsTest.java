@@ -150,8 +150,7 @@ public class BiographyFileUtilsTest {
     
     @Test
     public void testSha1() {
-    	assertEquals("318b2e153846b058b088ca20bd995287c71e64bf", BiographyFileUtils.sha1(new File(getClass().getResource("/exifdatatest/NikonD60.jpg").getFile())));
+        assertEquals("7648bf4572edc4e71ed7992db4071e08b1a57597", BiographyFileUtils.sha1(new File(getClass().getResource("/exifdatatest/NikonD60.jpg").getFile())));
     }
-    
 
 }

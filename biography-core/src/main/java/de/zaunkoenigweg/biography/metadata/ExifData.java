@@ -2,19 +2,25 @@ package de.zaunkoenigweg.biography.metadata;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Optional;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.apache.commons.imaging.ImageReadException;
+import org.apache.commons.imaging.Imaging;
+import org.apache.commons.imaging.common.ImageMetadata;
+import org.apache.commons.imaging.formats.jpeg.JpegImageMetadata;
+import org.apache.commons.imaging.formats.tiff.TiffField;
+import org.apache.commons.imaging.formats.tiff.constants.ExifTagConstants;
+import org.apache.commons.imaging.formats.tiff.constants.TiffTagConstants;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
-import com.drew.imaging.ImageMetadataReader;
-import com.drew.imaging.ImageProcessingException;
-import com.drew.metadata.Directory;
-import com.drew.metadata.Metadata;
-import com.drew.metadata.Tag;
-import com.drew.metadata.exif.ExifSubIFDDirectory;
+import de.zaunkoenigweg.biography.core.MediaFileType;
+
 
 /**
  * EXIF-Data for a given image file.
@@ -25,92 +31,131 @@ import com.drew.metadata.exif.ExifSubIFDDirectory;
  */
 public class ExifData {
 
-    private static final Logger LOG = LogManager.getLogger(ExifData.class);
+    private final static Log LOG = LogFactory.getLog(ExifData.class);
 
-    private final static DateTimeFormatter EXIF_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss:SSS");;
+    private static final DateTimeFormatter EXIF_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss:SSS");
 
     private LocalDateTime dateTimeOriginal;
+    private Optional<String> description;
 
 	private ExifData() {
 	}
 	
-	public static ExifData from(File file) {
+	public static ExifData of(File file) {
 
 		if(file==null) {
-			LOG.error("Missing argument file.");
+			LOG.trace("Missing argument 'file'.");
 			return null;
 		}
 		
 		if(!file.exists() || file.isDirectory()) {
-			LOG.error(String.format("File '%s' does not exist or is a directory.", file.getAbsolutePath()));
+		    LOG.trace(String.format("File '%s' does not exist or is a directory.", file.getAbsolutePath()));
 			return null;
 		}
 		
-        Metadata metadata = null;
+        ImageMetadata metadata;
         try {
-            metadata = ImageMetadataReader.readMetadata(file);
-        } catch (ImageProcessingException | IOException e) {
-            LOG.error(String.format("Error reading EXIF data of %s", file.getAbsolutePath()));
-            LOG.error(e);
+            metadata = Imaging.getMetadata(file);
+        } catch (ImageReadException | IOException e) {
+            LOG.trace(String.format("Error reading EXIF data of %s", file.getAbsolutePath()));
+            LOG.trace(e);
             return null;
         }
+
+        if (!(metadata instanceof JpegImageMetadata)) {
+            LOG.trace(String.format("Error reading EXIF data of %s", file.getAbsolutePath()));
+            return null;
+        }
+        
+        final JpegImageMetadata jpegMetadata = (JpegImageMetadata) metadata;
+        
 		ExifData exifData = new ExifData();
 		
-		exifData.dateTimeOriginal = readDateTimeOriginal(metadata, file); 
+		exifData.dateTimeOriginal = readDateTimeOriginal(jpegMetadata, file);
+		exifData.description = Optional.ofNullable(readDescription(jpegMetadata, file));
 		
 		return exifData;
 	}
 	
-    private static LocalDateTime readDateTimeOriginal(Metadata metadata, File file) {
-        LocalDateTime dateTimeOriginal = null;
+	public static boolean supports(MediaFileType mediaFileType) {
+	    return MediaFileType.JPEG==mediaFileType;
+	}
+	
+    private static LocalDateTime readDateTimeOriginal(JpegImageMetadata metadata, File file) {
+
         if (metadata == null) {
             LOG.trace(String.format("File %s: metadata is null", file.getAbsolutePath()));
             return null;
         }
-        ExifSubIFDDirectory exifSubIFDDirectory = metadata.getFirstDirectoryOfType(ExifSubIFDDirectory.class);
-        if (exifSubIFDDirectory == null) {
-            LOG.trace(String.format("File %s: exifSubIFDDirectory is null", file.getAbsolutePath()));
-            LOG.trace("exifSubIFDDirectory is null");
+        
+        TiffField dateTimeOriginal = metadata.findEXIFValueWithExactMatch(ExifTagConstants.EXIF_TAG_DATE_TIME_ORIGINAL);
+
+        if (dateTimeOriginal == null) {
+            LOG.trace(String.format("File %s has no EXIF_TAG_DATE_TIME_ORIGINAL", file.getAbsolutePath()));
             return null;
         }
-        Object objectDateTimeOriginal = exifSubIFDDirectory.getObject(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL);
-        if (objectDateTimeOriginal == null) {
-            LOG.trace(String.format("File %s: exifSubIFDDirectory has no TAG_DATETIME_ORIGINAL", file.getAbsolutePath()));
-            return null;
-        }
-        if (!(objectDateTimeOriginal instanceof String)) {
-            LOG.trace(String.format("File %s: TAG_DATETIME_ORIGINAL does not contain a string", file.getAbsolutePath()));
-            return null;
-        }
-        Object objectSubsecondTimeOriginal = exifSubIFDDirectory.getObject(ExifSubIFDDirectory.TAG_SUBSECOND_TIME_ORIGINAL);
-        if (!(objectSubsecondTimeOriginal instanceof String)) {
-            LOG.trace(String.format("File %s: TAG_SUBSECOND_TIME_ORIGINAL does not contain a string", file.getAbsolutePath()));
-            objectSubsecondTimeOriginal = "000";
-        }
-        String dateString = String.format("%s:%03d", objectDateTimeOriginal, Integer.parseInt((String) objectSubsecondTimeOriginal));
+        
+        String dateTimeOriginalValue = null;
         try {
-            dateTimeOriginal = LocalDateTime.parse(dateString, EXIF_DATE_TIME_FORMATTER);
+            dateTimeOriginalValue = dateTimeOriginal.getStringValue();
+        } catch (ImageReadException e) {
+            LOG.trace(String.format("File %s: Error whilereading EXIF_TAG_DATE_TIME_ORIGINAL", file.getAbsolutePath()));
+            return null;
+        }
+        
+        TiffField subsecondTimeOriginal = metadata.findEXIFValueWithExactMatch(ExifTagConstants.EXIF_TAG_SUB_SEC_TIME_ORIGINAL);
+
+        String subsecondOriginalValue = "000";
+
+        if (subsecondTimeOriginal != null) {
+            try {
+                subsecondOriginalValue = subsecondTimeOriginal.getStringValue();
+            } catch (ImageReadException e) {
+                // stays '000', which is fine...
+                LOG.trace(String.format("File %s: Error whilereading EXIF_TAG_SUB_SEC_TIME_ORIGINAL", file.getAbsolutePath()));
+            }
+        }
+        
+        String dateString = String.format("%s:%03d", dateTimeOriginalValue, Integer.parseInt(subsecondOriginalValue));
+        try {
+            return LocalDateTime.parse(dateString, EXIF_DATE_TIME_FORMATTER);
         } catch (DateTimeParseException e) {
-            LOG.trace(String.format("Date '%s' could not be parsed.", objectDateTimeOriginal));
-        }
-        return dateTimeOriginal;
-    }
-	
-    private static void dumpExif(Metadata metadata) {
-        for (Directory directory : metadata.getDirectories()) {
-            for (Tag tag : directory.getTags()) {
-                LOG.trace(String.format("[%s] - %s = %s", directory.getName(), tag.getTagName(), tag.getDescription()));
-            }
-            if (directory.hasErrors()) {
-                for (String error : directory.getErrors()) {
-                    LOG.error(String.format("ERROR: %s", error));
-                }
-            }
+            LOG.trace(String.format("Date '%s' could not be parsed.", dateString));
+            return null;
         }
     }
-	
-	public LocalDateTime getDateTimeOriginal() {
+    
+    private static String readDescription(JpegImageMetadata metadata, File file) {
+        
+        if (metadata == null) {
+            LOG.trace(String.format("File %s: metadata is null", file.getAbsolutePath()));
+            return null;
+        }
+        
+        TiffField imageDescription = metadata.findEXIFValueWithExactMatch(TiffTagConstants.TIFF_TAG_IMAGE_DESCRIPTION);
+
+        if (imageDescription == null) {
+            LOG.trace(String.format("File %s has no TIFF_TAG_IMAGE_DESCRIPTION", file.getAbsolutePath()));
+            return null;
+        }
+        
+        try {
+            byte[] descriptionRaw = imageDescription.getByteArrayValue();
+            int nullPosition = ArrayUtils.indexOf(descriptionRaw, (byte)0);
+            if(nullPosition!=-1) {
+                descriptionRaw = ArrayUtils.subarray(descriptionRaw, 0, nullPosition);
+            }
+            return new String(descriptionRaw, "ISO-8859-1");
+        } catch (UnsupportedEncodingException e) {
+            return null;
+        }
+    }
+    
+    public LocalDateTime getDateTimeOriginal() {
 		return dateTimeOriginal;
 	}
-	
+
+    public Optional<String> getDescription() {
+        return description;
+    }
 }

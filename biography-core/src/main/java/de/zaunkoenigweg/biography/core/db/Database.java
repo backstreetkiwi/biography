@@ -2,62 +2,52 @@ package de.zaunkoenigweg.biography.core.db;
 
 import java.io.File;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.bson.Document;
-import org.bson.conversions.Bson;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.Block;
-import com.mongodb.DBObject;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.bson.Document;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.mongodb.MongoClient;
-import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
+import de.zaunkoenigweg.biography.core.MediaFileType;
+import de.zaunkoenigweg.biography.core.TimestampExtractor;
 import de.zaunkoenigweg.biography.core.config.BiographyConfig;
 import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
 import de.zaunkoenigweg.biography.metadata.ExifData;
 
 public class Database {
 
-	private static final Logger LOG = LogManager.getLogger(Database.class);
+    private final static Log LOG = LogFactory.getLog(Database.class);
 
-	// TODO Read from Configuration
-	private static final String DATABASE_NAME = "biography";
-	private static final String COLLECTION_MEDIA_NAME = "media";
-	private static final String COLLECTION_ALBUMS_NAME = "albums";
+    private static final String COLLECTION_MEDIA_NAME = "media";
+    private static final String COLLECTION_ALBUMS_NAME = "albums";
+    
+    @Autowired
+    private BiographyConfig config;
 
-	private BiographyConfig biographyConfig = null;
-	
 	private MongoClient mongoClient;
 	private MongoDatabase database;
-
-	public void setBiographyConfig(BiographyConfig biographyConfig) {
-		this.biographyConfig = biographyConfig;
-	}
-
-	/**
-	 * Inits Database.
-	 * 
-	 * @throws IllegalStateException if {@link BiographyConfig} has been set.
-	 */
+	
+	@PostConstruct
 	public void init() {
-		if(this.biographyConfig==null) {
-			throw new IllegalStateException("No BiographyConfig set in Database.");
-		}
 		mongoClient = new MongoClient();
-		database = mongoClient.getDatabase(DATABASE_NAME);
+		database = mongoClient.getDatabase(config.getDatabaseName());
+		LOG.info("MongoDB connection established.");
 	}
 
+	@PreDestroy
 	public void close() {
 		mongoClient.close();
+        LOG.info("MongoDB connection closed.");
 	}
 
 	public long getFileCount() {
@@ -82,32 +72,31 @@ public class Database {
 
 		MongoCollection<Document> collection = database.getCollection(COLLECTION_MEDIA_NAME);
 		collection.drop();
-		List<File> mediaFiles = BiographyFileUtils.getMediaFiles(this.biographyConfig.getArchiveFolder());
-		mediaFiles.stream().map(fileToDocumentMapper).forEach( document -> {
-			collection.insertOne(document);
-			addMediaFileToMonthAlbum(albums, document);
-			LOG.info(String.format("Inserted %s into database.", document.get("_id")));
-		});
-
+		
+		List<File> mediaFiles = BiographyFileUtils.getMediaFiles(config.getArchiveFolder());
+		
+        mediaFiles.stream()
+                .map(fileToDocumentMapper)
+                .forEach(collection::insertOne);
 		
 		LOG.info(String.format("Database rebuilt, containing %d media files.", collection.count()));
 	}
 	
-	private void addMediaFileToMonthAlbum(MongoCollection<Document> albums, Document mediaFile) {
-		String dateTimeOriginalAsString = mediaFile.get("dateTimeOriginal", String.class);
-		if(dateTimeOriginalAsString==null) {
-			return;
-		}
-		LocalDateTime dateTimeOriginal = LocalDateTime.parse(dateTimeOriginalAsString, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-		String albumName = String.format("Fotos %s %s", dateTimeOriginal.getMonth(), dateTimeOriginal.getYear());
-		FindIterable<Document> findIterable = albums.find(new Document("name", albumName));
-		Document album = findIterable.first();
-		if(album==null) {
-			album = new Document("name", albumName);
-			albums.insertOne(album);
-		}
-		albums.updateOne(new Document("_id", album.get("_id")), new Document("$push", new Document("mediaFiles", mediaFile.get("_id"))));
-	}
+//	private void addMediaFileToMonthAlbum(MongoCollection<Document> albums, Document mediaFile) {
+//		String dateTimeOriginalAsString = mediaFile.get("dateTimeOriginal", String.class);
+//		if(dateTimeOriginalAsString==null) {
+//			return;
+//		}
+//		LocalDateTime dateTimeOriginal = LocalDateTime.parse(dateTimeOriginalAsString, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+//		String albumName = String.format("Fotos %s %s", dateTimeOriginal.getMonth(), dateTimeOriginal.getYear());
+//		FindIterable<Document> findIterable = albums.find(new Document("name", albumName));
+//		Document album = findIterable.first();
+//		if(album==null) {
+//			album = new Document("name", albumName);
+//			albums.insertOne(album);
+//		}
+//		albums.updateOne(new Document("_id", album.get("_id")), new Document("$push", new Document("mediaFiles", mediaFile.get("_id"))));
+//	}
 	
 	/**
 	 * Refreshes database.
@@ -116,36 +105,32 @@ public class Database {
 		// not implemented yet
 	}
 	
-	public void foo() {
-
-		FindIterable<Document> iterable = database.getCollection("biography_files").find();
-
-		iterable.forEach(new Block<Document>() {
-			@Override
-			public void apply(final Document document) {
-				System.out.println(document.get("_id"));
-				System.out.println(document.get("description"));
-			}
-		});
-
-		Document neuesFoto = new Document("_id", "2016-05-11--12-43-33-423.jpg").append("description", "Weserstadion");
-		database.getCollection("biography_files").insertOne(neuesFoto);
-
-	}
-
 	private Function<File, Document> fileToDocumentMapper = (file) -> {
+        LOG.info(String.format("Mapping file '%s' to MongoDB document.", file.getName()));
+        Optional<MediaFileType> fileType = MediaFileType.of(file);
+        if(!fileType.isPresent()) {
+            // TODO deal with other file types
+            return null;
+        }
+        TimestampExtractor timestampExtractor = fileType.get().getTimestampExtractorForArchivedFiles();
+        LocalDateTime dateTime = timestampExtractor.apply(file);
+        if(dateTime==null) {
+            // TODO deal with it
+            return null;
+        }
 		String sha1 = BiographyFileUtils.sha1(file);
-		ExifData exifData = ExifData.from(file);
 		Document document = new Document("_id", sha1);
-		LocalDateTime dateTimeOriginal = null;
-		if(exifData.getDateTimeOriginal()!=null) {
-			// TODO das ist das falsche Datum!!!
-			dateTimeOriginal = exifData.getDateTimeOriginal();
-		} else {
-			dateTimeOriginal = LocalDateTime.ofEpochSecond(file.lastModified()/1000, 0, ZoneOffset.UTC);
-		}
-		document.append("dateTimeOriginal", dateTimeOriginal.toString());
+		document.append("dateTimeOriginal", dateTime.toString());
 		document.append("fileName", file.getName());
+        if(ExifData.supports(fileType.get())) {
+            ExifData exifData = ExifData.of(file);
+            if(exifData!=null) {
+                if(exifData.getDescription().isPresent()) {
+                    document.append("description", exifData.getDescription().get());
+                }
+            }
+        }
+		System.out.println(document);
 		return document;
 	};	
 	

@@ -14,9 +14,13 @@ public class BiographyConfig {
 
     private File importFolder;
     private File archiveFolder;
+    private File indexFolder;
 
     private String importFolderProperty;
     private String archiveFolderProperty;
+    private String indexFolderProperty;
+    
+    private String databaseName;
 
     /**
      * Creates Biography configuration using properties.
@@ -58,7 +62,22 @@ public class BiographyConfig {
             LOG.error(msg);
             throw new BeanInitializationException(msg);
         }
-        LOG.info(String.format("Biography configuration: import-folder='%s', archive-folder='%s'", this.importFolder, this.archiveFolder));
+
+        if(indexFolderProperty==null) {
+            String msg = "Index folder property is not set.";
+            LOG.error(msg);
+            throw new BeanInitializationException(msg);
+        }
+        
+        this.indexFolder = new File(indexFolderProperty);
+
+        if(indexFolder==null || !indexFolder.exists() || !indexFolder.isDirectory()) {
+            String msg = String.format("Index folder '%s' does not exist or is not a directory.", indexFolderProperty);
+            LOG.error(msg);
+            throw new BeanInitializationException(msg);
+        }
+        
+        LOG.info(String.format("Biography configuration: import-folder='%s', archive-folder='%s', database-name='%s'", this.importFolder, this.archiveFolder, this.databaseName));
     }
 
     public void setImportFolderProperty(String importFolderProperty) {
@@ -69,6 +88,10 @@ public class BiographyConfig {
         this.archiveFolderProperty = archiveFolderProperty;
     }
     
+    public void setIndexFolderProperty(String indexFolderProperty) {
+        this.indexFolderProperty = indexFolderProperty;
+    }
+    
 	public File getImportFolder() {
 		return importFolder;
 	}
@@ -76,5 +99,17 @@ public class BiographyConfig {
 	public File getArchiveFolder() {
 		return archiveFolder;
 	}
+
+    public File getIndexFolder() {
+        return indexFolder;
+    }
+    
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public void setDatabaseName(String databaseName) {
+        this.databaseName = databaseName;
+    }
 
 }
