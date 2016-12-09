@@ -9,10 +9,13 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
+
+import de.zaunkoenigweg.biography.metadata.ExifData;
 
 public class BiographyFileUtilsTest {
     
@@ -20,6 +23,7 @@ public class BiographyFileUtilsTest {
     private File notExistingFolder;
     private File notExistingFile;
     private File someFile;
+    private File someFolder;
     
     @Before
     public void setUp() throws IOException {
@@ -29,6 +33,8 @@ public class BiographyFileUtilsTest {
         notExistingFile = new File(biographyArchiveFolder, "i-do-not-exist");
         someFile = new File(biographyArchiveFolder, "someFile.txt");
         someFile.createNewFile();
+        someFolder = Files.createTempDirectory("someFolder").toFile();
+        someFolder.deleteOnExit();
     }
 
     @Test
@@ -151,6 +157,18 @@ public class BiographyFileUtilsTest {
     @Test
     public void testSha1() {
         assertEquals("7648bf4572edc4e71ed7992db4071e08b1a57597", BiographyFileUtils.sha1(new File(getClass().getResource("/exifdatatest/NikonD60.jpg").getFile())));
+    }
+
+    @Test
+    public void testSha1AfterExifChange() throws IOException {
+        File sourceFile = new File(getClass().getResource("/exifdatatest/NikonD60.jpg").getFile());
+        File targetFile = new File(someFolder, "ImageWithChangedDescription.jpg");
+        assertEquals("7648bf4572edc4e71ed7992db4071e08b1a57597", BiographyFileUtils.sha1(sourceFile));
+        Files.copy(sourceFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        assertEquals("7648bf4572edc4e71ed7992db4071e08b1a57597", BiographyFileUtils.sha1(targetFile));
+        ExifData.setDescription(targetFile, "blablabla");
+        ExifData.setUserComment(targetFile, "blablabla");
+        assertEquals("7648bf4572edc4e71ed7992db4071e08b1a57597", BiographyFileUtils.sha1(targetFile));
     }
 
 }

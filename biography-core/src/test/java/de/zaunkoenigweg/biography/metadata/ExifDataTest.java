@@ -9,7 +9,9 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
+import java.util.stream.IntStream;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -88,7 +90,51 @@ public class ExifDataTest {
     }
     
     @Test
-    public void testReadJpegWithoutDescription() {
+    public void testWriteJpegDescription() throws IOException {
+        File fileSource = new File(getClass().getResource("/exifdatatest/NikonD60.jpg").getFile());
+        File file = new File(someFolder, "ImageWithDescription.jpg");
+        Files.copy(fileSource.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        String description = String.format("description set at %s", LocalDateTime.now());
+        ExifData.setDescription(file, description);
+        ExifData exifData = ExifData.of(file);
+        assertNotNull(exifData);
+        assertNotNull(exifData.getDescription());
+        assertTrue(exifData.getDescription().isPresent());
+        assertEquals(description, exifData.getDescription().get());
+    }
+    
+    @Test
+    public void testWriteJpegUserComment() throws IOException {
+        File fileSource = new File(getClass().getResource("/exifdatatest/NikonD60.jpg").getFile());
+        File file = new File(someFolder, "ImageWithUserComment.jpg");
+        Files.copy(fileSource.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        String userComment = String.format("usercomment set at %s", LocalDateTime.now());
+        ExifData.setUserComment(file, userComment);
+        ExifData exifData = ExifData.of(file);
+        assertNotNull(exifData);
+        assertNotNull(exifData.getUserComment());
+        assertTrue(exifData.getUserComment().isPresent());
+        assertEquals(userComment, exifData.getUserComment().get());
+    }
+    
+    @Test
+    public void testWriteJpegLongUserComment() throws IOException {
+        File fileSource = new File(getClass().getResource("/exifdatatest/NikonD60.jpg").getFile());
+        File file = new File(someFolder, "ImageWithLongUserComment.jpg");
+        Files.copy(fileSource.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        StringBuilder longCommentBuilder = new StringBuilder();
+        IntStream.range(1, 10001).forEach(longCommentBuilder::append);
+        String userComment = longCommentBuilder.toString();
+        ExifData.setUserComment(file, userComment);
+        ExifData exifData = ExifData.of(file);
+        assertNotNull(exifData);
+        assertNotNull(exifData.getUserComment());
+        assertTrue(exifData.getUserComment().isPresent());
+        assertEquals(userComment, exifData.getUserComment().get());
+    }
+    
+    @Test
+    public void testReadJpegWithoutDescription(){
         File file = new File(getClass().getResource("/exifdatatest/iPhone5s.jpg").getFile());
         ExifData exifData = ExifData.of(file);
         assertNotNull(exifData);
