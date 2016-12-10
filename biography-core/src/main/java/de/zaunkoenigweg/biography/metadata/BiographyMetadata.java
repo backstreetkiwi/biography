@@ -15,17 +15,17 @@ import com.google.gson.JsonSyntaxException;
  */
 public class BiographyMetadata {
 
-    private List<String> albums = new ArrayList<>();
+    private List<Album> albums = new ArrayList<>();
 
     @SuppressWarnings("unused") // for Gson
     private BiographyMetadata() {
     }
     
-    public BiographyMetadata(List<String> albums) {
+    public BiographyMetadata(List<Album> albums) {
         this.albums = albums;
     }
 
-    public List<String> getAlbums() {
+    public List<Album> getAlbums() {
         return albums;
     }
     
