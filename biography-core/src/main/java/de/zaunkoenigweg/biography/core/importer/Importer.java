@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -19,6 +20,9 @@ import de.zaunkoenigweg.biography.core.MediaFileType;
 import de.zaunkoenigweg.biography.core.TimestampExtractor;
 import de.zaunkoenigweg.biography.core.config.BiographyConfig;
 import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
+import de.zaunkoenigweg.biography.metadata.Album;
+import de.zaunkoenigweg.biography.metadata.BiographyMetadata;
+import de.zaunkoenigweg.biography.metadata.ExifData;
 
 public class Importer {
 
@@ -30,7 +34,7 @@ public class Importer {
     /**
      * Imports all images from import folder into the archive.
      */
-    public void importAll(boolean dryRun) {
+    public void importAll(boolean dryRun, Album... albums) {
 
         Set<File> mediaFilesInImportFolder = MediaFileType.all()
                 .flatMap(BiographyFileUtils.streamFilesOfMediaFileType(config.getImportFolder()))
@@ -68,6 +72,7 @@ public class Importer {
                 if(!dryRun) {
                     Files.createDirectories(archivePath.getParent());
                     Files.copy(Paths.get(file.toURI()), archivePath);
+                    setBiographyMetadata(archivePath.toFile(), albums);
                     LOG.trace(String.format("Copied file %s to %s.", file.getAbsolutePath(), archivePath));
                 }
                 importLog.imported(file, archivePath);
@@ -89,5 +94,13 @@ public class Importer {
             LOG.error(e);
             throw new RuntimeException(String.format("Error writing logfile %s.", logFile));
         }
+    }
+    
+    private void setBiographyMetadata(File file, Album... albums) {
+        if(albums.length==0) {
+            return;
+        }
+        BiographyMetadata biographyMetadata = new BiographyMetadata(Arrays.asList(albums).stream().collect(Collectors.toList()));
+        ExifData.setUserComment(file, biographyMetadata.toJson());
     }
 }
