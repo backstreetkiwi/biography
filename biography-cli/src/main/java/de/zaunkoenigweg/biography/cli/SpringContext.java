@@ -33,10 +33,10 @@ public class SpringContext {
         return new Importer();
     }
     
-    @Bean
-    public Database database() {
-        return new Database();
-    }
+//    @Bean
+//    public Database database() {
+//        return new Database();
+//    }
 
     @Bean
     public Index index() {
