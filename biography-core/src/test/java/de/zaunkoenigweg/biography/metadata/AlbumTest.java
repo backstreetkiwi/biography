@@ -60,64 +60,92 @@ public class AlbumTest {
     public void testToJsonTitleOnly() {
         Album album = new Album("NZ 2005");
         String json = album.toJson();
-        assertEquals("\"NZ 2005\"", json);
+        assertEquals("{\"title\":\"NZ 2005\"}", json);
     }
 
     @Test
     public void testToJsonTitleAndChapter() {
         Album album = new Album("NZ 2005", "03 Kaiteriteri");
         String json = album.toJson();
-        assertEquals("\"NZ 2005" + Album.SEPARATOR + "03 Kaiteriteri\"", json);
+        assertEquals("{\"title\":\"NZ 2005\",\"chapter\":\"03 Kaiteriteri\"}", json);
     }
 
     @Test
     public void testFromJsonTitleOnly() {
-        String json = "\"NZ 2005\"";
+        String json = "{\"title\":\"NZ 2005\"}";
         Album album = Album.fromJson(json);
         assertNotNull(album);
         assertNotNull(album.getTitle());
         assertNotNull(album.getChapter());
         assertFalse(album.getChapter().isPresent());
-        assertEquals("NZ 2005", album.getId());
         assertEquals("NZ 2005", album.getTitle());
     }
 
     @Test
     public void testFromJsonTitleAndChapter() {
-        String json = "\"NZ 2005" + Album.SEPARATOR + "03 Kaiteriteri\"";
+        String json = "{\"title\":\"NZ 2005\",\"chapter\":\"03 Kaiteriteri\"}";
         Album album = Album.fromJson(json);
         assertNotNull(album);
         assertNotNull(album.getTitle());
         assertNotNull(album.getChapter());
         assertTrue(album.getChapter().isPresent());
-        assertEquals("NZ 2005" + Album.SEPARATOR + "03 Kaiteriteri", album.getId());
+        assertEquals("NZ 2005", album.getTitle());
+        assertEquals("03 Kaiteriteri", album.getChapter().get());
+    }
+
+    @Test
+    public void testToIdTitleOnly() {
+        Album album = new Album("NZ 2005");
+        String id = album.getId();
+        assertEquals("NZ 2005" + Album.SEPARATOR, id);
+    }
+
+    @Test
+    public void testFromIdTitleOnly() {
+        Album album = Album.fromId("NZ 2005" + Album.SEPARATOR);
+        assertNotNull(album);
+        assertNotNull(album.getTitle());
+        assertNotNull(album.getChapter());
+        assertFalse(album.getChapter().isPresent());
+        assertEquals("NZ 2005", album.getTitle());
+    }
+
+    @Test
+    public void testToIdTitleAndChapter() {
+        Album album = new Album("NZ 2005", "03 Kaiteriteri");
+        String id = album.getId();
+        assertEquals("NZ 2005" + Album.SEPARATOR + "03 Kaiteriteri", id);
+    }
+
+    @Test
+    public void testFromIdTitleAndChapter() {
+        Album album = Album.fromId("NZ 2005" + Album.SEPARATOR + "03 Kaiteriteri");
+        assertNotNull(album);
+        assertNotNull(album.getTitle());
+        assertNotNull(album.getChapter());
+        assertTrue(album.getChapter().isPresent());
         assertEquals("NZ 2005", album.getTitle());
         assertEquals("03 Kaiteriteri", album.getChapter().get());
     }
 
     @Test(expected=IllegalArgumentException.class)
-    public void testFromJsonMultipleSeparators() {
-        Album.fromJson("\"NZ 2005" + Album.SEPARATOR + "something" + Album.SEPARATOR + "03 Kaiteriteri\"");
+    public void testFromIdMultipleSeparators() {
+        Album.fromId("NZ 2005" + Album.SEPARATOR + "something" + Album.SEPARATOR + "03 Kaiteriteri");
     }
 
     @Test(expected=IllegalArgumentException.class)
-    public void testFromJsonNoTitleBeforeSeparator() {
-        Album.fromJson("\"" + Album.SEPARATOR + "03 Kaiteriteri\"");
+    public void testFromIdNoTitleBeforeSeparator() {
+        Album.fromId(Album.SEPARATOR + "03 Kaiteriteri");
     }
 
     @Test(expected=IllegalArgumentException.class)
-    public void testFromJsonNoChapterAfterSeparator() {
-        Album.fromJson("\"NZ 2005" + Album.SEPARATOR + "\"");
+    public void testFromIdNoSeparator() {
+        Album.fromId("Title without any separator");
     }
 
     @Test(expected=IllegalArgumentException.class)
-    public void testFromJsonEmptyJson() {
-        Album.fromJson("{}");
-    }
-
-    @Test(expected=IllegalArgumentException.class)
-    public void testFromJsonEmptyString() {
-        Album.fromJson("");
+    public void testFromIdEmptyString() {
+        Album.fromId("");
     }
 
 }

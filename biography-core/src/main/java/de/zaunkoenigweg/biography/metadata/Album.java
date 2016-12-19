@@ -16,9 +16,8 @@ import com.google.gson.JsonSyntaxException;
  */
 public class Album {
 
-    public static final String SEPARATOR = "::";
+    public static final String SEPARATOR = "|";
     
-    private String id;
     private String title;
     private String chapter;
     
@@ -33,7 +32,6 @@ public class Album {
         if(StringUtils.contains(title, SEPARATOR)) {
             throw new IllegalArgumentException(String.format("Album title must not contain the separator String (\"%s\").", SEPARATOR));
         }
-        this.id = title;
         this.title = title;
     }
 
@@ -50,49 +48,54 @@ public class Album {
         if(StringUtils.contains(title, SEPARATOR)) {
             throw new IllegalArgumentException(String.format("Album title must not contain the separator String (\"%s\").", SEPARATOR));
         }
-        this.id = String.format("%s%s%s", title, SEPARATOR, chapter);
         this.title = title;
         this.chapter = chapter;
     }
 
     public String toJson() {
         Gson gson = new Gson();
-        return gson.toJson(id);
+        return gson.toJson(this);
     }
     
     public static Album fromJson(String json) {
         Gson gson = new Gson();
         try {
-            String id = gson.fromJson(json, String.class);
-            return fromId(id);
+            return gson.fromJson(json, Album.class);
         } catch (JsonSyntaxException e) {
             throw new IllegalArgumentException("No valid Json String: " + json);
         }
     }
 
-    public String getId() {
-        return id;
-    }
-    
-    public String getTitle() {
-        return title;
-    }
-
-    public Optional<String> getChapter() {
-        return Optional.ofNullable(this.chapter);
-    }
-    
-    private static Album fromId(String id) {
+    public static Album fromId(String id) {
         if(StringUtils.isBlank(id)) {
             throw new IllegalArgumentException("Album id must not be blank.");
         }
         if(!StringUtils.contains(id, SEPARATOR)) {
-            return new Album(id);
+            throw new IllegalArgumentException("Album id must contain a separator.");
         }
         String[] tokens = StringUtils.splitByWholeSeparator(id, SEPARATOR);
         if(tokens.length!=2) {
             throw new IllegalArgumentException("Album id is not valid.");
         }
+        if(StringUtils.isBlank(tokens[1])) {
+            return new Album(tokens[0]);
+        }
         return new Album(tokens[0], tokens[1]);
+    }
+    
+    public String getId() {
+        if(this.chapter!=null) {
+            return String.format("%s%s%s", this.title, SEPARATOR, this.chapter);
+        } else {
+            return String.format("%s%s", this.title, SEPARATOR);
+        }
+    }
+
+    public String getTitle() {
+        return title;
+    }
+    
+    public Optional<String> getChapter() {
+        return Optional.ofNullable(this.chapter);
     }
 }
