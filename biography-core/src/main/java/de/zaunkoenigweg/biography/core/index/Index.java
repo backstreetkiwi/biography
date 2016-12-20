@@ -3,40 +3,42 @@ package de.zaunkoenigweg.biography.core.index;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.ToLongFunction;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.LongPoint;
-import org.apache.lucene.document.StringField;
-import org.apache.lucene.document.TextField;
-import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.FSDirectory;
+import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.request.schema.SchemaRequest;
+import org.apache.solr.client.solrj.response.UpdateResponse;
+import org.apache.solr.common.SolrInputDocument;
+import org.apache.solr.common.util.NamedList;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.zaunkoenigweg.biography.core.MediaFileType;
 import de.zaunkoenigweg.biography.core.TimestampExtractor;
 import de.zaunkoenigweg.biography.core.config.BiographyConfig;
 import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
+import de.zaunkoenigweg.biography.metadata.Album;
+import de.zaunkoenigweg.biography.metadata.BiographyMetadata;
 import de.zaunkoenigweg.biography.metadata.ExifData;
 
 public class Index {
@@ -50,49 +52,66 @@ public class Index {
         return datetimeOriginal.getYear() * 10000 + datetimeOriginal.getMonthValue() * 100 + datetimeOriginal.getDayOfMonth();
     };
 
-    private final static Function<File, Document> MEDIA_FILE_TO_INDEXED_DOCUMENT = (file) -> {
-        LOG.info(String.format("Mapping file '%s' to Lucene document.", file.getName()));
+    private final static Function<File, SolrInputDocument> MEDIA_FILE_TO_SOLR_DOCUMENT = (file) -> {
+
+        LOG.info(String.format("Mapping file '%s' to JSON document.", file.getName()));
+        
         Optional<MediaFileType> fileType = MediaFileType.of(file);
+
         if(!fileType.isPresent()) {
-            LOG.warn(String.format("No valid media file type could be found for '%s'", file.getAbsolutePath()));
+            LOG.error(String.format("No valid media file type could be found for '%s'", file.getAbsolutePath()));
             return null;
         }
+        
         TimestampExtractor timestampExtractor = fileType.get().getTimestampExtractorForArchivedFiles();
         LocalDateTime dateTime = timestampExtractor.apply(file);
         if(dateTime==null) {
-            LOG.warn(String.format("No valid timestamp could be found for '%s'", file.getAbsolutePath()));
+            LOG.error(String.format("No valid timestamp could be found for '%s'", file.getAbsolutePath()));
             return null;
         }
-        Document document = new Document();
-        document.add(new StringField("fileName", file.getName(), Store.YES));
-        document.add(new LongPoint("datetimeOriginal", DATETIME_ORIGINAL_TO_LONG_POINT.applyAsLong(dateTime)));
+        String imageDescription = null;
+        Set<String> albumTitles = null;
+        Set<String> albumChapters = null;
+        
         if(ExifData.supports(fileType.get())) {
             ExifData exifData = ExifData.of(file);
             if(exifData!=null) {
                 if(exifData.getDescription().isPresent()) {
-                    document.add(new TextField("description", exifData.getDescription().get(), Store.YES));
+                    imageDescription = StringUtils.replace(exifData.getDescription().get(), "\"", "\\\"");
                 }
-// TODO Index of albums                
-//                System.out.println(file.getName());
-//                Optional<String> userComment = exifData.getUserComment();
-//                System.out.println(userComment);
-//                if(userComment.isPresent()) {
-//                    BiographyMetadata biographyMetadata = BiographyMetadata.from(userComment.get());
-//                    if(biographyMetadata!=null) {
-//                        biographyMetadata.getAlbums().stream().forEach(album -> {System.out.println(album.getTitle() + " " + album.getChapter());});
-//                    } else {
-//                        System.out.println("metadata==null");
-//                    }
-//                }
-//                System.out.println("\n");
+                Optional<String> userComment = exifData.getUserComment();
+                if(userComment.isPresent()) {
+                    BiographyMetadata biographyMetadata = BiographyMetadata.from(userComment.get());
+                    if(biographyMetadata!=null) {
+                        albumTitles = biographyMetadata.getAlbums()
+                                .stream()
+                                .map(Album::getTitle)
+                                .collect(Collectors.toSet());
+                        albumChapters = biographyMetadata.getAlbums()
+                                .stream()
+                                .map(Album::getId)
+                                .collect(Collectors.toSet());
+                    }
+                }
             }
         }
+        
+        SolrInputDocument document = new SolrInputDocument();
+        document.addField("id", file.getName());
+        document.addField("description", imageDescription);
+        document.addField("albumTitles", albumTitles);
+        document.addField("albumChapters", albumChapters);
+        document.addField("dateOriginal", DATETIME_ORIGINAL_TO_LONG_POINT.applyAsLong(dateTime));
+        document.addField("year", dateTime.getYear());
+        document.addField("month", dateTime.getMonthValue());
+        document.addField("day", dateTime.getDayOfMonth());
+
         return document;
     };  
-
+    
     @PostConstruct
     public void init() {
-        LOG.info(String.format("Index initialized, directory '%s'.", getIndexFolderMediaFiles().getAbsolutePath()));
+        LOG.info(String.format("Index initialized, Solr URL is '%s'.", config.getIndexUrl()));
     }
 
     @PreDestroy
@@ -104,60 +123,154 @@ public class Index {
      * Creates an index of all Media Files
      */
     public void index() {
-        List<File> mediaFiles = BiographyFileUtils.getMediaFiles(config.getArchiveFolder());
+
         try {
-            Analyzer analyzer = new StandardAnalyzer();
-            Directory directory = FSDirectory.open(getIndexFolderMediaFiles().toPath());
-            final IndexWriter indexWriter = new IndexWriter(directory, new IndexWriterConfig(analyzer));
-            indexWriter.deleteAll();
+
+            SolrClient solr = new HttpSolrClient.Builder(config.getIndexUrl()).build();
+
+            UpdateResponse deleteByQuery = solr.deleteByQuery("*:*");
+            LOG.info(String.format("Deleted all rows in %s -> Status %d", config.getIndexUrl(), deleteByQuery.getStatus()));
+
+            List<File> mediaFiles = BiographyFileUtils.getMediaFiles(config.getArchiveFolder());
+
             mediaFiles.stream()
-                .map(MEDIA_FILE_TO_INDEXED_DOCUMENT)
-                .forEach(doc -> {
+                .map(MEDIA_FILE_TO_SOLR_DOCUMENT)
+                .forEach(document -> {
                     try {
-                        indexWriter.addDocument(doc);
-                    } catch (IOException e) {
-                        LOG.error("Document could not be written to Lucene index.");
+                        UpdateResponse response = solr.add(document);
+                        LOG.trace(response);
+                    } catch (IOException|SolrServerException e) {
+                        LOG.error("Document could not be written to Solr.");
                         LOG.error(e);
                     }
                 });
-            indexWriter.close();
-        } catch (IOException e) {
-            LOG.error(String.format("Index could not be initialized in directory '%s'.", getIndexFolderMediaFiles().getAbsolutePath()));
+
+            solr.commit();
+
+        } catch (SolrServerException | IOException e) {
+            // TODO Auto-generated catch block
             e.printStackTrace();
         }
+    }
+    
+    /**
+     * Creates an index of all Media Files
+     */
+    public void defineIndex() {
         
-        LOG.info("Index rebuilt, containing %d media files.");
+        try {
+            
+            SolrClient solr = new HttpSolrClient.Builder(config.getIndexUrl()).build();
+
+            Map<String, Map<String,Object>> FIELD_DEFINITIONS = new HashMap<>();
+            Map<String, Object> fieldAttributes = new HashMap<>();
+            fieldAttributes.put("name", "fileName");
+            fieldAttributes.put("type", "string");
+            fieldAttributes.put("multiValued", Boolean.FALSE);
+            FIELD_DEFINITIONS.put("fileName", fieldAttributes);
+
+            fieldAttributes = new HashMap<>();
+            fieldAttributes.put("name", "albumTitles");
+            fieldAttributes.put("type", "string");
+            fieldAttributes.put("multiValued", Boolean.TRUE);
+            FIELD_DEFINITIONS.put("albumTitles", fieldAttributes);
+            
+            fieldAttributes = new HashMap<>();
+            fieldAttributes.put("name", "albumChapters");
+            fieldAttributes.put("type", "string");
+            fieldAttributes.put("multiValued", Boolean.TRUE);
+            FIELD_DEFINITIONS.put("albumChapters", fieldAttributes);
+            
+            fieldAttributes = new HashMap<>();
+            fieldAttributes.put("name", "description");
+            fieldAttributes.put("type", "text_general");
+            fieldAttributes.put("multiValued", Boolean.FALSE);
+            FIELD_DEFINITIONS.put("description", fieldAttributes);
+            
+            fieldAttributes = new HashMap<>();
+            fieldAttributes.put("name", "year");
+            fieldAttributes.put("type", "long");
+            fieldAttributes.put("multiValued", Boolean.FALSE);
+            FIELD_DEFINITIONS.put("year", fieldAttributes);
+
+            fieldAttributes = new HashMap<>();
+            fieldAttributes.put("name", "dateOriginal");
+            fieldAttributes.put("type", "long");
+            fieldAttributes.put("multiValued", Boolean.FALSE);
+            FIELD_DEFINITIONS.put("dateOriginal", fieldAttributes);
+
+            fieldAttributes = new HashMap<>();
+            fieldAttributes.put("name", "month");
+            fieldAttributes.put("type", "long");
+            fieldAttributes.put("multiValued", Boolean.FALSE);
+            FIELD_DEFINITIONS.put("month", fieldAttributes);
+
+            fieldAttributes = new HashMap<>();
+            fieldAttributes.put("name", "day");
+            fieldAttributes.put("type", "long");
+            fieldAttributes.put("multiValued", Boolean.FALSE);
+            FIELD_DEFINITIONS.put("day", fieldAttributes);
+
+            UpdateResponse deleteByQuery = solr.deleteByQuery("*:*");
+            LOG.info(String.format("Deleted all rows in %s -> Status %d", config.getIndexUrl(), deleteByQuery.getStatus()));
+            
+            FIELD_DEFINITIONS.forEach((name, attributes) -> {
+                try {
+                    NamedList<Object> request = solr.request(new SchemaRequest.DeleteField(name));
+                    LOG.info(String.format("Deleted field '%s' -> Response %s", name, request));
+                } catch (SolrServerException|IOException e) {
+                    LOG.error(String.format("Field named '%s' could not be deleted.", name), e);
+                }
+            });
+            
+            FIELD_DEFINITIONS.forEach((name, attributes) -> {
+                try {
+                    NamedList<Object> response = solr.request(new SchemaRequest.AddField(attributes));
+                    LOG.info(String.format("Added field '%s' -> Response %s", name, response));
+                } catch (SolrServerException|IOException e) {
+                    LOG.error(String.format("Field named '%s' could not be created.", name), e);
+                }
+            });
+            
+            solr.commit();
+
+        } catch (SolrServerException|IOException e) {
+            LOG.error("Error defining index structure.", e);
+        }        
+        
     }
     
     private void findInMediaFileIndex(Supplier<Query> querySupplier) {
-        try {
-            Directory directory = FSDirectory.open(getIndexFolderMediaFiles().toPath());
-            DirectoryReader directoryReader = DirectoryReader.open(directory);
-            IndexSearcher indexSearcher = new IndexSearcher(directoryReader);
-            Query query = querySupplier.get();
-            if(query==null) {
-                System.out.println("Query could not be initialized :-(");
-                return;
-            }
-            ScoreDoc[] hits = indexSearcher.search(query, 1000).scoreDocs;
-            if(hits.length==0) {
-                System.out.println("No media file matches your query :-(");
-            }
-            // Iterate through the results:
-            for (int i = 0; i < hits.length; i++) {
-              Document hitDoc = indexSearcher.doc(hits[i].doc);
-              System.out.printf("%04d: %s (%s)%n", i, hitDoc.get("description"), hitDoc.get("fileName"));
-            }
-            directoryReader.close();
-            directory.close();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }    
+        throw new RuntimeException("replaced by solr search queries.");
+//        try {
+//            Directory directory = FSDirectory.open(getIndexFolderMediaFiles().toPath());
+//            DirectoryReader directoryReader = DirectoryReader.open(directory);
+//            IndexSearcher indexSearcher = new IndexSearcher(directoryReader);
+//            Query query = querySupplier.get();
+//            if(query==null) {
+//                System.out.println("Query could not be initialized :-(");
+//                return;
+//            }
+//            ScoreDoc[] hits = indexSearcher.search(query, 1000).scoreDocs;
+//            if(hits.length==0) {
+//                System.out.println("No media file matches your query :-(");
+//            }
+//            // Iterate through the results:
+//            for (int i = 0; i < hits.length; i++) {
+//              Document hitDoc = indexSearcher.doc(hits[i].doc);
+//              System.out.printf("%04d: %s (%s)%n", i, hitDoc.get("description"), hitDoc.get("fileName"));
+//            }
+//            directoryReader.close();
+//            directory.close();
+//        } catch (IOException e) {
+//            // TODO Auto-generated catch block
+//            e.printStackTrace();
+//        }    
     }
     
     public void findInDescription(String text) {
         QueryParser parser = new QueryParser("description", new StandardAnalyzer());
+        parser.setAllowLeadingWildcard(true);
         findInMediaFileIndex(()-> {
             try {
                 return parser.parse(text);
@@ -176,13 +289,5 @@ public class Index {
     public void findByDate(LocalDateTime date) {
         long dateLongPoint = DATETIME_ORIGINAL_TO_LONG_POINT.applyAsLong(date);
         findInMediaFileIndex(()-> LongPoint.newExactQuery("datetimeOriginal", dateLongPoint));
-    }
-    
-    private File getIndexFolderMediaFiles() {
-        return new File(config.getIndexFolder(), "mediafiles");
-    }
-
-    private File getIndexFolderAlbums() {
-        return new File(config.getIndexFolder(), "albums");
     }
 }

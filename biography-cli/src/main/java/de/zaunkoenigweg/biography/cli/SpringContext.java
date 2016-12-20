@@ -7,7 +7,6 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 
 import de.zaunkoenigweg.biography.core.config.BiographyConfig;
-import de.zaunkoenigweg.biography.core.db.Database;
 import de.zaunkoenigweg.biography.core.importer.Importer;
 import de.zaunkoenigweg.biography.core.index.Index;
 
@@ -24,7 +23,7 @@ public class SpringContext {
         config.setImportFolderProperty(environment.getProperty("import.folder"));
         config.setArchiveFolderProperty(environment.getProperty("archive.folder"));
         config.setDatabaseName(environment.getProperty("database.name"));
-        config.setIndexFolderProperty(environment.getProperty("index.folder"));
+        config.setIndexUrl(environment.getProperty("index.url"));
         return config;
     }
     

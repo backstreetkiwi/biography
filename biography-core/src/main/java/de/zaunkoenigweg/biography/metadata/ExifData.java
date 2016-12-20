@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -46,7 +47,7 @@ public class ExifData {
     private final static Log LOG = LogFactory.getLog(ExifData.class);
 
     private static final DateTimeFormatter EXIF_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss:SSS");
-    private static byte[] UTF8_PREFIX = Arrays.copyOf("UTF-8".getBytes(), 8);
+    private static byte[] UNICODE_PREFIX = Arrays.copyOf("UNICODE".getBytes(), 8);
 
     private LocalDateTime dateTimeOriginal;
     private Optional<String> description;
@@ -118,16 +119,10 @@ public class ExifData {
         }
         
         byte[] userCommentBytesWithoutPrefix;
-        try {
-            userCommentBytesWithoutPrefix = userComment.getBytes("UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            LOG.trace("Encoding UTF-8 not supported!?");
-            return;
-        }
-        byte[] userCommentBytes = new byte[UTF8_PREFIX.length + userCommentBytesWithoutPrefix.length];
-        System.arraycopy(UTF8_PREFIX, 0, userCommentBytes, 0, UTF8_PREFIX.length);
-        System.arraycopy(userCommentBytesWithoutPrefix, 0, userCommentBytes, UTF8_PREFIX.length, userCommentBytesWithoutPrefix.length);
-        
+        userCommentBytesWithoutPrefix = userComment.getBytes(StandardCharsets.UTF_16);
+        byte[] userCommentBytes = new byte[UNICODE_PREFIX.length + userCommentBytesWithoutPrefix.length];
+        System.arraycopy(UNICODE_PREFIX, 0, userCommentBytes, 0, UNICODE_PREFIX.length);
+        System.arraycopy(userCommentBytesWithoutPrefix, 0, userCommentBytes, UNICODE_PREFIX.length, userCommentBytesWithoutPrefix.length);
         
         setField(file, TiffOutputSet::getOrCreateExifDirectory, ExifTagConstants.EXIF_TAG_USER_COMMENT, FieldType.UNDEFINED, userCommentBytes);
     }
@@ -254,24 +249,20 @@ public class ExifData {
             return null;
         }
 
-        try {
-            byte[] userCommentRaw = userComment.getByteArrayValue();
-            if(userCommentRaw.length < UTF8_PREFIX.length) {
-                LOG.trace(String.format("File %s: Field EXIF_TAG_USER_COMMENT is too short.", file.getAbsolutePath()));
-                return null;
-            }
-            byte[] prefix = new byte[UTF8_PREFIX.length]; 
-            System.arraycopy(userCommentRaw, 0, prefix, 0, UTF8_PREFIX.length);
-            if(!Arrays.equals(UTF8_PREFIX, prefix)) {
-                LOG.trace(String.format("File %s: Field EXIF_TAG_USER_COMMENT does not contain UTF-8 text.", file.getAbsolutePath()));
-                return null;
-            }
-            byte[] contentRaw = new byte[userCommentRaw.length-UTF8_PREFIX.length];
-            System.arraycopy(userCommentRaw, 8, contentRaw, 0, contentRaw.length);
-            return new String(contentRaw, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
+        byte[] userCommentRaw = userComment.getByteArrayValue();
+        if(userCommentRaw.length < UNICODE_PREFIX.length) {
+            LOG.trace(String.format("File %s: Field EXIF_TAG_USER_COMMENT is too short.", file.getAbsolutePath()));
             return null;
         }
+        byte[] prefix = new byte[UNICODE_PREFIX.length]; 
+        System.arraycopy(userCommentRaw, 0, prefix, 0, UNICODE_PREFIX.length);
+        if(!Arrays.equals(UNICODE_PREFIX, prefix)) {
+            LOG.trace(String.format("File %s: Field EXIF_TAG_USER_COMMENT does not contain Unicode text.", file.getAbsolutePath()));
+            return null;
+        }
+        byte[] contentRaw = new byte[userCommentRaw.length-UNICODE_PREFIX.length];
+        System.arraycopy(userCommentRaw, 8, contentRaw, 0, contentRaw.length);
+        return new String(contentRaw, StandardCharsets.UTF_16);
     }
 
     public LocalDateTime getDateTimeOriginal() {
@@ -284,6 +275,37 @@ public class ExifData {
 
     public Optional<String> getUserComment() {
         return userComment;
+    }
+
+    public static String dumpExif(File file) {
+
+        if (file == null) {
+            LOG.trace("Missing argument 'file'.");
+            return null;
+        }
+
+        if (!file.exists() || file.isDirectory()) {
+            LOG.trace(String.format("File '%s' does not exist or is a directory.", file.getAbsolutePath()));
+            return null;
+        }
+
+        ImageMetadata metadata;
+        try {
+            metadata = Imaging.getMetadata(file);
+        } catch (ImageReadException | IOException e) {
+            LOG.trace(String.format("Error reading EXIF data of %s", file.getAbsolutePath()));
+            LOG.trace(e);
+            return null;
+        }
+        
+        if (!(metadata instanceof JpegImageMetadata)) {
+            LOG.trace(String.format("Error reading EXIF data of %s", file.getAbsolutePath()));
+            return null;
+        }
+
+        final JpegImageMetadata jpegMetadata = (JpegImageMetadata) metadata;
+
+        return jpegMetadata.toString();
     }
 
 }

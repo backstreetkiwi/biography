@@ -17,8 +17,6 @@ public class BiographyConfigTest {
     private File nonExistingImportFolder;
     private File existingArchiveFolder;
     private File nonExistingArchiveFolder;
-    private File existingIndexFolder;
-    private File nonExistingIndexFolder;
 
     @Before
     public void setUp() throws IOException {
@@ -28,9 +26,6 @@ public class BiographyConfigTest {
         existingArchiveFolder = Files.createTempDirectory("biographyArchiveFolder").toFile();
         existingArchiveFolder.deleteOnExit();
         nonExistingArchiveFolder = new File("./thisfolderdoesnotexistB");
-        existingIndexFolder = Files.createTempDirectory("biographyIndexFolder").toFile();
-        existingIndexFolder.deleteOnExit();
-        nonExistingIndexFolder = new File("./thisfolderdoesnotexistC");
     }
 
     @Test(expected=BeanInitializationException.class)
@@ -77,29 +72,11 @@ public class BiographyConfigTest {
         sut.init();
     }
     
-    @Test(expected=BeanInitializationException.class)
-    public void testIndexFolderNotSet() {
-        sut = new BiographyConfig();
-        sut.setImportFolderProperty(existingImportFolder.getAbsolutePath());
-        sut.setArchiveFolderProperty(existingArchiveFolder.getAbsolutePath());
-        sut.init();
-    }
-    
-    @Test(expected=BeanInitializationException.class)
-    public void testIndexFolderNotExisting() {
-        sut = new BiographyConfig();
-        sut.setImportFolderProperty(existingImportFolder.getAbsolutePath());
-        sut.setArchiveFolderProperty(existingArchiveFolder.getAbsolutePath());
-        sut.setIndexFolderProperty(nonExistingIndexFolder.getAbsolutePath());
-        sut.init();
-    }
-    
     @Test
     public void testAllSet() {
         sut = new BiographyConfig();
         sut.setImportFolderProperty(existingImportFolder.getAbsolutePath());
         sut.setArchiveFolderProperty(existingArchiveFolder.getAbsolutePath());
-        sut.setIndexFolderProperty(existingIndexFolder.getAbsolutePath());
         sut.init();
         assertNotNull(sut);
     }

@@ -16,6 +16,7 @@ public class MainIndex {
         AbstractApplicationContext springContext = new AnnotationConfigApplicationContext(SpringContext.class);
         LOG.info("Spring context successfully initialized.");
         Index index = springContext.getBean(Index.class);
+//        index.defineIndex();
         index.index();
         springContext.close();
         LOG.info("Biography index finished.");

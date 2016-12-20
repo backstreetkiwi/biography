@@ -14,13 +14,12 @@ public class BiographyConfig {
 
     private File importFolder;
     private File archiveFolder;
-    private File indexFolder;
 
     private String importFolderProperty;
     private String archiveFolderProperty;
-    private String indexFolderProperty;
     
     private String databaseName;
+    private String indexUrl;
 
     /**
      * Creates Biography configuration using properties.
@@ -63,21 +62,7 @@ public class BiographyConfig {
             throw new BeanInitializationException(msg);
         }
 
-        if(indexFolderProperty==null) {
-            String msg = "Index folder property is not set.";
-            LOG.error(msg);
-            throw new BeanInitializationException(msg);
-        }
-        
-        this.indexFolder = new File(indexFolderProperty);
-
-        if(indexFolder==null || !indexFolder.exists() || !indexFolder.isDirectory()) {
-            String msg = String.format("Index folder '%s' does not exist or is not a directory.", indexFolderProperty);
-            LOG.error(msg);
-            throw new BeanInitializationException(msg);
-        }
-        
-        LOG.info(String.format("Biography configuration: import-folder='%s', archive-folder='%s', database-name='%s'", this.importFolder, this.archiveFolder, this.databaseName));
+        LOG.info(String.format("Biography configuration: import-folder='%s', archive-folder='%s', database-name='%s', index-url='%s'", this.importFolder, this.archiveFolder, this.databaseName, this.indexUrl));
     }
 
     public void setImportFolderProperty(String importFolderProperty) {
@@ -88,8 +73,8 @@ public class BiographyConfig {
         this.archiveFolderProperty = archiveFolderProperty;
     }
     
-    public void setIndexFolderProperty(String indexFolderProperty) {
-        this.indexFolderProperty = indexFolderProperty;
+    public void setIndexUrl(String indexUrl) {
+        this.indexUrl = indexUrl;
     }
     
 	public File getImportFolder() {
@@ -100,8 +85,8 @@ public class BiographyConfig {
 		return archiveFolder;
 	}
 
-    public File getIndexFolder() {
-        return indexFolder;
+    public String getIndexUrl() {
+        return indexUrl;
     }
     
     public String getDatabaseName() {
