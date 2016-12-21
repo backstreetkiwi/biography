@@ -4,13 +4,16 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.ToLongFunction;
 import java.util.stream.Collectors;
@@ -33,11 +36,9 @@ import org.apache.solr.client.solrj.SolrQuery.ORDER;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.request.schema.SchemaRequest;
-import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.FacetField.Count;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
-import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.util.NamedList;
@@ -260,14 +261,14 @@ public class Index {
 
     public void dumpArchiveInfo() {
 
-        Stream<Count> albumFacetCounts = streamFacetFieldCount("albumTitles", "");
+        Stream<Count> albumFacetCounts = streamFacetFieldCount("albumTitles");
 
         List<AlbumInfo> albumInfos = albumFacetCounts.map(count -> new AlbumInfo(count.getName(), count.getCount()))
                                                      .collect(Collectors.toList());
 
         albumInfos.forEach(album -> {
-            Stream<Count> chapterFacetCounts = streamFacetFieldCount("albumChapters", album.getName() + "|");
-            chapterFacetCounts.sorted(Comparator.comparing(Count::getName))
+            Stream<Count> chapterFacetCounts = streamFacetFieldCount("albumChapters", q->q.setFacetPrefix(album.getName() + "|"));
+            chapterFacetCounts.sorted(COMPARE_COUNT_BY_NAME)
                               .map(count -> new AlbumInfo(count.getName(), count.getCount()))
                               .forEach(album.getChapters()::add);
             album.getChapters().forEach(chapter -> {
@@ -282,7 +283,26 @@ public class Index {
             System.out.println(album);
         });
 
+        System.out.println();
+
+        Stream<Count> yearFacetCounts = streamFacetFieldCount("year");
+        yearFacetCounts.sorted(COMPARE_COUNT_BY_NAME)
+                       .forEach(count -> {
+                           System.out.println(count);
+                           Stream<Count> monthFacetCounts = streamFacetFieldCount("month", q->q.setQuery("year:"+count.getName()));
+                           monthFacetCounts.filter(COUNT_NOT_EMPTY)
+                                           .sorted(COMPARE_COUNT_BY_NAME_AS_INT)
+                                           .forEach(c -> System.out.println("  " + Month.values()[Integer.valueOf(c.getName())-1] + "(" + c.getCount() + ")"));
+                           System.out.println();
+                       });
+
     }
+    
+    private Predicate<Count> COUNT_NOT_EMPTY = count -> count.getCount() > 0;
+    
+    private Comparator<Count> COMPARE_COUNT_BY_NAME = Comparator.comparing(Count::getName);
+
+    private Comparator<Count> COMPARE_COUNT_BY_NAME_AS_INT = Comparator.comparingInt(count -> Integer.valueOf(count.getName()));
 
     private static final Function<QueryResponse, LocalDate> EXTRACT_DATE_OF_FIRST_DOCUMENT = response -> LocalDateTime.parse(
             response.getResults().get(0).get("dateTimeOriginal").toString()).toLocalDate();
@@ -295,13 +315,17 @@ public class Index {
         return query;
     }
 
-    private Stream<Count> streamFacetFieldCount(String facetField, String facetPrefix) {
+    private Stream<Count> streamFacetFieldCount(String facetField) {
+        return streamFacetFieldCount(facetField, q->{});
+    }
+
+    private Stream<Count> streamFacetFieldCount(String facetField, Consumer<SolrQuery> additionalQueryDefinitions) {
         SolrQuery query = new SolrQuery();
         query.setQuery("*:*");
         query.setRows(0);
         query.setFacet(true);
-        query.setFacetPrefix(facetPrefix);
         query.addFacetField(facetField);
+        additionalQueryDefinitions.accept(query);
         return query(query, (response) -> response.getFacetField(facetField).getValues().stream());
     }
 
