@@ -53,9 +53,9 @@ import de.zaunkoenigweg.biography.metadata.Album;
 import de.zaunkoenigweg.biography.metadata.BiographyMetadata;
 import de.zaunkoenigweg.biography.metadata.ExifData;
 
-public class Index {
+public class Indexer {
 
-    private final static Log LOG = LogFactory.getLog(Index.class);
+    private final static Log LOG = LogFactory.getLog(Indexer.class);
 
     @Autowired
     private BiographyConfig config;

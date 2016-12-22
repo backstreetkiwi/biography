@@ -10,7 +10,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.support.AbstractApplicationContext;
 
-import de.zaunkoenigweg.biography.core.index.Index;
+import de.zaunkoenigweg.biography.core.index.Indexer;
 
 public class MainFindInDescription {
     
@@ -20,7 +20,7 @@ public class MainFindInDescription {
         LOG.info("Biography index started...");
         AbstractApplicationContext springContext = new AnnotationConfigApplicationContext(SpringContext.class);
         LOG.info("Spring context successfully initialized.");
-        Index index = springContext.getBean(Index.class);
+        Indexer index = springContext.getBean(Indexer.class);
         
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         

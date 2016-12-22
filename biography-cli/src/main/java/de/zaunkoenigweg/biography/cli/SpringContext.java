@@ -8,7 +8,7 @@ import org.springframework.core.env.Environment;
 
 import de.zaunkoenigweg.biography.core.config.BiographyConfig;
 import de.zaunkoenigweg.biography.core.importer.Importer;
-import de.zaunkoenigweg.biography.core.index.Index;
+import de.zaunkoenigweg.biography.core.index.Indexer;
 
 @Configuration
 @PropertySource("${biography.config.file}")
@@ -38,8 +38,8 @@ public class SpringContext {
 //    }
 
     @Bean
-    public Index index() {
-        return new Index();
+    public Indexer index() {
+        return new Indexer();
     }
 }
 
