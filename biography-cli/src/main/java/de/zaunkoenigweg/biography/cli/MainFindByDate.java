@@ -13,7 +13,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.support.AbstractApplicationContext;
 
-import de.zaunkoenigweg.biography.core.index.Indexer;
+import de.zaunkoenigweg.biography.core.index.SearchEngine;
 
 public class MainFindByDate {
     
@@ -23,7 +23,7 @@ public class MainFindByDate {
         LOG.info("Biography index started...");
         AbstractApplicationContext springContext = new AnnotationConfigApplicationContext(SpringContext.class);
         LOG.info("Spring context successfully initialized.");
-        Indexer index = springContext.getBean(Indexer.class);
+        SearchEngine searchEngine = springContext.getBean(SearchEngine.class);
         
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         
@@ -34,7 +34,7 @@ public class MainFindByDate {
             query = br.readLine();
             while(StringUtils.isNotBlank(query)) {
                 LocalDate localDate = LocalDate.parse(query);
-                index.findByDate(LocalDateTime.of(localDate, LocalTime.MIDNIGHT));
+                searchEngine.findByDate(LocalDateTime.of(localDate, LocalTime.MIDNIGHT)).forEach(System.out::println);
                 System.out.print("Query: ");
                 query = br.readLine();
             }
