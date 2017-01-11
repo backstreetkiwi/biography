@@ -19,7 +19,7 @@ public interface Index {
     String FIELD_TYPE_TEXT = "text_general";
     String FIELD_TYPE_STRING = "string";
 
-    String FIELD_ID = "fieldName";
+    String FIELD_ID = "fileName";
     String FIELD_DESCRIPTION = "description";
     String FIELD_ALBUM_TITLES = "albumTitles";
     String FIELD_ALBUM_CHAPTERS = "albumChapters";

@@ -107,12 +107,12 @@ public class Indexer {
 
     @PostConstruct
     public void init() {
-        LOG.info(String.format("Index initialized, Solr URL is '%s'.", config.getIndexUrl()));
+        LOG.info(String.format("Indexer initialized, Solr URL is '%s'.", config.getIndexUrl()));
     }
 
     @PreDestroy
     public void close() {
-        LOG.info("Index stopped.");
+        LOG.info("Indexer stopped.");
     }
 
     /**
