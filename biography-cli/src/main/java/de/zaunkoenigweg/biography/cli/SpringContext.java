@@ -10,6 +10,7 @@ import de.zaunkoenigweg.biography.core.config.BiographyConfig;
 import de.zaunkoenigweg.biography.core.importer.Importer;
 import de.zaunkoenigweg.biography.core.index.Indexer;
 import de.zaunkoenigweg.biography.core.index.SearchEngine;
+import de.zaunkoenigweg.biography.metadata.MetadataService;
 
 @Configuration
 @PropertySource("${biography.config.file}")
@@ -32,11 +33,11 @@ public class SpringContext {
     public Importer importer() {
         return new Importer();
     }
-    
-//    @Bean
-//    public Database database() {
-//        return new Database();
-//    }
+
+    @Bean
+    public MetadataService metadataService() {
+        return new MetadataService();
+    }
 
     @Bean
     public Indexer indexer() {

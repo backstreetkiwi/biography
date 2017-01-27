@@ -7,6 +7,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
@@ -22,16 +23,20 @@ public class BiographyMetadataTest {
     @Test
     public void testToJson() {
         List<Album> albums = Arrays.asList(new Album("NZ 2005", "03 Kaiteriteri"), new Album("NZ 2007"));
-        BiographyMetadata biographyMetadata = new BiographyMetadata(albums);
+        BiographyMetadata biographyMetadata = new BiographyMetadata(LocalDateTime.of(2005, 02, 05, 15, 27, 33, 123000000), "Vogel", albums);
         String json = biographyMetadata.toJson();
-        assertEquals("{\"albums\":[{\"title\":\"NZ 2005\",\"chapter\":\"03 Kaiteriteri\"},{\"title\":\"NZ 2007\"}]}", json);
+        assertEquals("{\"dateTimeOriginal\":\"2005-02-05T15:27:33.123\",\"description\":\"Vogel\",\"albums\":[{\"title\":\"NZ 2005\",\"chapter\":\"03 Kaiteriteri\"},{\"title\":\"NZ 2007\"}]}", json);
     }
 
     @Test
     public void testFromJson() {
-        String json = "{\"albums\":[{\"title\":\"NZ 2005\",\"chapter\":\"03 Kaiteriteri\"},{\"title\":\"NZ 2007\"}]}";
+        String json = "{\"dateTimeOriginal\":\"2005-02-05T15:27:33.123\",\"description\":\"Vogel\",\"albums\":[{\"title\":\"NZ 2005\",\"chapter\":\"03 Kaiteriteri\"},{\"title\":\"NZ 2007\"}]}";
         BiographyMetadata biographyMetadata = BiographyMetadata.from(json);
         assertNotNull(biographyMetadata);
+        assertNotNull(biographyMetadata.getDescription());
+        assertEquals("Vogel", biographyMetadata.getDescription());
+        assertNotNull(biographyMetadata.getDateTimeOriginal());
+        assertEquals(LocalDateTime.of(2005, 02, 05, 15, 27, 33, 123000000), biographyMetadata.getDateTimeOriginal());
         assertNotNull(biographyMetadata.getAlbums());
         assertEquals(2, biographyMetadata.getAlbums().size());
         assertNotNull(biographyMetadata.getAlbums().get(0));
@@ -52,6 +57,8 @@ public class BiographyMetadataTest {
         String json = "{}";
         BiographyMetadata biographyMetadata = BiographyMetadata.from(json);
         assertNotNull(biographyMetadata);
+        assertNull(biographyMetadata.getDateTimeOriginal());
+        assertNull(biographyMetadata.getDescription());
         assertNotNull(biographyMetadata.getAlbums());
         assertEquals(0, biographyMetadata.getAlbums().size());
     }

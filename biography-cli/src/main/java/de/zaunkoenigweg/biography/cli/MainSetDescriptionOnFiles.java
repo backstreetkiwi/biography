@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -14,22 +13,29 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.support.AbstractApplicationContext;
 
+import de.zaunkoenigweg.biography.metadata.BiographyMetadata;
 import de.zaunkoenigweg.biography.metadata.ExifData;
+import de.zaunkoenigweg.biography.metadata.MetadataService;
 
 public class MainSetDescriptionOnFiles {
     
     private final static Log LOG = LogFactory.getLog(MainSetDescriptionOnFiles.class);
+    
+    private static MetadataService metadataService;
 
     public static void main(String[] args) {
         AbstractApplicationContext springContext = new AnnotationConfigApplicationContext(SpringContext.class);
+        System.out.println("WARNING! This program overwrites existing descriptions.");
 
-        setAlbumOnFiles();
+        metadataService = springContext.getBean(MetadataService.class);
+        
+        setDescriptionOnFiles();
 
         springContext.close();
         System.out.println("Bye...");
     }
 
-    public static void setAlbumOnFiles() {
+    public static void setDescriptionOnFiles() {
         BufferedReader stdInReader = new BufferedReader(new InputStreamReader(System.in));
         
         String input = null;
@@ -57,13 +63,11 @@ public class MainSetDescriptionOnFiles {
                 mediaFilePath = stdInReader.readLine();
             }
             System.out.printf("%d media files entered...%n", mediaFilePaths.size());
-            boolean hasAnyFileAlreadyADescription = mediaFilePaths.stream().map(ExifData::of).map(ExifData::getDescription).anyMatch(Optional::isPresent);
-            if(hasAnyFileAlreadyADescription) {
-                System.out.println("Some files already have a description field set.");
-                return;
-            }
             mediaFilePaths.forEach(file -> {
                 ExifData.setDescription(file, description);
+                BiographyMetadata oldMetadata = metadataService.getMetadata(file);
+                BiographyMetadata newMetadata = new BiographyMetadata(oldMetadata.getDateTimeOriginal(), description, oldMetadata.getAlbums());
+                metadataService.setMetadata(file, newMetadata);
             });
         } catch (IOException e) {
             LOG.error("Read from System.in failed.", e);

@@ -16,7 +16,7 @@ public class MainImport {
         AbstractApplicationContext springContext = new AnnotationConfigApplicationContext(SpringContext.class);
         LOG.info("Spring context successfully initialized.");
         Importer importer = springContext.getBean(Importer.class);
-        importer.importAll(true);
+        importer.importAll(false);
         springContext.close();
         LOG.info("Biography importer finished.");
     }

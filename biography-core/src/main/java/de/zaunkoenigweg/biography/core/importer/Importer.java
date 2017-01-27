@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -23,6 +24,7 @@ import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
 import de.zaunkoenigweg.biography.metadata.Album;
 import de.zaunkoenigweg.biography.metadata.BiographyMetadata;
 import de.zaunkoenigweg.biography.metadata.ExifData;
+import de.zaunkoenigweg.biography.metadata.MetadataService;
 
 public class Importer {
 
@@ -31,10 +33,13 @@ public class Importer {
     @Autowired
     private BiographyConfig config;
 
+    @Autowired
+    private MetadataService metadataService;
+
     /**
      * Imports all images from import folder into the archive.
      */
-    public void importAll(boolean dryRun, Album... albums) {
+    public void importAll(boolean dryRun) {
 
         Set<File> mediaFilesInImportFolder = MediaFileType.all()
                 .flatMap(BiographyFileUtils.streamFilesOfMediaFileType(config.getImportFolder()))
@@ -72,7 +77,7 @@ public class Importer {
                 if(!dryRun) {
                     Files.createDirectories(archivePath.getParent());
                     Files.copy(Paths.get(file.toURI()), archivePath);
-                    setBiographyMetadata(archivePath.toFile(), albums);
+                    setBiographyMetadata(archivePath.toFile());
                     LOG.trace(String.format("Copied file %s to %s.", file.getAbsolutePath(), archivePath));
                 }
                 importLog.imported(file, archivePath);
@@ -96,11 +101,14 @@ public class Importer {
         }
     }
     
-    private void setBiographyMetadata(File file, Album... albums) {
-        if(albums.length==0) {
-            return;
+    private void setBiographyMetadata(File file) {
+        MediaFileType mediaFileType = MediaFileType.of(file).get();
+        LocalDateTime dateTimeOriginal = mediaFileType.getTimestampExtractorForArchivedFiles().apply(file);
+        String description = null;
+        if(ExifData.supports(mediaFileType)) {
+            description = ExifData.of(file).getDescription().orElse(null);
         }
-        BiographyMetadata biographyMetadata = new BiographyMetadata(Arrays.asList(albums).stream().collect(Collectors.toList()));
-        ExifData.setUserComment(file, biographyMetadata.toJson());
+        BiographyMetadata metadata = new BiographyMetadata(dateTimeOriginal, description, Collections.emptyList());
+        metadataService.setMetadata(file, metadata);
     }
 }

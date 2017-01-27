@@ -4,7 +4,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -13,13 +15,14 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.support.AbstractApplicationContext;
 
-import de.zaunkoenigweg.biography.metadata.Album;
+import de.zaunkoenigweg.biography.core.MediaFileType;
 import de.zaunkoenigweg.biography.metadata.BiographyMetadata;
+import de.zaunkoenigweg.biography.metadata.ExifData;
 import de.zaunkoenigweg.biography.metadata.MetadataService;
 
-public class MainSetAlbumOnFiles {
+public class MainCreateMetadataOnFiles {
     
-    private final static Log LOG = LogFactory.getLog(MainSetAlbumOnFiles.class);
+    private final static Log LOG = LogFactory.getLog(MainCreateMetadataOnFiles.class);
 
     private static MetadataService metadataService;
 
@@ -40,28 +43,6 @@ public class MainSetAlbumOnFiles {
         String albumId = null;
         
         System.out.println("Existing Biography Metadata will be destroyed on touched files!!!");
-        System.out.print("Please enter Album ID: ");
-        try {
-            albumId = stdInReader.readLine();
-            if(StringUtils.isBlank(albumId)) {
-                System.out.println("Album ID must not be empty.");
-                return;
-            }
-        } catch (IOException e) {
-            LOG.error("Read from System.in failed.", e);
-            return;
-        }
-        
-        Album album;
-        try {
-            album = Album.fromId(albumId);
-            System.out.println(album.toJson());
-            System.out.println();
-        } catch (IllegalArgumentException e) {
-            System.out.println("Album ID is not valid.");
-            return;
-        }
-
         try {
             System.out.println("Please enter full media file path(s): ");
             List<File> mediaFilePaths = new ArrayList<>();
@@ -72,14 +53,13 @@ public class MainSetAlbumOnFiles {
             }
             System.out.printf("%d media files entered...%n", mediaFilePaths.size());
             mediaFilePaths.stream().forEach(file -> {
-                BiographyMetadata metadata = metadataService.getMetadata(file);
-                if(metadata==null) {
-                    metadata = new BiographyMetadata(null, null, new ArrayList<Album>());
+                MediaFileType mediaFileType = MediaFileType.of(file).get();
+                LocalDateTime dateTimeOriginal = mediaFileType.getTimestampExtractorForArchivedFiles().apply(file);
+                String description = null;
+                if(ExifData.supports(mediaFileType)) {
+                    description = ExifData.of(file).getDescription().orElse(null);
                 }
-                if(metadata.getAlbums().contains(album)) {
-                    return;
-                }
-                metadata.getAlbums().add(album);
+                BiographyMetadata metadata = new BiographyMetadata(dateTimeOriginal, description, Collections.emptyList());
                 metadataService.setMetadata(file, metadata);
             });
         } catch (IOException e) {

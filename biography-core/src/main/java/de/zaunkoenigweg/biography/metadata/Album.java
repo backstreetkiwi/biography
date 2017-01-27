@@ -84,11 +84,7 @@ public class Album {
     }
     
     public String getId() {
-        if(this.chapter!=null) {
-            return String.format("%s%s%s", this.title, SEPARATOR, this.chapter);
-        } else {
-            return String.format("%s%s", this.title, SEPARATOR);
-        }
+        return String.format("%s%s%s", this.title, SEPARATOR, this.chapter != null ? this.chapter : "");
     }
 
     public String getTitle() {
@@ -97,5 +93,36 @@ public class Album {
     
     public Optional<String> getChapter() {
         return Optional.ofNullable(this.chapter);
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((chapter == null) ? 0 : chapter.hashCode());
+        result = prime * result + ((title == null) ? 0 : title.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        Album other = (Album) obj;
+        if (chapter == null) {
+            if (other.chapter != null)
+                return false;
+        } else if (!chapter.equals(other.chapter))
+            return false;
+        if (title == null) {
+            if (other.title != null)
+                return false;
+        } else if (!title.equals(other.title))
+            return false;
+        return true;
     }
 }
