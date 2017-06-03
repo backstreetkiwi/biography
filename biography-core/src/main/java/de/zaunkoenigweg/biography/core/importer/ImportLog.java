@@ -23,8 +23,8 @@ public class ImportLog {
         StringBuilder builder = new StringBuilder();
         builder.append(String.format("# imported: %d%n", this.imported.size()));
         builder.append(String.format("# not imported: %d%n", this.notImported.size()));
-        imported.forEach((file,archivePath)-> {
-            builder.append(String.format("imported: %s -> %s%n", file.getName(), archivePath));
+        imported.keySet().stream().sorted().forEach((file)-> {
+            builder.append(String.format("imported: %s -> %s%n", file.getName(), imported.get(file)));
         });
         notImported.forEach((file,message)-> {
             builder.append(String.format("not imported: %s -> %s%n", file.getName(), message));
