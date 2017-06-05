@@ -1,5 +1,9 @@
 package de.zaunkoenigweg.biography.cli;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -15,8 +19,23 @@ public class MainImport {
         LOG.info("Biography importer started...");
         AbstractApplicationContext springContext = new AnnotationConfigApplicationContext(SpringContext.class);
         LOG.info("Spring context successfully initialized.");
+
+        BufferedReader stdInReader = new BufferedReader(new InputStreamReader(System.in));
+        
+        String input = null;
+        
+        System.out.print("Enter 'nodry' for NOT doing a dry run!: ");
+        try {
+            input = stdInReader.readLine();
+        } catch (IOException e) {
+            LOG.error("Read from System.in failed.", e);
+            return;
+        }
+        
+        boolean dry = !"nodry".equals(input);
+        
         Importer importer = springContext.getBean(Importer.class);
-        importer.importAll(false);
+        importer.importAll(dry);
         springContext.close();
         LOG.info("Biography importer finished.");
     }
