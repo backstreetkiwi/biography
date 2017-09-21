@@ -9,7 +9,8 @@ import org.apache.commons.lang3.StringUtils;
 public enum MediaFileType {
     
     JPEG("jpg", TimestampExtractor.FROM_EXIF_OR_ELSE_FILE_LAST_MODIFIED, TimestampExtractor.FROM_EXIF_OR_ELSE_ARCHIVE_FILENAME),
-    QUICKTIME("mov", TimestampExtractor.FROM_FILE_LAST_MODIFIED, TimestampExtractor.FROM_ARCHIVE_FILENAME);
+    QUICKTIME("mov", TimestampExtractor.FROM_FILE_LAST_MODIFIED, TimestampExtractor.FROM_ARCHIVE_FILENAME),
+    MPEG("mpg", TimestampExtractor.FROM_FILE_LAST_MODIFIED, TimestampExtractor.FROM_ARCHIVE_FILENAME);
     
     private String fileExtension;
     private TimestampExtractor timestampExtractorForUntrackedFiles;

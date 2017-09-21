@@ -51,8 +51,8 @@ public class MetadataServiceTest {
 
     @Test
     public void testWriteMetadataForMovie() throws IOException {
-        File fileSource = new File(getClass().getResource("/exifdatatest/emptymovie.mov").getFile());
-        File movieFile = new File(someFolder, "emptymovie.mov");
+        File fileSource = new File(getClass().getResource("/exifdatatest/2017-09-21--18-39-22---139acab5f70c6ecafa73634a9cb6885b1835ce5c.mov").getFile());
+        File movieFile = new File(someFolder, "2017-09-21--18-39-22---139acab5f70c6ecafa73634a9cb6885b1835ce5c.mov");
         Files.copy(fileSource.toPath(), movieFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
         
         this.sut.setMetadata(movieFile, METADATA);
@@ -90,7 +90,7 @@ public class MetadataServiceTest {
 
     @Test
     public void testWriteMetadataForUnknownMediaFile() throws IOException {
-        File fileSource = new File(getClass().getResource("/exifdatatest/emptymovie.mov").getFile());
+        File fileSource = new File(getClass().getResource("/exifdatatest/2017-09-21--18-39-22---139acab5f70c6ecafa73634a9cb6885b1835ce5c.mov").getFile());
         File unknownMediaFile = new File(someFolder, "file.wtf");
         Files.copy(fileSource.toPath(), unknownMediaFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
         
@@ -103,8 +103,8 @@ public class MetadataServiceTest {
 
     @Test
     public void testReadMetadataForMovie() throws IOException {
-        File fileSource = new File(getClass().getResource("/exifdatatest/emptymovie.mov").getFile());
-        File movieFile = new File(someFolder, "emptymovie.mov");
+        File fileSource = new File(getClass().getResource("/exifdatatest/2017-09-21--18-39-22---139acab5f70c6ecafa73634a9cb6885b1835ce5c.mov").getFile());
+        File movieFile = new File(someFolder, "2017-09-21--18-39-22---139acab5f70c6ecafa73634a9cb6885b1835ce5c.mov");
         Files.copy(fileSource.toPath(), movieFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
         
         File jsonFile = new File(someFolder, String.format("b%s.json", BiographyFileUtils.sha1(movieFile)));
