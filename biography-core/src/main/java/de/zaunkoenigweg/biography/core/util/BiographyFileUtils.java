@@ -36,7 +36,7 @@ import de.zaunkoenigweg.biography.core.MediaFileType;
  */
 public class BiographyFileUtils {
 
-    private final static Pattern ARCHIVE_FILE_FORMAT = Pattern.compile("(\\d{4})-(\\d{2})-(\\d{2})--(\\d{2})-(\\d{2})-(\\d{2})---\\p{XDigit}{40}.(jpg|mov)");
+    private final static Pattern ARCHIVE_FILE_FORMAT = Pattern.compile("(\\d{4})-(\\d{2})-(\\d{2})--(\\d{2})-(\\d{2})-(\\d{2})---(\\p{XDigit}{40}).(jpg|mov)");
 
     /**
      * Predicate: Does the name of the given folder represent a valid year?
@@ -94,6 +94,20 @@ public class BiographyFileUtils {
         }
         
         return LocalDateTime.of(Integer.parseInt(matcher.group(1)), Integer.parseInt(matcher.group(2)), Integer.parseInt(matcher.group(3)), Integer.parseInt(matcher.group(4)), Integer.parseInt(matcher.group(5)), Integer.parseInt(matcher.group(6)));
+    }
+    
+    public static String getSha1FromArchiveFilename(File file) {
+        
+        if (file == null || file.isDirectory()) {
+            return null;
+        }
+
+        Matcher matcher = ARCHIVE_FILE_FORMAT.matcher(file.getName());
+        if(!matcher.matches()) {
+            return null;
+        }
+        
+        return matcher.group(7);
     }
     
     /**

@@ -68,26 +68,34 @@ public class MainRebuildAlbumFolders {
         
         System.out.printf("Found %d media files.%n%n", mediaFiles.size());
 
-        Function<File, Stream<Pair<Album, File>>> flatMapFileToAlbumFilePairs = file -> metadataService.getMetadata(file).getAlbums().stream().map(album -> Pair.of(album, file));
+        final Counter counter = new Counter(1);
+        
+        Function<File, Stream<Pair<File, Album>>> flatMapFileToAlbumFilePairs = file -> {
+            System.out.printf("%05d -> %s%n", counter.getCounter(), file.toString());
+            counter.plus1();
+            return metadataService.getMetadata(file).getAlbums().stream().map(album -> Pair.of(file, album));
+        };
 
-        Map<String, Optional<LocalDateTime>> startDateByTitle = mediaFiles.stream()
+        List<Triple<File, Album, LocalDateTime>> allFilesWithAlbumAndDateTimeOriginal = mediaFiles.stream()
                 .flatMap(flatMapFileToAlbumFilePairs)
-                .map(pair -> Pair.of(pair.getKey().getTitle(), metadataService.getMetadata(pair.getValue()).getDateTimeOriginal()))
-                .collect(Collectors.groupingBy(Pair::getKey, Collectors.mapping(Pair::getValue, Collectors.minBy(LocalDateTime::compareTo))));
+                .map(pair -> Triple.of(pair.getLeft(), pair.getRight(), metadataService.getMetadata(pair.getLeft()).getDateTimeOriginal()))
+                .collect(Collectors.toList());
 
-        Map<Integer, List<String>> albumTitlesChronologicallyGroupedByYear = startDateByTitle.entrySet()
+        Map<String, Optional<LocalDateTime>> albumStartDateByTitle = allFilesWithAlbumAndDateTimeOriginal.stream()
+                .collect(Collectors.groupingBy(triple -> triple.getMiddle().getTitle(), Collectors.mapping(Triple::getRight, Collectors.minBy(LocalDateTime::compareTo))));
+
+        Map<Integer, List<String>> albumTitlesChronologicallyGroupedByYear = albumStartDateByTitle.entrySet()
             .stream()
             .map(entry -> Pair.of(entry.getValue().get(), entry.getKey()))
-            .sorted(Comparator.comparing(Pair::getKey))
+            .sorted(Comparator.comparing(Pair::getLeft))
             .collect(Collectors.groupingBy(pair -> pair.getLeft().getYear(), Collectors.mapping(Pair::getRight, Collectors.toList())));
         
-        mediaFiles.stream()
-              .flatMap(flatMapFileToAlbumFilePairs)
-              .map(pair -> Triple.of(pair.getValue(), pair.getKey(), startDateByTitle.get(pair.getKey().getTitle()).get()))
+        allFilesWithAlbumAndDateTimeOriginal.stream()
+              .map(triple -> Triple.of(triple.getLeft(), triple.getMiddle(), albumStartDateByTitle.get(triple.getMiddle().getTitle()).get()))
               .map(triple -> Pair.of(triple.getLeft(), getAlbumFolder(albumBaseFolder, triple.getMiddle(), triple.getRight().getYear(), albumTitlesChronologicallyGroupedByYear.get(triple.getRight().getYear()).indexOf(triple.getMiddle().getTitle()))))
-              .forEach(pair -> {
+              .forEach(sourceFileAndtargetFolder -> {
                   try {
-                      FileUtils.copyFileToDirectory(pair.getLeft(), pair.getRight());
+                      FileUtils.copyFileToDirectory(sourceFileAndtargetFolder.getLeft(), sourceFileAndtargetFolder.getRight());
                   } catch (IOException e) {
                       throw new RuntimeException(e);
                   }
@@ -126,6 +134,19 @@ public class MainRebuildAlbumFolders {
     
     private static File getAlbumFolder(File baseFolder, Album album, Integer albumYear, Integer albumIndexInYear) {
         return new File(new File(new File(baseFolder, albumYear.toString()), String.format("%03d %s", albumIndexInYear+1, album.getTitle())), album.getChapter().orElse(""));        
+    }
+    
+    static class Counter{
+        private int counter;
+        Counter(int value) {
+            counter = value;
+        }
+        int getCounter() {
+            return counter;
+        }
+        void plus1() {
+            counter++;
+        }
     }
 
 }

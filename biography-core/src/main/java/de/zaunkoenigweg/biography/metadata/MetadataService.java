@@ -88,7 +88,7 @@ public class MetadataService {
             LOG.warn("Parent directory could not be detected.");
             return null;
         }
-        File jsonFile = new File(folder, "b" + BiographyFileUtils.sha1(archiveFile) + ".json");
+        File jsonFile = new File(folder, "b" + BiographyFileUtils.getSha1FromArchiveFilename(archiveFile) + ".json");
         if(!jsonFile.exists() || !jsonFile.isFile()) {
             return null;
         }
