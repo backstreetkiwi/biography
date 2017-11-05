@@ -18,7 +18,6 @@ public class BiographyConfig {
     private String importFolderProperty;
     private String archiveFolderProperty;
     
-    private String databaseName;
     private String indexUrl;
 
     /**
@@ -62,7 +61,7 @@ public class BiographyConfig {
             throw new BeanInitializationException(msg);
         }
 
-        LOG.info(String.format("Biography configuration: import-folder='%s', archive-folder='%s', database-name='%s', index-url='%s'", this.importFolder, this.archiveFolder, this.databaseName, this.indexUrl));
+        LOG.info(String.format("Biography configuration: import-folder='%s', archive-folder='%s', index-url='%s'", this.importFolder, this.archiveFolder, this.indexUrl));
     }
 
     public void setImportFolderProperty(String importFolderProperty) {
@@ -88,13 +87,4 @@ public class BiographyConfig {
     public String getIndexUrl() {
         return indexUrl;
     }
-    
-    public String getDatabaseName() {
-        return databaseName;
-    }
-
-    public void setDatabaseName(String databaseName) {
-        this.databaseName = databaseName;
-    }
-
 }

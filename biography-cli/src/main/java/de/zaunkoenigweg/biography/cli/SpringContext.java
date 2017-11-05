@@ -24,7 +24,6 @@ public class SpringContext {
         BiographyConfig config = new BiographyConfig();
         config.setImportFolderProperty(environment.getProperty("import.folder"));
         config.setArchiveFolderProperty(environment.getProperty("archive.folder"));
-        config.setDatabaseName(environment.getProperty("database.name"));
         config.setIndexUrl(environment.getProperty("index.url"));
         return config;
     }
