@@ -4,18 +4,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.lang3.tuple.Triple;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -69,37 +60,39 @@ public class MainRebuildAlbumFolders {
         System.out.printf("Found %d media files.%n%n", mediaFiles.size());
 
         final Counter counter = new Counter(1);
+
+        // TODO: Repair once ArchiveService is done! 
         
-        Function<File, Stream<Pair<File, Album>>> flatMapFileToAlbumFilePairs = file -> {
-            System.out.printf("%05d -> %s%n", counter.getCounter(), file.toString());
-            counter.plus1();
-            return metadataService.getMetadata(file).getAlbums().stream().map(album -> Pair.of(file, album));
-        };
+//        Function<File, Stream<Pair<File, Album>>> flatMapFileToAlbumFilePairs = file -> {
+//            System.out.printf("%05d -> %s%n", counter.getCounter(), file.toString());
+//            counter.plus1();
+//            return metadataService.getMetadata(file).getAlbums().stream().map(album -> Pair.of(file, album));
+//        };
 
-        List<Triple<File, Album, LocalDateTime>> allFilesWithAlbumAndDateTimeOriginal = mediaFiles.stream()
-                .flatMap(flatMapFileToAlbumFilePairs)
-                .map(pair -> Triple.of(pair.getLeft(), pair.getRight(), metadataService.getMetadata(pair.getLeft()).getDateTimeOriginal()))
-                .collect(Collectors.toList());
-
-        Map<String, Optional<LocalDateTime>> albumStartDateByTitle = allFilesWithAlbumAndDateTimeOriginal.stream()
-                .collect(Collectors.groupingBy(triple -> triple.getMiddle().getTitle(), Collectors.mapping(Triple::getRight, Collectors.minBy(LocalDateTime::compareTo))));
-
-        Map<Integer, List<String>> albumTitlesChronologicallyGroupedByYear = albumStartDateByTitle.entrySet()
-            .stream()
-            .map(entry -> Pair.of(entry.getValue().get(), entry.getKey()))
-            .sorted(Comparator.comparing(Pair::getLeft))
-            .collect(Collectors.groupingBy(pair -> pair.getLeft().getYear(), Collectors.mapping(Pair::getRight, Collectors.toList())));
-        
-        allFilesWithAlbumAndDateTimeOriginal.stream()
-              .map(triple -> Triple.of(triple.getLeft(), triple.getMiddle(), albumStartDateByTitle.get(triple.getMiddle().getTitle()).get()))
-              .map(triple -> Pair.of(triple.getLeft(), getAlbumFolder(albumBaseFolder, triple.getMiddle(), triple.getRight().getYear(), albumTitlesChronologicallyGroupedByYear.get(triple.getRight().getYear()).indexOf(triple.getMiddle().getTitle()))))
-              .forEach(sourceFileAndtargetFolder -> {
-                  try {
-                      FileUtils.copyFileToDirectory(sourceFileAndtargetFolder.getLeft(), sourceFileAndtargetFolder.getRight());
-                  } catch (IOException e) {
-                      throw new RuntimeException(e);
-                  }
-              });
+//        List<Triple<File, Album, LocalDateTime>> allFilesWithAlbumAndDateTimeOriginal = mediaFiles.stream()
+//                .flatMap(flatMapFileToAlbumFilePairs)
+//                .map(pair -> Triple.of(pair.getLeft(), pair.getRight(), metadataService.getMetadata(pair.getLeft()).getDateTimeOriginal()))
+//                .collect(Collectors.toList());
+//
+//        Map<String, Optional<LocalDateTime>> albumStartDateByTitle = allFilesWithAlbumAndDateTimeOriginal.stream()
+//                .collect(Collectors.groupingBy(triple -> triple.getMiddle().getTitle(), Collectors.mapping(Triple::getRight, Collectors.minBy(LocalDateTime::compareTo))));
+//
+//        Map<Integer, List<String>> albumTitlesChronologicallyGroupedByYear = albumStartDateByTitle.entrySet()
+//            .stream()
+//            .map(entry -> Pair.of(entry.getValue().get(), entry.getKey()))
+//            .sorted(Comparator.comparing(Pair::getLeft))
+//            .collect(Collectors.groupingBy(pair -> pair.getLeft().getYear(), Collectors.mapping(Pair::getRight, Collectors.toList())));
+//        
+//        allFilesWithAlbumAndDateTimeOriginal.stream()
+//              .map(triple -> Triple.of(triple.getLeft(), triple.getMiddle(), albumStartDateByTitle.get(triple.getMiddle().getTitle()).get()))
+//              .map(triple -> Pair.of(triple.getLeft(), getAlbumFolder(albumBaseFolder, triple.getMiddle(), triple.getRight().getYear(), albumTitlesChronologicallyGroupedByYear.get(triple.getRight().getYear()).indexOf(triple.getMiddle().getTitle()))))
+//              .forEach(sourceFileAndtargetFolder -> {
+//                  try {
+//                      FileUtils.copyFileToDirectory(sourceFileAndtargetFolder.getLeft(), sourceFileAndtargetFolder.getRight());
+//                  } catch (IOException e) {
+//                      throw new RuntimeException(e);
+//                  }
+//              });
         
 //        Map<String, List<Entry<Album, List<File>>>> collect = albumContent.entrySet()
 //            .stream()

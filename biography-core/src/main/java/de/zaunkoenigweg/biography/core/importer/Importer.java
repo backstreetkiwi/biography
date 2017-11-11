@@ -1,6 +1,7 @@
 package de.zaunkoenigweg.biography.core.importer;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -104,9 +105,16 @@ public class Importer {
         LocalDateTime dateTimeOriginal = mediaFileType.getTimestampExtractorForArchivedFiles().apply(file);
         String description = null;
         if(ExifData.supports(mediaFileType)) {
-            description = ExifData.of(file).getDescription().orElse(null);
+            description = ExifData.of(file, StandardCharsets.ISO_8859_1).getDescription().orElse(null);
         }
         BiographyMetadata metadata = new BiographyMetadata(dateTimeOriginal, description, Collections.emptyList());
-        metadataService.setMetadata(file, metadata);
+        
+        if(ExifData.supports(mediaFileType)) {
+        	metadataService.writeMetadataIntoExif(file, metadata);
+        	return;
+        }
+        
+        File jsonFile = new File(file.getParentFile(), "b" + BiographyFileUtils.getSha1FromArchiveFilename(file) + ".json");
+        metadataService.writeMetadataToJsonFile(jsonFile, metadata);
     }
 }

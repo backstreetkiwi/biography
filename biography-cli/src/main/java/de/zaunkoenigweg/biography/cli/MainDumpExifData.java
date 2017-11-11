@@ -8,21 +8,17 @@ import java.io.InputStreamReader;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.support.AbstractApplicationContext;
 
 import de.zaunkoenigweg.biography.metadata.ExifData;
 
-public class MainDumpFileInfo {
+public class MainDumpExifData {
     
-    private final static Log LOG = LogFactory.getLog(MainDumpFileInfo.class);
+    private final static Log LOG = LogFactory.getLog(MainDumpExifData.class);
 
     public static void main(String[] args) {
-        AbstractApplicationContext springContext = new AnnotationConfigApplicationContext(SpringContext.class);
 
         dump();
 
-        springContext.close();
         System.out.println("Bye...");
     }
 

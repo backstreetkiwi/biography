@@ -36,7 +36,7 @@ import de.zaunkoenigweg.biography.core.MediaFileType;
  */
 public class BiographyFileUtils {
 
-    private final static Pattern ARCHIVE_FILE_FORMAT = Pattern.compile("(\\d{4})-(\\d{2})-(\\d{2})--(\\d{2})-(\\d{2})-(\\d{2})---(\\p{XDigit}{40}).(jpg|mov|mpg)");
+    private final static Pattern ARCHIVE_FILENAME_FORMAT = Pattern.compile("(\\d{4})-(\\d{2})-(\\d{2})--(\\d{2})-(\\d{2})-(\\d{2})---(\\p{XDigit}{40}).(jpg|mov|mpg)");
 
     /**
      * Predicate: Does the name of the given folder represent a valid year?
@@ -79,7 +79,7 @@ public class BiographyFileUtils {
             return false;
         }
 
-        return ARCHIVE_FILE_FORMAT.matcher(file.getName()).matches();
+        return ARCHIVE_FILENAME_FORMAT.matcher(file.getName()).matches();
     };
 
     public static LocalDateTime getDatetimeOriginalFromArchiveFilename(File file) {
@@ -88,7 +88,7 @@ public class BiographyFileUtils {
             return null;
         }
 
-        Matcher matcher = ARCHIVE_FILE_FORMAT.matcher(file.getName());
+        Matcher matcher = ARCHIVE_FILENAME_FORMAT.matcher(file.getName());
         if(!matcher.matches()) {
             return null;
         }
@@ -102,7 +102,7 @@ public class BiographyFileUtils {
             return null;
         }
 
-        Matcher matcher = ARCHIVE_FILE_FORMAT.matcher(file.getName());
+        Matcher matcher = ARCHIVE_FILENAME_FORMAT.matcher(file.getName());
         if(!matcher.matches()) {
             return null;
         }

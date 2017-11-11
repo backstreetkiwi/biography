@@ -18,8 +18,6 @@ public class BiographyConfig {
     private String importFolderProperty;
     private String archiveFolderProperty;
     
-    private String indexUrl;
-
     /**
      * Creates Biography configuration using properties.
      * 
@@ -61,7 +59,7 @@ public class BiographyConfig {
             throw new BeanInitializationException(msg);
         }
 
-        LOG.info(String.format("Biography configuration: import-folder='%s', archive-folder='%s', index-url='%s'", this.importFolder, this.archiveFolder, this.indexUrl));
+        LOG.info(String.format("Biography configuration: import-folder='%s', archive-folder='%s'", this.importFolder, this.archiveFolder));
     }
 
     public void setImportFolderProperty(String importFolderProperty) {
@@ -72,10 +70,6 @@ public class BiographyConfig {
         this.archiveFolderProperty = archiveFolderProperty;
     }
     
-    public void setIndexUrl(String indexUrl) {
-        this.indexUrl = indexUrl;
-    }
-    
 	public File getImportFolder() {
 		return importFolder;
 	}
@@ -83,8 +77,4 @@ public class BiographyConfig {
 	public File getArchiveFolder() {
 		return archiveFolder;
 	}
-
-    public String getIndexUrl() {
-        return indexUrl;
-    }
 }

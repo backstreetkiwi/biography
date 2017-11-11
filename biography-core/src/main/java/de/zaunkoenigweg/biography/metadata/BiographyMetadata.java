@@ -24,8 +24,23 @@ public class BiographyMetadata {
     private LocalDateTime dateTimeOriginal;
     private String description;
     private List<Album> albums = new ArrayList<>();
+    
+    private static final JsonSerializer<LocalDateTime> LOCAL_DATE_TIME_SERIALIZER = (localDateTime, type, context) -> {
+    	return new JsonPrimitive(DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(localDateTime));
+    };
 
-    @SuppressWarnings("unused") // for Gson
+    private static final Gson SERIALIZER = new GsonBuilder().registerTypeAdapter(LocalDateTime.class, LOCAL_DATE_TIME_SERIALIZER).create(); 
+    
+    private static final JsonDeserializer<LocalDateTime> LOCAL_DATE_TIME_DESERIALIZER = (json, typeOfT, context) -> {
+        return LocalDateTime.parse(json.getAsString());
+    };
+    
+    private static final Gson DESERIALIZER = new GsonBuilder().registerTypeAdapter(LocalDateTime.class, LOCAL_DATE_TIME_DESERIALIZER).create();
+
+    /**
+     * This constructor is just used to create a Metadata object through Gson.
+     */
+    @SuppressWarnings("unused")
     private BiographyMetadata() {
     }
     
@@ -35,15 +50,22 @@ public class BiographyMetadata {
         this.albums = albums;
     }
 
+    /**
+     * Exports this biography metadata to JSON.
+     * @return biography metadata as JSON string.
+     */
     public String toJson() {
-        Gson gson = new GsonBuilder().registerTypeAdapter(LocalDateTime.class, localDateTimeSerializer).create();
-        return gson.toJson(this);
+        return SERIALIZER.toJson(this);
     }
     
+    /**
+     * Creates a Biography metadata object from JSON string.
+     * @param json JSON String
+     * @return BiographyMetadata
+     */
     public static BiographyMetadata from(String json) {
-        Gson gson = new GsonBuilder().registerTypeAdapter(LocalDateTime.class, localDateTimeDeserializer).create();
         try {
-            return gson.fromJson(json, BiographyMetadata.class);
+            return DESERIALIZER.fromJson(json, BiographyMetadata.class);
         } catch (JsonSyntaxException e) {
             return null;
         }
@@ -61,12 +83,4 @@ public class BiographyMetadata {
         return albums;
     }
     
-    private static final JsonDeserializer<LocalDateTime> localDateTimeDeserializer = (json, typeOfT, context) -> {
-        return LocalDateTime.parse(json.getAsString());
-    };
-
-    private static final JsonSerializer<LocalDateTime> localDateTimeSerializer = (localDateTime, type, context) -> {
-        return new JsonPrimitive(DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(localDateTime));
-    };
-
 }

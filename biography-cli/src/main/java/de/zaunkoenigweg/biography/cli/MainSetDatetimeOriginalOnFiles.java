@@ -1,24 +1,10 @@
 package de.zaunkoenigweg.biography.cli;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAccessor;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.support.AbstractApplicationContext;
-import org.springframework.format.datetime.joda.LocalDateTimeParser;
 
-import de.zaunkoenigweg.biography.metadata.BiographyMetadata;
-import de.zaunkoenigweg.biography.metadata.ExifData;
 import de.zaunkoenigweg.biography.metadata.MetadataService;
 
 public class MainSetDatetimeOriginalOnFiles {
@@ -40,24 +26,27 @@ public class MainSetDatetimeOriginalOnFiles {
     }
 
     public static void setDatetimeOriginalOnFiles() {
-        BufferedReader stdInReader = new BufferedReader(new InputStreamReader(System.in));
-        
-        String input = null;
-        LocalDateTime datetimeOriginal;
-        
-        System.out.print("Please enter timestamp: ");
-        try {
-            input = stdInReader.readLine();
-            if(StringUtils.isBlank(input)) {
-                System.out.println("Datetime must not be empty.");
-                return;
-            }
-            datetimeOriginal = LocalDateTime.from(DateTimeFormatter.ISO_LOCAL_DATE_TIME.parse(input));
-        } catch (IOException e) {
-            LOG.error("Read from System.in failed.", e);
-            return;
-        }
-        
+    	
+    	// TODO Redesign with ArchiveService
+    	
+//        BufferedReader stdInReader = new BufferedReader(new InputStreamReader(System.in));
+//        
+//        String input = null;
+//        LocalDateTime datetimeOriginal;
+//        
+//        System.out.print("Please enter timestamp: ");
+//        try {
+//            input = stdInReader.readLine();
+//            if(StringUtils.isBlank(input)) {
+//                System.out.println("Datetime must not be empty.");
+//                return;
+//            }
+//            datetimeOriginal = LocalDateTime.from(DateTimeFormatter.ISO_LOCAL_DATE_TIME.parse(input));
+//        } catch (IOException e) {
+//            LOG.error("Read from System.in failed.", e);
+//            return;
+//        }
+//        
 //        try {
 //            System.out.println("Please enter full media file path(s): ");
 //            List<File> mediaFilePaths = new ArrayList<>();

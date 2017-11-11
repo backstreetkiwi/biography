@@ -8,6 +8,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
@@ -104,6 +105,33 @@ public class ExifDataTest {
     }
     
     @Test
+    public void testWriteJpegDateTimeOriginal() throws IOException {
+        File fileSource = new File(getClass().getResource("/exifdatatest/NikonD60.jpg").getFile());
+        File file = new File(someFolder, "ImageToSetDateTimeOriginal.jpg");
+        Files.copy(fileSource.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        LocalDateTime dateTimeOriginal = LocalDateTime.now();
+        ExifData.setDateTimeOriginal(file, dateTimeOriginal);
+        ExifData exifData = ExifData.of(file);
+        assertNotNull(exifData);
+        assertNotNull(exifData.getDateTimeOriginal());
+        assertEquals(dateTimeOriginal, exifData.getDateTimeOriginal());
+    }
+    
+    @Test
+    public void testWriteJpegDescriptionWithUmlaut() throws IOException {
+        File fileSource = new File(getClass().getResource("/exifdatatest/NikonD60.jpg").getFile());
+        File file = new File(someFolder, "ImageWithDescriptionWithUmlaut.jpg");
+        Files.copy(fileSource.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        String description = "Christchurch, auf der S\u00fcdinsel";
+        ExifData.setDescription(file, description);
+        ExifData exifData = ExifData.of(file);
+        assertNotNull(exifData);
+        assertNotNull(exifData.getDescription());
+        assertTrue(exifData.getDescription().isPresent());
+        assertEquals(description, exifData.getDescription().get());
+    }
+    
+    @Test
     public void testWriteJpegUserComment() throws IOException {
         File fileSource = new File(getClass().getResource("/exifdatatest/NikonD60.jpg").getFile());
         File file = new File(someFolder, "ImageWithUserComment.jpg");
@@ -176,9 +204,9 @@ public class ExifDataTest {
     }
 
     @Test
-    public void testReadJpegDescriptionWithUmlaut() {
+    public void testReadJpegDescriptionIso8859() {
         File file = new File(getClass().getResource("/exifdatatest/DescriptionWithUmlaut.jpg").getFile());
-        ExifData exifData = ExifData.of(file);
+        ExifData exifData = ExifData.of(file, StandardCharsets.ISO_8859_1);
         assertNotNull(exifData);
         assertNotNull(exifData.getDescription());
         assertTrue(exifData.getDescription().isPresent());

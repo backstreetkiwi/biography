@@ -8,9 +8,9 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 
 /**
- * Album.
+ * Album (as part of Biography metadata).
  * 
- * An album must have a title and may have a chapter.
+ * An album MUST have a title and MAY have a chapter.
  * 
  * @author mail@nikolaus-winter.de
  */
@@ -21,10 +21,17 @@ public class Album {
     private String title;
     private String chapter;
     
-    @SuppressWarnings("unused") // for Gson
+    /**
+     * This constructor is just used to create a Metadata object through Gson.
+     */
+    @SuppressWarnings("unused")
     private Album() {
     }
     
+    /**
+     * Creates Album metadata with just a title (no chapter).
+     * @param title Title, must not be empty.
+     */
     public Album(String title) {
         if(StringUtils.isBlank(title)) {
             throw new IllegalArgumentException("Album title must not be blank.");
@@ -35,6 +42,11 @@ public class Album {
         this.title = title;
     }
 
+    /**
+     * Creates Album metadata with a title and a chapter.
+     * @param title Title, must not be empty.
+     * @param chapter Chapter, must not be empty.
+     */
     public Album(String title, String chapter) {
         if(StringUtils.isBlank(title)) {
             throw new IllegalArgumentException("Album title must not be blank.");
@@ -52,11 +64,20 @@ public class Album {
         this.chapter = chapter;
     }
 
+    /**
+     * Exports this album metadata to JSON.
+     * @return album metadata as JSON string.
+     */
     public String toJson() {
         Gson gson = new Gson();
         return gson.toJson(this);
     }
     
+    /**
+     * Creates an album metadata object from JSON string.
+     * @param json JSON String
+     * @return Album
+     */
     public static Album fromJson(String json) {
         Gson gson = new Gson();
         try {
@@ -66,6 +87,14 @@ public class Album {
         }
     }
 
+    /**
+     * Creates an album metadata object from an id string.
+	 * 
+	 * An album ID has the format "title|chapter" or "title|"
+	 *  
+     * @param id album ID string
+     * @return Album
+     */
     public static Album fromId(String id) {
         if(StringUtils.isBlank(id)) {
             throw new IllegalArgumentException("Album id must not be blank.");
@@ -83,6 +112,13 @@ public class Album {
         return new Album(tokens[0], tokens[1]);
     }
     
+    /**
+     * Gets the album ID string
+     * 
+     * See {@link #fromId(String)} for information about the format.
+     * 
+     * @return album ID string
+     */
     public String getId() {
         return String.format("%s%s%s", this.title, SEPARATOR, this.chapter != null ? this.chapter : "");
     }
