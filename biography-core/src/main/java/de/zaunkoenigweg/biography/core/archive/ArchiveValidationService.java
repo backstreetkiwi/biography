@@ -20,6 +20,28 @@ import de.zaunkoenigweg.biography.metadata.BiographyMetadata;
 import de.zaunkoenigweg.biography.metadata.ExifData;
 import de.zaunkoenigweg.biography.metadata.MetadataService;
 
+/**
+ * This service offers methods to validate archived media files.
+ * 
+ * The validating methods are ordered by the strength of the validation criteria.
+ * They call each other in a kind of cascade.
+ * 
+ * Methods ordered by criteria strength:
+ * 
+ * <ul>
+ * 		<li>{@link #hasMediaFileName(File)}</li>
+ * 		<li>{@link #isInCorrectArchiveFolder(File)}</li>
+ * 		<li>{@link #hasMetadata(File)}</li>
+ * 		<li>{@link #doesMetadataDatetimeOriginalMatchFilename(File)}</li>
+ * 		<li>{@link #doesMetadataMatchExifData(File)}</li>
+ * </ul>
+ * 
+ * The method {@link #check(File)} performs all validations sequentially until the
+ * first one fails and provides a protocol of the validations.
+ * 
+ * @author mail@nikolaus-winter.de
+ *
+ */
 public class ArchiveValidationService {
 
     private final static Log LOG = LogFactory.getLog(ArchiveValidationService.class);
@@ -75,9 +97,12 @@ public class ArchiveValidationService {
 		}
 		checks.add(Pair.of("No mismatch between EXIF metadata and BiographyMetadata", Boolean.TRUE));
 		
-		
-		// TODO check hashcode ?
-        
+        if(!isHashcodeCorrect(file)) {
+    		checks.add(Pair.of("SHA-1 hashcode does not match media file content", Boolean.FALSE));
+    		return Pair.of(Boolean.FALSE, checks);
+		}
+		checks.add(Pair.of("SHA-1 hashcode matches media file content", Boolean.TRUE));
+		        
 		return Pair.of(Boolean.TRUE, checks);
     }
     
@@ -221,6 +246,23 @@ public class ArchiveValidationService {
     	}
     	
     	return true;
+    }
+    
+    /**
+     * Is the hashcode in the filename matching the file content?
+     * 
+     * @param file media file
+     * @return Is the hashcode in the filename matching the file content?
+     * @throws {@link NullPointerException} if the file object is <code>null</code>
+     * @throws {@link IllegalArgumentException} if the file does not exist (or is a directory)
+     * @throws {@link IllegalArgumentException} if the file does not pass {@link #doesMetadataMatchExifData(File)}!
+     */
+    public boolean isHashcodeCorrect(File file) {
+    	if(!doesMetadataMatchExifData(file)) {
+    		throw new IllegalArgumentException(String.format("File '%s' does not have biography metadata attached.", file.getAbsolutePath()));
+    	}
+
+    	return BiographyFileUtils.getSha1FromArchiveFilename(file).equals(BiographyFileUtils.sha1(file));
     }
     
     private File getMetadataJsonFile(File file) {

@@ -57,21 +57,6 @@ public class ArchiveValidationServiceTest {
 		assertFalse(sut.hasMediaFileName(fileWithoutMediaFileName));
 	}
 
-	@Test(expected=NullPointerException.class)
-	public void testIsInCorrectArchiveFolderNull() {
-		sut.isInCorrectArchiveFolder(null);
-	}
-
-	@Test(expected=IllegalArgumentException.class)
-	public void testIsInCorrectArchiveFolderFileDoesNotExist() {
-		sut.isInCorrectArchiveFolder(new File(archiveFolder, "notexisting.jpg"));
-	}
-
-	@Test(expected=IllegalArgumentException.class)
-	public void testIsInCorrectArchiveFolderFileIsADirectory() {
-		sut.isInCorrectArchiveFolder(archiveFolder);
-	}
-
 	@Test(expected=IllegalArgumentException.class)
 	public void testIsInCorrectArchiveFolderFileHasNoValidMediaFileName() {
         File fileWithoutMediaFileName = new File(getClass().getResource("/archivevalidationservicetest/someimage.jpg").getFile());
@@ -87,27 +72,6 @@ public class ArchiveValidationServiceTest {
         TestUtil.copyFromResources("/archivevalidationservicetest/" + imageFileName, imageFileInWrongFolder);
 		assertTrue(sut.isInCorrectArchiveFolder(imageFileInCorrectFolder));
 		assertFalse(sut.isInCorrectArchiveFolder(imageFileInWrongFolder));
-	}
-
-	@Test(expected=NullPointerException.class)
-	public void testHasMetadataNull() {
-		sut.hasMetadata(null);
-	}
-
-	@Test(expected=IllegalArgumentException.class)
-	public void testHasMetadataFileDoesNotExist() {
-		sut.hasMetadata(new File(archiveFolder, "notexisting.jpg"));
-	}
-
-	@Test(expected=IllegalArgumentException.class)
-	public void testHasMetadataFileIsADirectory() {
-		sut.hasMetadata(archiveFolder);
-	}
-
-	@Test(expected=IllegalArgumentException.class)
-	public void testHasMetadataFileHasNoValidMediaFileName() {
-        File fileWithoutMediaFileName = new File(getClass().getResource("/archivevalidationservicetest/someimage.jpg").getFile());
-		sut.hasMetadata(fileWithoutMediaFileName);
 	}
 
 	@Test(expected=IllegalArgumentException.class)
@@ -144,35 +108,6 @@ public class ArchiveValidationServiceTest {
 		assertTrue(sut.hasMetadata(movieFileWithMetadata));
 	}
 	
-	@Test(expected=NullPointerException.class)
-	public void testDoesMetadataDatetimeOriginalMatchFilenameNull() {
-		sut.doesMetadataDatetimeOriginalMatchFilename(null);
-	}
-
-	@Test(expected=IllegalArgumentException.class)
-	public void testDoesMetadataDatetimeOriginalMatchFilenameFileDoesNotExist() {
-		sut.doesMetadataDatetimeOriginalMatchFilename(new File(archiveFolder, "notexisting.jpg"));
-	}
-
-	@Test(expected=IllegalArgumentException.class)
-	public void testDoesMetadataDatetimeOriginalMatchFilenameFileIsADirectory() {
-		sut.doesMetadataDatetimeOriginalMatchFilename(archiveFolder);
-	}
-
-	@Test(expected=IllegalArgumentException.class)
-	public void testDoesMetadataDatetimeOriginalMatchFilenameFileHasNoValidMediaFileName() {
-        File fileWithoutMediaFileName = new File(getClass().getResource("/archivevalidationservicetest/someimage.jpg").getFile());
-		sut.doesMetadataDatetimeOriginalMatchFilename(fileWithoutMediaFileName);
-	}
-
-	@Test(expected=IllegalArgumentException.class)
-	public void testDoesMetadataDatetimeOriginalMatchFilenameFileIsNotInCorrectArchiveFolder() throws IOException {
-		String imageFileName = "2017-10-17--16-58-40---7da47dd317e0e74388fa9688c1c7481ab614ce2f.jpg";
-		File imageFileInWrongFolder = new File(archiveFolder, "2017/09/" + imageFileName);
-        TestUtil.copyFromResources("/archivevalidationservicetest/" + imageFileName, imageFileInWrongFolder);
-        sut.doesMetadataDatetimeOriginalMatchFilename(imageFileInWrongFolder);
-	}
-
 	@Test(expected=IllegalArgumentException.class)
 	public void testDoesMetadataDatetimeOriginalMatchFilenameFileHasNoMetadataInExif() throws IOException {
 		String imageFileWithoutMetadataName = "2017-10-17--16-58-40---7da47dd317e0e74388fa9688c1c7481ab614ce2f.jpg";
@@ -245,6 +180,29 @@ public class ArchiveValidationServiceTest {
 		File imageFileNotMatchingDescription = new File(archiveFolder, "2017/04/" + imageFileNotMatchingDescriptionName);
         TestUtil.copyFromResources("/archivevalidationservicetest/" + imageFileNotMatchingDescriptionName, imageFileNotMatchingDescription);
         assertFalse(sut.doesMetadataMatchExifData(imageFileNotMatchingDescription));
+	}
+
+	@Test(expected=IllegalArgumentException.class)
+	public void testIsHashCodeCorrectExifDataDoesNotMatch() throws IOException {
+		String imageFileNotMatchingDescriptionName = "2017-04-03--20-58-09---5b9732ccc64bddf285dae030276639fc367d4e14.jpg";
+		File imageFileNotMatchingDescription = new File(archiveFolder, "2017/04/" + imageFileNotMatchingDescriptionName);
+        TestUtil.copyFromResources("/archivevalidationservicetest/" + imageFileNotMatchingDescriptionName, imageFileNotMatchingDescription);
+        sut.isHashcodeCorrect(imageFileNotMatchingDescription);
+	}
+
+	@Test
+	public void testIsHashCodeCorrect() throws IOException {
+		String imageFileName = "2017-05-12--21-25-08---2d1d6ced6c4df4f018f10f7697e9453fc1cfc86f.jpg";
+		File imageFile = new File(archiveFolder, "2017/05/" + imageFileName);
+        TestUtil.copyFromResources("/archivevalidationservicetest/" + imageFileName, imageFile);
+        assertTrue(sut.isHashcodeCorrect(imageFile));
+        
+		String imageFileNotMatchingHashcodeName = "2017-05-12--21-25-08---affeaffeaffeaffeaffeaffeaffeaffeaffeaffe.jpg";
+		File imageFileNotMatchingHashcode = new File(archiveFolder, "2017/05/" + imageFileNotMatchingHashcodeName);
+        TestUtil.copyFromResources("/archivevalidationservicetest/" + imageFileNotMatchingHashcodeName, imageFileNotMatchingHashcode);
+        assertFalse(sut.isHashcodeCorrect(imageFileNotMatchingHashcode));
+        
+        
 	}
 
 }
