@@ -14,44 +14,32 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.support.AbstractApplicationContext;
 
 import de.zaunkoenigweg.biography.core.archive.ArchiveMetadataService;
-import de.zaunkoenigweg.biography.metadata.MetadataService;
+import de.zaunkoenigweg.biography.core.config.BiographyConfig;
+import de.zaunkoenigweg.biography.metadata.BiographyMetadata;
 
-public class MainSetDescriptionOnFiles {
+public class MainDumpBiographyMetadata {
     
-    private final static Log LOG = LogFactory.getLog(MainSetDescriptionOnFiles.class);
-    
+    private final static Log LOG = LogFactory.getLog(MainDumpBiographyMetadata.class);
+
     private static ArchiveMetadataService archiveMetadataService;
+    private static BiographyConfig biographyConfig;
 
     public static void main(String[] args) {
         AbstractApplicationContext springContext = new AnnotationConfigApplicationContext(SpringContext.class);
-        System.out.println("WARNING! This program overwrites existing descriptions.");
 
         archiveMetadataService = springContext.getBean(ArchiveMetadataService.class);
+        biographyConfig = springContext.getBean(BiographyConfig.class);
         
-        setDescriptionOnFiles();
+        System.out.printf("%n%nDumping the given files in context of archive %s%n%n", biographyConfig.getArchiveFolder().toString());
+        
+        dump();
 
         springContext.close();
         System.out.println("Bye...");
     }
 
-    public static void setDescriptionOnFiles() {
+    private static void dump() {
         BufferedReader stdInReader = new BufferedReader(new InputStreamReader(System.in));
-        
-        String input = null;
-        
-        System.out.print("Please enter Description: ");
-        try {
-            input = stdInReader.readLine();
-            if(StringUtils.isBlank(input)) {
-                System.out.println("Description must not be empty.");
-                return;
-            }
-        } catch (IOException e) {
-            LOG.error("Read from System.in failed.", e);
-            return;
-        }
-        
-        final String description = input;
         
         try {
             System.out.println("Please enter full media file path(s): ");
@@ -62,13 +50,30 @@ public class MainSetDescriptionOnFiles {
                 mediaFilePath = stdInReader.readLine();
             }
             System.out.printf("%d media files entered...%n", mediaFilePaths.size());
-            mediaFilePaths.forEach(file -> {
-            	archiveMetadataService.setDescription(file, description);
-            });
+            mediaFilePaths.stream().forEach(MainDumpBiographyMetadata::dumpBiographyMetadata);
+            System.out.println();
+            System.out.println();
         } catch (IOException e) {
             LOG.error("Read from System.in failed.", e);
             return;
         }
+    }
+    
+    private static void dumpBiographyMetadata(File file) {
+        
+        System.out.printf("%n%nDumping BiographyMetadata for file %s ...%n", file.toString());
+
+        BiographyMetadata metadata = null;
+        try {
+			metadata = archiveMetadataService.getMetadata(file);
+		} catch (Exception e) {
+			System.out.printf("%nError reading metadata :-( %n%n");
+			return;
+		}
+        
+        System.out.printf("%nDescription: %s", metadata.getDescription());
+        System.out.printf("%nDateTimeOriginal: %s", metadata.getDateTimeOriginal());
+        System.out.printf("%nAlbums: %s", metadata.getAlbums());
     }
 
 }

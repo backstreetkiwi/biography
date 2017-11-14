@@ -3,6 +3,7 @@ package de.zaunkoenigweg.biography.metadata;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import com.google.gson.Gson;
@@ -77,6 +78,10 @@ public class BiographyMetadata {
 
     public String getDescription() {
         return description;
+    }
+    
+    public BiographyMetadata withDescription(String description) {
+    	return new BiographyMetadata(this.dateTimeOriginal, description, Collections.unmodifiableList(this.albums));
     }
 
     public List<Album> getAlbums() {

@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 
+import de.zaunkoenigweg.biography.core.archive.ArchiveMetadataService;
 import de.zaunkoenigweg.biography.core.archive.ArchiveValidationService;
 import de.zaunkoenigweg.biography.core.config.BiographyConfig;
 import de.zaunkoenigweg.biography.core.importer.Importer;
@@ -37,8 +38,13 @@ public class SpringContext {
     }
 
     @Bean
-    public ArchiveValidationService archiveService() {
+    public ArchiveValidationService archiveValidationService() {
         return new ArchiveValidationService();
+    }
+
+    @Bean
+    public ArchiveMetadataService archiveMetadataService() {
+        return new ArchiveMetadataService();
     }
 }
 
