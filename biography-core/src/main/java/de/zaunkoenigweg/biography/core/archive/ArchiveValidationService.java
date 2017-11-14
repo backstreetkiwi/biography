@@ -52,6 +52,28 @@ public class ArchiveValidationService {
     @Autowired
     MetadataService metadataService;
 
+    /**
+     * Is the archive file valid?
+     * 
+     * The check is performed by using just the method {@link #isHashcodeCorrect(File)} 
+     * because that validation method is the strongest in the cascade of validations.
+     * 
+     * Exceptions are swallowed and result in a false value because this method does not
+     * provide further information about the reasons of a failure.
+     * 
+     * If you need further information, use {@link #check(File)}.
+     * 
+     * @param file archive file
+     * @return Is the archive file valid?
+     */
+    public boolean isValid(File file) {
+    	try {
+			return isHashcodeCorrect(file);
+		} catch (Exception e) {
+			return false;
+		}
+    }
+    
     public Pair<Boolean, List<Pair<String, Boolean>>> check(File file) {
     	List<Pair<String, Boolean>> checks = new ArrayList<>();
     	
