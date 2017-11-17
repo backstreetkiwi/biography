@@ -8,8 +8,8 @@ import org.springframework.core.env.Environment;
 
 import de.zaunkoenigweg.biography.core.archive.ArchiveMetadataService;
 import de.zaunkoenigweg.biography.core.archive.ArchiveValidationService;
+import de.zaunkoenigweg.biography.core.archive.ArchiveImportService;
 import de.zaunkoenigweg.biography.core.config.BiographyConfig;
-import de.zaunkoenigweg.biography.core.importer.Importer;
 import de.zaunkoenigweg.biography.metadata.MetadataService;
 
 @Configuration
@@ -28,8 +28,8 @@ public class SpringContext {
     }
     
     @Bean
-    public Importer importer() {
-        return new Importer();
+    public ArchiveImportService importer() {
+        return new ArchiveImportService();
     }
 
     @Bean

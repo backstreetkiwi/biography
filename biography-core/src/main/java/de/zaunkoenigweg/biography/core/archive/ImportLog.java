@@ -1,4 +1,4 @@
-package de.zaunkoenigweg.biography.core.importer;
+package de.zaunkoenigweg.biography.core.archive;
 
 import java.io.File;
 import java.nio.file.Path;

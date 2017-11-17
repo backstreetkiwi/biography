@@ -9,7 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.support.AbstractApplicationContext;
 
-import de.zaunkoenigweg.biography.core.importer.Importer;
+import de.zaunkoenigweg.biography.core.archive.ArchiveImportService;
 
 public class MainImport {
     
@@ -34,7 +34,7 @@ public class MainImport {
         
         boolean dry = !"nodry".equals(input);
         
-        Importer importer = springContext.getBean(Importer.class);
+        ArchiveImportService importer = springContext.getBean(ArchiveImportService.class);
         importer.importAll(dry);
         springContext.close();
         LOG.info("Biography importer finished.");

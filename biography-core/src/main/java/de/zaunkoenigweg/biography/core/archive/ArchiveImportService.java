@@ -1,4 +1,4 @@
-package de.zaunkoenigweg.biography.core.importer;
+package de.zaunkoenigweg.biography.core.archive;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -25,9 +25,9 @@ import de.zaunkoenigweg.biography.metadata.BiographyMetadata;
 import de.zaunkoenigweg.biography.metadata.ExifData;
 import de.zaunkoenigweg.biography.metadata.MetadataService;
 
-public class Importer {
+public class ArchiveImportService {
 
-    private final static Log LOG = LogFactory.getLog(Importer.class);
+    private final static Log LOG = LogFactory.getLog(ArchiveImportService.class);
 
     @Autowired
     private BiographyConfig config;
