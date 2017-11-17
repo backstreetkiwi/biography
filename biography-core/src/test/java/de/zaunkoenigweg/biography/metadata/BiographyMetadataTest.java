@@ -9,47 +9,60 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 
 public class BiographyMetadataTest {
 
-    @Before
-    public void setUp() throws IOException {
-    }
+	private static final Album ALBUM_1 = new Album("album_1_title_aksdfj", "album_1_chapter_adsgfe");
+    private static final Album ALBUM_2 = new Album("album_2_title_gdtfbf");
+    private static final LocalDateTime DATE_TIME_ORIGINAL = LocalDateTime.of(2005, 02, 05, 15, 27, 33, 123000000);
+	private static final Set<Album> ALBUMS = new HashSet<>(Arrays.asList(ALBUM_1, ALBUM_2));
+	private static final String DESCRIPTION = "description";
+	private static final BiographyMetadata BIOGRAPHY_METADATA = new BiographyMetadata(DATE_TIME_ORIGINAL, DESCRIPTION, ALBUMS);
+	private String json;
 
-    @Test
+	@Before
+    public void setUp() throws IOException {
+		json = String.format(
+				"{\"dateTimeOriginal\":\"2005-02-05T15:27:33.123\","
+				+ "\"description\":\"%s\","
+				+ "\"albums\":[{\"title\":\"%s\",\"chapter\":\"%s\"},"
+				+ "{\"title\":\"%s\"}]}", 
+				DESCRIPTION, 
+				ALBUM_1.getTitle(), 
+				ALBUM_1.getChapter().get(), 
+				ALBUM_2.getTitle());
+		
+		
+	}
+
+	/**
+	 * This test can only test necessary conditions, but is not sufficient
+	 * as the JSON cannot be compared as a whole due to unspecified sequence of values.
+	 * 
+	 * A sufficient test would include parsing the JSON. Maybe later...
+	 */
+	@Test
     public void testToJson() {
-        List<Album> albums = Arrays.asList(new Album("NZ 2005", "03 Kaiteriteri"), new Album("NZ 2007"));
-        BiographyMetadata biographyMetadata = new BiographyMetadata(LocalDateTime.of(2005, 02, 05, 15, 27, 33, 123000000), "Vogel", albums);
-        String json = biographyMetadata.toJson();
-        assertEquals("{\"dateTimeOriginal\":\"2005-02-05T15:27:33.123\",\"description\":\"Vogel\",\"albums\":[{\"title\":\"NZ 2005\",\"chapter\":\"03 Kaiteriteri\"},{\"title\":\"NZ 2007\"}]}", json);
+    	String json = BIOGRAPHY_METADATA.toJson();
+    	assertNotNull(json);
+    	assertTrue(StringUtils.isNotBlank(json));
+    	assertTrue(StringUtils.contains(json, ALBUM_1.getTitle()));
+    	assertTrue(StringUtils.contains(json, ALBUM_1.getChapter().orElse("")));
+    	assertTrue(StringUtils.contains(json, ALBUM_2.getTitle()));
+    	assertTrue(StringUtils.contains(json, ALBUM_2.getChapter().orElse("")));
     }
 
     @Test
     public void testFromJson() {
-        String json = "{\"dateTimeOriginal\":\"2005-02-05T15:27:33.123\",\"description\":\"Vogel\",\"albums\":[{\"title\":\"NZ 2005\",\"chapter\":\"03 Kaiteriteri\"},{\"title\":\"NZ 2007\"}]}";
         BiographyMetadata biographyMetadata = BiographyMetadata.from(json);
         assertNotNull(biographyMetadata);
-        assertNotNull(biographyMetadata.getDescription());
-        assertEquals("Vogel", biographyMetadata.getDescription());
-        assertNotNull(biographyMetadata.getDateTimeOriginal());
-        assertEquals(LocalDateTime.of(2005, 02, 05, 15, 27, 33, 123000000), biographyMetadata.getDateTimeOriginal());
-        assertNotNull(biographyMetadata.getAlbums());
-        assertEquals(2, biographyMetadata.getAlbums().size());
-        assertNotNull(biographyMetadata.getAlbums().get(0));
-        assertNotNull(biographyMetadata.getAlbums().get(0).getTitle());
-        assertNotNull(biographyMetadata.getAlbums().get(0).getChapter());
-        assertTrue(biographyMetadata.getAlbums().get(0).getChapter().isPresent());
-        assertEquals("NZ 2005", biographyMetadata.getAlbums().get(0).getTitle());
-        assertEquals("03 Kaiteriteri", biographyMetadata.getAlbums().get(0).getChapter().get());
-        assertNotNull(biographyMetadata.getAlbums().get(1));
-        assertNotNull(biographyMetadata.getAlbums().get(1).getTitle());
-        assertNotNull(biographyMetadata.getAlbums().get(1).getChapter());
-        assertFalse(biographyMetadata.getAlbums().get(1).getChapter().isPresent());
-        assertEquals("NZ 2007", biographyMetadata.getAlbums().get(1).getTitle());
+        assertEquals(BIOGRAPHY_METADATA, biographyMetadata);
     }
 
     @Test
@@ -77,4 +90,68 @@ public class BiographyMetadataTest {
         assertNull(biographyMetadata);
     }
 
+    @Test
+    public void testWithDescription() {
+    	String newDescription = "new_description";
+		BiographyMetadata biographyMetadata = BIOGRAPHY_METADATA.withDescription(newDescription);
+		
+		assertNotNull(biographyMetadata);
+		assertFalse(biographyMetadata==BIOGRAPHY_METADATA);
+		assertEquals(BIOGRAPHY_METADATA.getDateTimeOriginal(), biographyMetadata.getDateTimeOriginal());
+		assertEquals(BIOGRAPHY_METADATA.getAlbums(), biographyMetadata.getAlbums());
+		assertEquals(newDescription, biographyMetadata.getDescription());
+    }
+
+    @Test
+    public void testWithAlbums() {
+    	Set<Album> newAlbums = new HashSet<>();
+    	newAlbums.add(new Album("new_album_1_title_azdteg"));
+    	newAlbums.add(new Album("new_album_2_title_ssrcwg", "new_album_2_chapter_zdgtsg"));
+		BiographyMetadata biographyMetadata = BIOGRAPHY_METADATA.withAlbums(newAlbums);
+		
+		assertNotNull(biographyMetadata);
+		assertFalse(biographyMetadata==BIOGRAPHY_METADATA);
+		assertEquals(BIOGRAPHY_METADATA.getDateTimeOriginal(), biographyMetadata.getDateTimeOriginal());
+		assertEquals(BIOGRAPHY_METADATA.getDescription(), biographyMetadata.getDescription());
+		assertEquals(newAlbums, biographyMetadata.getAlbums());
+    }
+
+    @Test
+    public void testWithMergedAlbums() {
+    	Set<Album> newAlbums = new HashSet<>();
+    	newAlbums.add(new Album("new_album_1_title_azdteg"));
+    	newAlbums.add(new Album("new_album_2_title_ssrcwg", "new_album_2_chapter_zdgtsg"));
+    	newAlbums.add(ALBUM_1);
+		BiographyMetadata biographyMetadata = BIOGRAPHY_METADATA.withMergedAlbums(newAlbums);
+		
+		assertNotNull(biographyMetadata);
+		assertFalse(biographyMetadata==BIOGRAPHY_METADATA);
+		assertEquals(BIOGRAPHY_METADATA.getDateTimeOriginal(), biographyMetadata.getDateTimeOriginal());
+		assertEquals(BIOGRAPHY_METADATA.getDescription(), biographyMetadata.getDescription());
+		
+		Set<Album> mergedAlbums = biographyMetadata.getAlbums();
+		assertTrue(mergedAlbums.containsAll(newAlbums));
+		assertTrue(mergedAlbums.containsAll(ALBUMS));
+		assertEquals(ALBUMS.size() + newAlbums.size() - 1, mergedAlbums.size());
+		
+    }
+    
+    @Test
+    public void testWithMergedAlbumsDisjoint() {
+    	Set<Album> newAlbums = new HashSet<>();
+    	newAlbums.add(new Album("new_album_1_title_azdteg"));
+    	newAlbums.add(new Album("new_album_2_title_ssrcwg", "new_album_2_chapter_zdgtsg"));
+		BiographyMetadata biographyMetadata = BIOGRAPHY_METADATA.withMergedAlbums(newAlbums);
+		
+		assertNotNull(biographyMetadata);
+		assertFalse(biographyMetadata==BIOGRAPHY_METADATA);
+		assertEquals(BIOGRAPHY_METADATA.getDateTimeOriginal(), biographyMetadata.getDateTimeOriginal());
+		assertEquals(BIOGRAPHY_METADATA.getDescription(), biographyMetadata.getDescription());
+		
+		Set<Album> mergedAlbums = biographyMetadata.getAlbums();
+		assertTrue(mergedAlbums.containsAll(newAlbums));
+		assertTrue(mergedAlbums.containsAll(ALBUMS));
+		assertEquals(ALBUMS.size() + newAlbums.size(), mergedAlbums.size());
+		
+    }
 }

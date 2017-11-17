@@ -2,9 +2,10 @@ package de.zaunkoenigweg.biography.metadata;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -24,7 +25,7 @@ public class BiographyMetadata {
 
     private LocalDateTime dateTimeOriginal;
     private String description;
-    private List<Album> albums = new ArrayList<>();
+    private Set<Album> albums = new HashSet<>();
     
     private static final JsonSerializer<LocalDateTime> LOCAL_DATE_TIME_SERIALIZER = (localDateTime, type, context) -> {
     	return new JsonPrimitive(DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(localDateTime));
@@ -45,7 +46,7 @@ public class BiographyMetadata {
     private BiographyMetadata() {
     }
     
-    public BiographyMetadata(LocalDateTime dateTimeOriginal, String description, List<Album> albums) {
+    public BiographyMetadata(LocalDateTime dateTimeOriginal, String description, Set<Album> albums) {
         this.dateTimeOriginal = dateTimeOriginal;
         this.description = description;
         this.albums = albums;
@@ -80,12 +81,83 @@ public class BiographyMetadata {
         return description;
     }
     
-    public BiographyMetadata withDescription(String description) {
-    	return new BiographyMetadata(this.dateTimeOriginal, description, Collections.unmodifiableList(this.albums));
-    }
-
-    public List<Album> getAlbums() {
+    public Set<Album> getAlbums() {
         return albums;
     }
     
+    /**
+     * Produces a metadata object that contains the same data as this one, with the description
+     * replaced by the given value.
+     * 
+     * @param newDescription new description
+     * @return metadata object with new description
+     */
+    public BiographyMetadata withDescription(String newDescription) {
+    	return new BiographyMetadata(this.dateTimeOriginal, newDescription, Collections.unmodifiableSet(albums));
+    }
+
+    /**
+     * Produces a metadata object that contains the same data as this one, with the albums
+     * replaced by the given album list.
+     * 
+     * @param newAlbums new list of albums
+     * @return metadata object with new description
+     */
+    public BiographyMetadata withAlbums(Set<Album> newAlbums) {
+    	return new BiographyMetadata(this.dateTimeOriginal, this.description, Collections.unmodifiableSet(newAlbums));
+    }
+
+
+    /**
+     * Produces a metadata object that contains the same data as this one, with the albums
+     * merged with the albums of the given album list.
+     * 
+     * @param newAlbums list of albums to merge into the existing album list
+     * @return metadata object with new description
+     */
+    public BiographyMetadata withMergedAlbums(Set<Album> newAlbums) {
+    	HashSet<Album> mergedAlbums = new HashSet<>(this.albums);
+    	mergedAlbums.addAll(newAlbums);
+    	return new BiographyMetadata(this.dateTimeOriginal, this.description, Collections.unmodifiableSet(mergedAlbums));
+    }
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((albums == null) ? 0 : albums.hashCode());
+		result = prime * result + ((dateTimeOriginal == null) ? 0 : dateTimeOriginal.hashCode());
+		result = prime * result + ((description == null) ? 0 : description.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		BiographyMetadata other = (BiographyMetadata) obj;
+		if (albums == null) {
+			if (other.albums != null)
+				return false;
+		} else if (!albums.equals(other.albums))
+			return false;
+		if (dateTimeOriginal == null) {
+			if (other.dateTimeOriginal != null)
+				return false;
+		} else if (!dateTimeOriginal.equals(other.dateTimeOriginal))
+			return false;
+		if (description == null) {
+			if (other.description != null)
+				return false;
+		} else if (!description.equals(other.description))
+			return false;
+		return true;
+	}
+    
+    
+
 }

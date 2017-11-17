@@ -1,14 +1,12 @@
 package de.zaunkoenigweg.biography.core.archive;
 
 import java.io.File;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import de.zaunkoenigweg.biography.core.MediaFileType;
 import de.zaunkoenigweg.biography.core.config.BiographyConfig;
 import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
+import de.zaunkoenigweg.biography.metadata.Album;
 import de.zaunkoenigweg.biography.metadata.BiographyMetadata;
 import de.zaunkoenigweg.biography.metadata.ExifData;
 import de.zaunkoenigweg.biography.metadata.MetadataService;
@@ -79,6 +78,25 @@ public class ArchiveMetadataService {
     		metadataService.writeMetadataToJsonFile(getMetadataJsonFile(file), metadata);
     	}
     }
+    
+    public void addAlbums(File file, Set<Album> albums) {
+    	BiographyMetadata metadata = getMetadata(file);
+    	metadata = metadata.withMergedAlbums(albums);
+    	Optional<MediaFileType> mediaFileType = MediaFileType.of(file);
+    	if(!mediaFileType.isPresent()) {
+    		throw new IllegalStateException(String.format("The file type '%s' is not known.", file.getAbsolutePath()));
+    	}
+		if(ExifData.supports(mediaFileType.get())) {
+			metadataService.writeMetadataIntoExif(file, metadata);
+    	} else {
+    		metadataService.writeMetadataToJsonFile(getMetadataJsonFile(file), metadata);
+    	}
+    }
+    
+    public void addAlbum(File file, Album album) {
+    	addAlbums(file, Collections.singleton(album));
+    }
+    
     
     private File getMetadataJsonFile(File file) {
     	return new File(file.getParent(), String.format("b%s.json", BiographyFileUtils.getSha1FromArchiveFilename(file)));

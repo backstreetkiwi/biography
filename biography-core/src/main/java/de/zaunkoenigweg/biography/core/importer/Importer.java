@@ -107,7 +107,7 @@ public class Importer {
         if(ExifData.supports(mediaFileType)) {
             description = ExifData.of(file, StandardCharsets.ISO_8859_1).getDescription().orElse(null);
         }
-        BiographyMetadata metadata = new BiographyMetadata(dateTimeOriginal, description, Collections.emptyList());
+        BiographyMetadata metadata = new BiographyMetadata(dateTimeOriginal, description, Collections.emptySet());
         
         if(ExifData.supports(mediaFileType)) {
         	metadataService.writeMetadataIntoExif(file, metadata);
