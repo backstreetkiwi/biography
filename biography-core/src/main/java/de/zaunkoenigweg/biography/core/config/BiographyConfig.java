@@ -17,6 +17,7 @@ public class BiographyConfig {
 
     private String importFolderProperty;
     private String archiveFolderProperty;
+    private String solrIndexUrl;
     
     /**
      * Creates Biography configuration using properties.
@@ -77,4 +78,14 @@ public class BiographyConfig {
 	public File getArchiveFolder() {
 		return archiveFolder;
 	}
+
+	public String getSolrIndexUrl() {
+		return solrIndexUrl;
+	}
+
+	public void setSolrIndexUrl(String solrIndexUrl) {
+		this.solrIndexUrl = solrIndexUrl;
+	}
+	
+	
 }
