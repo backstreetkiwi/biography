@@ -1,0 +1,5 @@
+archive:
+  path: /path/to/archive/
+  
+import:
+  path: /path/to/import/

@@ -11,5 +11,6 @@
 	<modules>
 		<module>biography-core</module>
 		<module>biography-cli</module>
+		<module>biography-web</module>
 	</modules>
 </project>
