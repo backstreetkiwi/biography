@@ -11,6 +11,7 @@ import de.zaunkoenigweg.biography.core.archive.ArchiveMetadataService;
 import de.zaunkoenigweg.biography.core.archive.ArchiveValidationService;
 import de.zaunkoenigweg.biography.core.config.BiographyConfig;
 import de.zaunkoenigweg.biography.core.index.ArchiveIndexingService;
+import de.zaunkoenigweg.biography.core.index.ArchiveSearchService;
 import de.zaunkoenigweg.biography.metadata.MetadataService;
 
 @Configuration
@@ -52,6 +53,11 @@ public class SpringContext {
     @Bean
     public ArchiveIndexingService archiveIndexingService() {
         return new ArchiveIndexingService();
+    }
+
+    @Bean
+    public ArchiveSearchService archiveSearchService() {
+        return new ArchiveSearchService();
     }
 }
 
