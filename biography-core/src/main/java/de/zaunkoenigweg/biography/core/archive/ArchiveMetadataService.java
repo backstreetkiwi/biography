@@ -2,17 +2,15 @@ package de.zaunkoenigweg.biography.core.archive;
 
 import java.io.File;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import de.zaunkoenigweg.biography.core.MediaFileType;
-import de.zaunkoenigweg.biography.core.config.BiographyConfig;
 import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
 import de.zaunkoenigweg.biography.metadata.Album;
 import de.zaunkoenigweg.biography.metadata.BiographyMetadata;
@@ -34,18 +32,20 @@ import de.zaunkoenigweg.biography.metadata.MetadataService;
  * @author mail@nikolaus-winter.de
  *
  */
+@Component
 public class ArchiveMetadataService {
 
     private final static Log LOG = LogFactory.getLog(ArchiveMetadataService.class);
 
-    @Autowired
-    BiographyConfig config;
+    private MetadataService metadataService;
 
-    @Autowired
-    MetadataService metadataService;
+    private ArchiveValidationService archiveValidationService;
 
-    @Autowired
-    ArchiveValidationService archiveValidationService;
+    public ArchiveMetadataService(MetadataService metadataService, ArchiveValidationService archiveValidationService) {
+		this.metadataService = metadataService;
+		this.archiveValidationService = archiveValidationService;
+		LOG.info("ArchiveMetadataService started.");
+	}
 
     public BiographyMetadata getMetadata(File file) {
     	throwIfUnvalid(file);

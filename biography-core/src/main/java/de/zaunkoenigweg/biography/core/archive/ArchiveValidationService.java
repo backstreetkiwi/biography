@@ -11,10 +11,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import de.zaunkoenigweg.biography.core.MediaFileType;
-import de.zaunkoenigweg.biography.core.config.BiographyConfig;
 import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
 import de.zaunkoenigweg.biography.metadata.BiographyMetadata;
 import de.zaunkoenigweg.biography.metadata.ExifData;
@@ -42,17 +41,23 @@ import de.zaunkoenigweg.biography.metadata.MetadataService;
  * @author mail@nikolaus-winter.de
  *
  */
+@Component
 public class ArchiveValidationService {
 
     private final static Log LOG = LogFactory.getLog(ArchiveValidationService.class);
 
-    @Autowired
-    BiographyConfig config;
+    private MetadataService metadataService;
+    
+    private File archiveFolder;
+    
+    public ArchiveValidationService(MetadataService metadataService, File archiveFolder) {
+		this.metadataService = metadataService;
+		this.archiveFolder = archiveFolder;
+		LOG.info("ArchiveValidationService started.");
+		LOG.info(String.format("archiveFolder=%s", this.archiveFolder));
+	}
 
-    @Autowired
-    MetadataService metadataService;
-
-    /**
+	/**
      * Is the archive file valid?
      * 
      * The check is performed by using just the method {@link #isHashcodeCorrect(File)} 
@@ -159,7 +164,7 @@ public class ArchiveValidationService {
     		throw new IllegalArgumentException(String.format("File '%s' has no valid media file name.", file.getAbsolutePath()));
     	}
         LocalDateTime datetimeOriginalFromArchiveFilename = BiographyFileUtils.getDatetimeOriginalFromArchiveFilename(file);
-        File expectedFolder = new File(config.getArchiveFolder(), String.format("%04d/%02d", datetimeOriginalFromArchiveFilename.getYear(), datetimeOriginalFromArchiveFilename.getMonthValue()));
+        File expectedFolder = new File(archiveFolder, String.format("%04d/%02d", datetimeOriginalFromArchiveFilename.getYear(), datetimeOriginalFromArchiveFilename.getMonthValue()));
     	return expectedFolder.equals(file.getParentFile());
     }
     

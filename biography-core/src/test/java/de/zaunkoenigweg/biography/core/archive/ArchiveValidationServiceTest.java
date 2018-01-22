@@ -10,7 +10,6 @@ import java.nio.file.Files;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.zaunkoenigweg.biography.core.config.BiographyConfig;
 import de.zaunkoenigweg.biography.core.test.TestUtil;
 import de.zaunkoenigweg.biography.metadata.MetadataService;
 
@@ -21,17 +20,9 @@ public class ArchiveValidationServiceTest {
 
 	@Before
 	public void setUp() throws Exception {
-	    File importFolder;
-	    importFolder = Files.createTempDirectory("importFolder").toFile();
-	    importFolder.deleteOnExit();
 	    archiveFolder = Files.createTempDirectory("archiveFolder").toFile();
 	    archiveFolder.deleteOnExit();
-		sut = new ArchiveValidationService();
-		sut.config = new BiographyConfig();
-		sut.config.setArchiveFolderProperty(archiveFolder.getAbsolutePath());
-		sut.config.setImportFolderProperty(importFolder.getAbsolutePath());
-		sut.config.init();
-		sut.metadataService = new MetadataService();
+		sut = new ArchiveValidationService(new MetadataService(), archiveFolder);
 	}
 
 	@Test(expected=NullPointerException.class)

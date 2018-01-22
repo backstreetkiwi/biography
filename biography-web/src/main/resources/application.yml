@@ -3,3 +3,7 @@ archive:
   
 import:
   path: /path/to/import/
+  
+solr:
+  index:
+    url: http://solr.url

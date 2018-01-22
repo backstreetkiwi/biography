@@ -15,25 +15,32 @@ import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import de.zaunkoenigweg.biography.core.MediaFileType;
 import de.zaunkoenigweg.biography.core.TimestampExtractor;
-import de.zaunkoenigweg.biography.core.config.BiographyConfig;
 import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
 import de.zaunkoenigweg.biography.metadata.BiographyMetadata;
 import de.zaunkoenigweg.biography.metadata.ExifData;
 import de.zaunkoenigweg.biography.metadata.MetadataService;
 
+@Component
 public class ArchiveImportService {
 
     private final static Log LOG = LogFactory.getLog(ArchiveImportService.class);
 
-    @Autowired
-    private BiographyConfig config;
-
-    @Autowired
     private MetadataService metadataService;
+    private File archiveFolder;
+    private File importFolder;
+    
+    public ArchiveImportService(MetadataService metadataService, File archiveFolder, File importFolder) {
+		this.metadataService = metadataService;
+		this.archiveFolder = archiveFolder;
+		this.importFolder = importFolder;
+		LOG.info("ArchiveImportService started.");
+		LOG.info(String.format("archiveFolder=%s", this.archiveFolder));
+		LOG.info(String.format("importFolder=%s", this.importFolder));
+	}
 
     /**
      * Imports all images from import folder into the archive.
@@ -41,10 +48,10 @@ public class ArchiveImportService {
     public void importAll(boolean dryRun) {
 
         Set<File> mediaFilesInImportFolder = MediaFileType.all()
-                .flatMap(BiographyFileUtils.streamFilesOfMediaFileType(config.getImportFolder()))
+                .flatMap(BiographyFileUtils.streamFilesOfMediaFileType(importFolder))
                 .collect(Collectors.toSet());
 
-        LOG.info(String.format("Found %d media files to import in %s", mediaFilesInImportFolder.size(), config.getImportFolder().getAbsolutePath()));
+        LOG.info(String.format("Found %d media files to import in %s", mediaFilesInImportFolder.size(), importFolder.getAbsolutePath()));
 
         Map<File, Path> filesToArchive = new HashMap<>();
         Map<Path, File> filesToArchiveReverseMap = new HashMap<>();
@@ -58,7 +65,7 @@ public class ArchiveImportService {
                 importLog.notImported(file, "No timestamp could be extracted.");
                 return;
             }
-            Path archiveFilename = BiographyFileUtils.buildArchiveFilename(config.getArchiveFolder(), file, timestamp, fileType);
+            Path archiveFilename = BiographyFileUtils.buildArchiveFilename(archiveFolder, file, timestamp, fileType);
             if (filesToArchiveReverseMap.containsKey(archiveFilename)) {
                 importLog.notImported(file, String.format("File is obviously a copy of '%s'.", filesToArchiveReverseMap.get(archiveFilename).getName()));
                 return;
@@ -87,7 +94,7 @@ public class ArchiveImportService {
         });
 
         LocalDateTime now = LocalDateTime.now();
-        File logFile = new File(config.getImportFolder(), String.format("%04d-%02d-%02d--%02d-%02d-%02d-%09d.%slog", now.getYear(), now.getMonthValue(),
+        File logFile = new File(importFolder, String.format("%04d-%02d-%02d--%02d-%02d-%02d-%09d.%slog", now.getYear(), now.getMonthValue(),
                 now.getDayOfMonth(), now.getHour(), now.getMinute(), now.getSecond(), now.getNano(), dryRun ? "dry." : ""));
         
         String logFileContent = importLog.toString();

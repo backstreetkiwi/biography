@@ -2,12 +2,13 @@ package de.zaunkoenigweg.biography.web;
 
 import java.io.File;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = { "de.zaunkoenigweg.biography.metadata", "de.zaunkoenigweg.biography.core" })
 public class Application {
 
     public static void main(String[] args) {
@@ -38,4 +39,12 @@ public class Application {
     		return archiveFolder;
     }
 
+    @Bean
+    public String solrIndexUrl(@Value("${solr.index.url}") String url) {
+    		if(StringUtils.isBlank(url)) {
+    			String msg = "The Solr index url must not be empty.";
+    			throw new RuntimeException(msg);
+    		}
+    		return url;
+    }
 }

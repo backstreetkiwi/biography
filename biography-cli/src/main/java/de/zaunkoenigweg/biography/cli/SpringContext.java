@@ -21,43 +21,43 @@ public class SpringContext {
     @Autowired
     Environment environment;
     
-    @Bean
-    public BiographyConfig config() {
-        BiographyConfig config = new BiographyConfig();
-        config.setImportFolderProperty(environment.getProperty("import.folder"));
-        config.setArchiveFolderProperty(environment.getProperty("archive.folder"));
-        config.setSolrIndexUrl(environment.getProperty("solr.url"));
-        return config;
-    }
+//    @Bean
+//    public BiographyConfig config() {
+//        BiographyConfig config = new BiographyConfig();
+//        config.setImportFolderProperty(environment.getProperty("import.folder"));
+//        config.setArchiveFolderProperty(environment.getProperty("archive.folder"));
+//        config.setSolrIndexUrl(environment.getProperty("solr.url"));
+//        return config;
+//    }
     
-    @Bean
-    public ArchiveImportService importer() {
-        return new ArchiveImportService();
-    }
+//    @Bean
+//    public ArchiveImportService importer() {
+//        return new ArchiveImportService();
+//    }
 
-    @Bean
-    public MetadataService metadataService() {
-        return new MetadataService();
-    }
+//    @Bean
+//    public MetadataService metadataService() {
+//        return new MetadataService();
+//    }
 
-    @Bean
-    public ArchiveValidationService archiveValidationService() {
-        return new ArchiveValidationService();
-    }
+//    @Bean
+//    public ArchiveValidationService archiveValidationService() {
+//        return new ArchiveValidationService();
+//    }
 
-    @Bean
-    public ArchiveMetadataService archiveMetadataService() {
-        return new ArchiveMetadataService();
-    }
+//    @Bean
+//    public ArchiveMetadataService archiveMetadataService() {
+//        return new ArchiveMetadataService();
+//    }
 
-    @Bean
-    public ArchiveIndexingService archiveIndexingService() {
-        return new ArchiveIndexingService();
-    }
+//    @Bean
+//    public ArchiveIndexingService archiveIndexingService() {
+//        return new ArchiveIndexingService();
+//    }
 
-    @Bean
-    public ArchiveSearchService archiveSearchService() {
-        return new ArchiveSearchService();
-    }
+//    @Bean
+//    public ArchiveSearchService archiveSearchService() {
+//        return new ArchiveSearchService();
+//    }
 }
 

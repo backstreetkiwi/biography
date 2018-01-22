@@ -16,27 +16,33 @@ import org.apache.solr.client.solrj.request.schema.SchemaRequest;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.util.NamedList;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import de.zaunkoenigweg.biography.core.archive.ArchiveMetadataService;
 import de.zaunkoenigweg.biography.core.archive.ArchiveValidationService;
-import de.zaunkoenigweg.biography.core.config.BiographyConfig;
 import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
 import de.zaunkoenigweg.biography.metadata.Album;
 import de.zaunkoenigweg.biography.metadata.BiographyMetadata;
 
+@Component
 public class ArchiveIndexingService {
 
 	private final static Log LOG = LogFactory.getLog(ArchiveIndexingService.class);
 
-	@Autowired
-	private BiographyConfig config;
-
-	@Autowired
+    private String solrIndexUrl;
+    private File archiveFolder;
 	private ArchiveMetadataService archiveMetadataService;
-
-	@Autowired
 	private ArchiveValidationService archiveValidationService;
+
+	public ArchiveIndexingService(String solrIndexUrl, File archiveFolder, ArchiveMetadataService archiveMetadataService, ArchiveValidationService archiveValidationService) {
+		this.solrIndexUrl = solrIndexUrl;
+		this.archiveFolder = archiveFolder;
+		this.archiveMetadataService = archiveMetadataService;
+		this.archiveValidationService = archiveValidationService;
+		LOG.info("ArchiveIndexingService started.");
+		LOG.info(String.format("archiveFolder=%s", this.archiveFolder));
+		LOG.info(String.format("solrIndexUrl=%s", this.solrIndexUrl));
+	}
 
 	/**
 	 * Maps archived media file to Solr document. The archive file must be valid
@@ -79,10 +85,10 @@ public class ArchiveIndexingService {
 	public boolean defineIndex() {
 
 		try {
-			SolrClient solr = new HttpSolrClient.Builder(config.getSolrIndexUrl()).build();
+			SolrClient solr = new HttpSolrClient.Builder(solrIndexUrl).build();
 
 			UpdateResponse deleteByQuery = solr.deleteByQuery("*:*");
-			LOG.info(String.format("Deleted all rows in %s -> Status %d", config.getSolrIndexUrl(),
+			LOG.info(String.format("Deleted all rows in %s -> Status %d", solrIndexUrl,
 					deleteByQuery.getStatus()));
 
 			Index.fields().map(Index::toFieldName).map(SchemaRequest.DeleteField::new).forEach(deleteFieldRequest -> {
@@ -122,13 +128,13 @@ public class ArchiveIndexingService {
 
 		try {
 
-			SolrClient solr = new HttpSolrClient.Builder(config.getSolrIndexUrl()).build();
+			SolrClient solr = new HttpSolrClient.Builder(solrIndexUrl).build();
 
 			UpdateResponse deleteByQuery = solr.deleteByQuery("*:*");
-			LOG.info(String.format("Deleted all rows in %s -> Status %d", config.getSolrIndexUrl(),
+			LOG.info(String.format("Deleted all rows in %s -> Status %d", solrIndexUrl,
 					deleteByQuery.getStatus()));
 
-			List<File> mediaFiles = BiographyFileUtils.getMediaFiles(config.getArchiveFolder());
+			List<File> mediaFiles = BiographyFileUtils.getMediaFiles(archiveFolder);
 
 			mediaFiles.stream().filter(archiveValidationService::isValid).map(this::toSolrDocument)
 					.forEach(document -> {

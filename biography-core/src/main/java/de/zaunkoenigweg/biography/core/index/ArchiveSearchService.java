@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 import org.apache.commons.logging.Log;
@@ -15,13 +14,14 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-import de.zaunkoenigweg.biography.core.config.BiographyConfig;
-
+@Component
 public class ArchiveSearchService {
 
     private final static Log LOG = LogFactory.getLog(ArchiveSearchService.class);
+
+    private String solrIndexUrl;
 
 //    private final static Predicate<Count> COUNT_NOT_EMPTY = count -> count.getCount() > 0;
 //    private final static Comparator<Count> COMPARE_COUNT_BY_NUMERIC_NAME = Comparator.comparingInt(count -> Integer.valueOf(count.getName()));
@@ -29,13 +29,11 @@ public class ArchiveSearchService {
 //    private static final Function<QueryResponse, LocalDate> EXTRACT_DATE_OF_FIRST_DOCUMENT = response -> LocalDateTime.parse(
 //            response.getResults().get(0).get(Index.FIELD_DATE_TIME_ORIGINAL).toString()).toLocalDate();
     
-    @Autowired
-    private BiographyConfig config;
-
-    @PostConstruct
-    public void init() {
-        LOG.info(String.format("Index initialized, Solr URL is '%s'.", config.getSolrIndexUrl()));
-    }
+	public ArchiveSearchService(String solrIndexUrl) {
+		this.solrIndexUrl = solrIndexUrl;
+		LOG.info("ArchiveSearchService started.");
+		LOG.info(String.format("solrIndexUrl=%s", this.solrIndexUrl));
+	}
 
     @PreDestroy
     public void close() {
@@ -123,7 +121,7 @@ public class ArchiveSearchService {
      */
     private <R> R query(SolrQuery query, Function<QueryResponse, R> responseExtractor) {
         try {
-            SolrClient solr = new HttpSolrClient.Builder(config.getSolrIndexUrl()).build();
+            SolrClient solr = new HttpSolrClient.Builder(solrIndexUrl).build();
             QueryResponse response = solr.query(query);
             return responseExtractor.apply(response);
         } catch (SolrServerException | IOException e) {

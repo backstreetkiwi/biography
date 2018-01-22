@@ -9,12 +9,18 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.stereotype.Component;
 
+@Component
 public class MetadataService {
 
     private final static Log LOG = LogFactory.getLog(MetadataService.class);
 
-    /**
+    public MetadataService() {
+		LOG.info("MetadataService started.");
+	}
+
+	/**
      * Writes metadata into EXIF data of a file.
      * 
      * The metadata is exported into a JSON string which is written in the USER_COMMENT field in the EXIF data.
