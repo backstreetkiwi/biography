@@ -8,7 +8,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
-@SpringBootApplication(scanBasePackages = { "de.zaunkoenigweg.biography.metadata", "de.zaunkoenigweg.biography.core" })
+@SpringBootApplication(scanBasePackages = { "de.zaunkoenigweg.biography.metadata", "de.zaunkoenigweg.biography.core", "de.zaunkoenigweg.biography.web" })
 public class Application {
 
     public static void main(String[] args) {

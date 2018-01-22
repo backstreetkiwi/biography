@@ -12,14 +12,14 @@ public class MainRebuildIndex {
     private static de.zaunkoenigweg.biography.core.index.ArchiveIndexingService archiveIndexingService;
 
     public static void main(String[] args) {
-        AbstractApplicationContext springContext = new AnnotationConfigApplicationContext(SpringContext.class);
-
-        archiveIndexingService = springContext.getBean(de.zaunkoenigweg.biography.core.index.ArchiveIndexingService.class);
-        
-        rebuildIndex();
-
-        springContext.close();
-        System.out.println("Bye...");
+//        AbstractApplicationContext springContext = new AnnotationConfigApplicationContext(SpringContext.class);
+//
+//        archiveIndexingService = springContext.getBean(de.zaunkoenigweg.biography.core.index.ArchiveIndexingService.class);
+//        
+//        rebuildIndex();
+//
+//        springContext.close();
+//        System.out.println("Bye...");
     }
 
     private static void rebuildIndex() {

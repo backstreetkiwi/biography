@@ -26,15 +26,15 @@ public class MainRebuildAlbumFolders {
     private static BiographyConfig config;
     
     public static void main(String[] args) throws IOException {
-        AbstractApplicationContext springContext = new AnnotationConfigApplicationContext(SpringContext.class);
-
-        metadataService = springContext.getBean(MetadataService.class);
-        config = springContext.getBean(BiographyConfig.class);
-        
-        rebuildAlbumFolders();
-
-        springContext.close();
-        System.out.println("Bye...");
+//        AbstractApplicationContext springContext = new AnnotationConfigApplicationContext(SpringContext.class);
+//
+//        metadataService = springContext.getBean(MetadataService.class);
+//        config = springContext.getBean(BiographyConfig.class);
+//        
+//        rebuildAlbumFolders();
+//
+//        springContext.close();
+//        System.out.println("Bye...");
     }
 
     public static void rebuildAlbumFolders() throws IOException {

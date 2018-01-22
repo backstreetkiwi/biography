@@ -23,15 +23,15 @@ public class MainSetDescriptionOnFiles {
     private static ArchiveMetadataService archiveMetadataService;
 
     public static void main(String[] args) {
-        AbstractApplicationContext springContext = new AnnotationConfigApplicationContext(SpringContext.class);
-        System.out.println("WARNING! This program overwrites existing descriptions.");
-
-        archiveMetadataService = springContext.getBean(ArchiveMetadataService.class);
-        
-        setDescriptionOnFiles();
-
-        springContext.close();
-        System.out.println("Bye...");
+//        AbstractApplicationContext springContext = new AnnotationConfigApplicationContext(SpringContext.class);
+//        System.out.println("WARNING! This program overwrites existing descriptions.");
+//
+//        archiveMetadataService = springContext.getBean(ArchiveMetadataService.class);
+//        
+//        setDescriptionOnFiles();
+//
+//        springContext.close();
+//        System.out.println("Bye...");
     }
 
     public static void setDescriptionOnFiles() {

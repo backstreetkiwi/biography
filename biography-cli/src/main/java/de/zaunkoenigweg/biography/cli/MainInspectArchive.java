@@ -27,17 +27,17 @@ public class MainInspectArchive {
     private static BiographyConfig biographyConfig;
 
     public static void main(String[] args) {
-        AbstractApplicationContext springContext = new AnnotationConfigApplicationContext(SpringContext.class);
-
-        archiveService = springContext.getBean(ArchiveValidationService.class);
-        biographyConfig = springContext.getBean(BiographyConfig.class);
-        
-        System.out.printf("%n%nValidating all media files of archive %s%n%n", biographyConfig.getArchiveFolder().toString());
-        
-        inspectArchive();
-
-        springContext.close();
-        System.out.println("Bye...");
+//        AbstractApplicationContext springContext = new AnnotationConfigApplicationContext(SpringContext.class);
+//
+//        archiveService = springContext.getBean(ArchiveValidationService.class);
+//        biographyConfig = springContext.getBean(BiographyConfig.class);
+//        
+//        System.out.printf("%n%nValidating all media files of archive %s%n%n", biographyConfig.getArchiveFolder().toString());
+//        
+//        inspectArchive();
+//
+//        springContext.close();
+//        System.out.println("Bye...");
     }
 
     private static void inspectArchive() {

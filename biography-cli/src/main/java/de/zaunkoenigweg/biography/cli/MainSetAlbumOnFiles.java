@@ -24,14 +24,14 @@ public class MainSetAlbumOnFiles {
     private static ArchiveMetadataService archiveMetadataService;
 
     public static void main(String[] args) {
-        AbstractApplicationContext springContext = new AnnotationConfigApplicationContext(SpringContext.class);
-
-        archiveMetadataService = springContext.getBean(ArchiveMetadataService.class);
-        
-        setAlbumOnFiles();
-
-        springContext.close();
-        System.out.println("Bye...");
+//        AbstractApplicationContext springContext = new AnnotationConfigApplicationContext(SpringContext.class);
+//
+//        archiveMetadataService = springContext.getBean(ArchiveMetadataService.class);
+//        
+//        setAlbumOnFiles();
+//
+//        springContext.close();
+//        System.out.println("Bye...");
     }
 
     public static void setAlbumOnFiles() {

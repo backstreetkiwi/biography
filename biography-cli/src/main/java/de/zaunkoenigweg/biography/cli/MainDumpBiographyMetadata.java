@@ -25,17 +25,17 @@ public class MainDumpBiographyMetadata {
     private static BiographyConfig biographyConfig;
 
     public static void main(String[] args) {
-        AbstractApplicationContext springContext = new AnnotationConfigApplicationContext(SpringContext.class);
-
-        archiveMetadataService = springContext.getBean(ArchiveMetadataService.class);
-        biographyConfig = springContext.getBean(BiographyConfig.class);
-        
-        System.out.printf("%n%nDumping the given files in context of archive %s%n%n", biographyConfig.getArchiveFolder().toString());
-        
-        dump();
-
-        springContext.close();
-        System.out.println("Bye...");
+//        AbstractApplicationContext springContext = new AnnotationConfigApplicationContext(SpringContext.class);
+//
+//        archiveMetadataService = springContext.getBean(ArchiveMetadataService.class);
+//        biographyConfig = springContext.getBean(BiographyConfig.class);
+//        
+//        System.out.printf("%n%nDumping the given files in context of archive %s%n%n", biographyConfig.getArchiveFolder().toString());
+//        
+//        dump();
+//
+//        springContext.close();
+//        System.out.println("Bye...");
     }
 
     private static void dump() {
