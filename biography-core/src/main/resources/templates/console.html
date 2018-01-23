@@ -1,0 +1,14 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head> 
+        <title>Biography :: console</title> 
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    </head>
+    <body>
+    		<p><a th:href="@{/}">zur Startseite</a></p>
+        <div th:if="consoleContent">
+            <pre><span th:text="${consoleContent}"/></pre>
+        </div>
+
+    </body>
+</html>
