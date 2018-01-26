@@ -1,4 +1,4 @@
-package de.zaunkoenigweg.biography.web;
+package de.zaunkoenigweg.biography.web.tools;
 
 import java.io.File;
 import java.util.List;
@@ -17,9 +17,9 @@ import de.zaunkoenigweg.biography.web.console.Console;
 import de.zaunkoenigweg.biography.web.console.Consoles;
 
 @Controller
-public class StatisticsController {
+public class ToolsController {
 
-	private final static Log LOG = LogFactory.getLog(StatisticsController.class);
+	private final static Log LOG = LogFactory.getLog(ToolsController.class);
 
 	private File archiveFolder;
 
@@ -27,24 +27,21 @@ public class StatisticsController {
 
 	private Consoles consoles;
 
-	public StatisticsController(File archiveFolder, ArchiveValidationService archiveValidationService,
+	public ToolsController(File archiveFolder, ArchiveValidationService archiveValidationService,
 			Consoles consoles) {
 		this.archiveFolder = archiveFolder;
 		this.archiveValidationService = archiveValidationService;
 		this.consoles = consoles;
-		LOG.info("StatisticsController started.");
+		LOG.info("ToolsController started.");
 		LOG.info(String.format("archiveFolder=%s", this.archiveFolder));
 	}
 
-	@RequestMapping("/statistics")
+	@RequestMapping("/tools")
 	public String statistics(Model model) {
-		long count = BiographyFileUtils.getMediaFiles(archiveFolder).stream().count();
-		model.addAttribute("count", count);
-
-		return "statistics";
+		return "tools/index";
 	}
 
-	@RequestMapping("/statistics/inspect-archive")
+	@RequestMapping("/tools/inspect-archive")
 	public String statisticsInspectArchive(Model model) {
 
 		Console console = consoles.create("inspect archive");

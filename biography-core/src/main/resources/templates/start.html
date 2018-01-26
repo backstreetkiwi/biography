@@ -5,7 +5,12 @@
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     </head>
     <body>
-        <h1 th:text="'Biography'" />
-        <p><a th:href="@{/statistics}">Statistics</a></p>
+        <h1 th:text="'Biography'"></h1>
+        <div th:if="mediaFileCount">
+            <h2 th:text="${'Happily serving ' + mediaFileCount + ' media files!'}"></h2>
+        </div>
+        	<div>
+        		<p><a th:href="@{/tools}">Tools</a></p>
+        	</div>
     </body>
 </html>

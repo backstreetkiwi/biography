@@ -24,13 +24,13 @@ public class ConsoleController {
 		model.addAttribute("closed", console.isClosed());
 		model.addAttribute("startTime", console.getStartTime());
 		model.addAttribute("content", console.getContent());
-        return "console";
+        return "console/console";
     }
 
 	@RequestMapping("/console")
     public String consoles(Model model) {
 		model.addAttribute("consoles", consoles.getAll());
-        return "consoles";
+        return "console/index";
     }
 
 }
