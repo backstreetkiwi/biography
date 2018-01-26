@@ -1,0 +1,11 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head> 
+        <title>Biography :: console</title> 
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    </head>
+    <body>
+    		<p><a th:href="@{/}">zur Startseite</a></p>
+    		<a th:each="console,iter : ${consoles}" th:text="${console.title + iter.index}" th:href="@{'/console/' + ${iter.index}}"/>
+           </body>
+</html>

@@ -1,8 +1,6 @@
 package de.zaunkoenigweg.biography.web;
 
 import java.io.File;
-import java.io.PrintWriter;
-import java.io.Writer;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -15,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import de.zaunkoenigweg.biography.core.archive.ArchiveValidationService;
 import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
+import de.zaunkoenigweg.biography.web.console.Console;
+import de.zaunkoenigweg.biography.web.console.Consoles;
 
 @Controller
 public class StatisticsController {
@@ -25,13 +25,13 @@ public class StatisticsController {
 
 	private ArchiveValidationService archiveValidationService;
 
-	private Console console;
+	private Consoles consoles;
 
 	public StatisticsController(File archiveFolder, ArchiveValidationService archiveValidationService,
-			Console console) {
+			Consoles consoles) {
 		this.archiveFolder = archiveFolder;
 		this.archiveValidationService = archiveValidationService;
-		this.console = console;
+		this.consoles = consoles;
 		LOG.info("StatisticsController started.");
 		LOG.info(String.format("archiveFolder=%s", this.archiveFolder));
 	}
@@ -47,43 +47,38 @@ public class StatisticsController {
 	@RequestMapping("/statistics/inspect-archive")
 	public String statisticsInspectArchive(Model model) {
 
-		Writer writer = console.writer();
+		Console console = consoles.create("inspect archive");
 
 		new Thread(() -> {
 			List<File> mediaFiles = BiographyFileUtils.getMediaFiles(archiveFolder);
 
-			PrintWriter pw = new PrintWriter(writer);
 			int totalNumberOfFiles = mediaFiles.size();
 			AtomicInteger numberOfCorruptFiles = new AtomicInteger(0);
 
-			mediaFiles.stream().limit(20).forEach(file -> {
+			mediaFiles.stream().limit(10).forEach(file -> {
 
 				Pair<Boolean, List<Pair<String, Boolean>>> check = archiveValidationService.check(file);
 				if (check.getLeft()) {
-					pw.printf("File '%s' -> [OK]%n", file.getAbsolutePath());
+					console.println(String.format("File '%s' -> [OK]", file.getAbsolutePath()));
 				} else {
 					numberOfCorruptFiles.incrementAndGet();
 					;
-					pw.printf("ERROR in file '%s'%n", file.getAbsolutePath());
+					console.println(String.format("ERROR in file '%s'", file.getAbsolutePath()));
 					check.getRight().stream().forEach(pair -> {
-						printMessage(pw, pair.getLeft(), pair.getRight());
+						console.println(String.format("%-100s [%s]", pair.getLeft(), pair.getRight() ? "OK" : "ERROR"));
 					});
 				}
 
-				pw.flush();
 			});
 
-			pw.printf("%n%nValidated files #: %d, # of corrupt files: %d%n%n", totalNumberOfFiles,
-					numberOfCorruptFiles.get());
-			pw.flush();
+			console.println(String.format("%n%nValidated files #: %d, # of corrupt files: %d%n", totalNumberOfFiles,
+					numberOfCorruptFiles.get()));
+			console.close();
 		}).start();
+		
 
 		return "redirect:/console";
 
-	}
-
-	private static void printMessage(PrintWriter pw, String message, boolean okay) {
-		pw.printf("%-100s [%s]%n", message, okay ? "OK" : "ERROR");
 	}
 
 }
