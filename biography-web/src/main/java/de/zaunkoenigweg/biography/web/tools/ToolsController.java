@@ -52,7 +52,7 @@ public class ToolsController {
 			int totalNumberOfFiles = mediaFiles.size();
 			AtomicInteger numberOfCorruptFiles = new AtomicInteger(0);
 
-			mediaFiles.stream().limit(10).forEach(file -> {
+			mediaFiles.stream().forEach(file -> {
 
 				Pair<Boolean, List<Pair<String, Boolean>>> check = archiveValidationService.check(file);
 				if (check.getLeft()) {

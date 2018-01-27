@@ -110,6 +110,20 @@ public class BiographyFileUtils {
         return matcher.group(7);
     }
     
+    public static File getArchiveFileFromShortFilename(File archiveFolder, String shortFileName) {
+    		// FIXME write test!
+    		if (StringUtils.isBlank(shortFileName)) {
+    			return null;
+    		}
+ 
+		Matcher matcher = ARCHIVE_FILENAME_FORMAT.matcher(shortFileName);
+		if (!matcher.matches()) {
+			return null;
+		}
+    		
+    		return new File(archiveFolder, String.format("%s/%s/%s", matcher.group(1), matcher.group(2), shortFileName));
+    }
+    
     /**
      * Reads all media folders in baseFolder and returns a list containing all
      * media folders ordered by date, oldest folders first.
