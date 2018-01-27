@@ -7,3 +7,7 @@ import:
 solr:
   index:
     url: http://solr.url
+    
+spring:
+  resources:
+    static-locations: classpath:/static/

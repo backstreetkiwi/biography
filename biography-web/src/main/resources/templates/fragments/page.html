@@ -1,0 +1,29 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+	<head>
+        <title>Biography</title> 
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	</head>
+	<body>
+ 		<div th:fragment="header" class="header">
+ 			<h1>Biography</h1>
+ 		</div>
+ 		<div th:fragment="menu" class="menu-bar">
+ 			<div>
+				<a th:href="@{/}">HOME</a>
+ 			</div>
+ 			<div>
+				<a th:href="@{/timeline}">TIMELINE</a>
+ 			</div>
+ 			<div>
+				<a th:href="@{/albums}">ALBUMS</a>
+ 			</div>
+ 			<div>
+				<a th:href="@{/tools}">TOOLS</a>
+ 			</div>
+ 			<div>
+				<a th:href="@{/console}">CONSOLE</a>
+ 			</div>
+ 		</div>
+ 	</body>
+</html>

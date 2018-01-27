@@ -3,14 +3,13 @@
     <head> 
         <title>Biography</title> 
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<link th:href="@{/styles/main.css}" href="../styles/main.css" rel="stylesheet" type="text/css"  />
     </head>
     <body>
-        <h1 th:text="'Biography'"></h1>
-        <div th:if="mediaFileCount">
+    		<div th:replace="fragments/page :: header"></div>
+    		<div th:replace="fragments/page :: menu"></div>
+    		<div class="main-content">
             <h2 th:text="${'Happily serving ' + mediaFileCount + ' media files!'}"></h2>
         </div>
-        	<div>
-        		<p><a th:href="@{/tools}">Tools</a></p>
-        	</div>
     </body>
 </html>

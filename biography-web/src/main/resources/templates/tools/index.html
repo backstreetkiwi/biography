@@ -1,0 +1,17 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head> 
+        <title>Biography</title> 
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<link th:href="@{/styles/main.css}" href="../styles/main.css" rel="stylesheet" type="text/css"  />
+    </head>
+    <body>
+    		<div th:replace="fragments/page :: header"></div>
+    		<div th:replace="fragments/page :: menu"></div>
+    		<div class="main-content">
+	    		<p><a th:href="@{/tools/inspect-archive}">inspect archive</a></p>
+    		</div>
+        
+    </body>
+    
+</html>
