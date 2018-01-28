@@ -9,10 +9,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import de.zaunkoenigweg.biography.core.archive.ArchiveMetadataService;
 import de.zaunkoenigweg.biography.core.archive.ArchiveValidationService;
 import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
+import de.zaunkoenigweg.biography.metadata.BiographyMetadata;
+import de.zaunkoenigweg.biography.metadata.ExifData;
 import de.zaunkoenigweg.biography.web.console.Console;
 import de.zaunkoenigweg.biography.web.console.Consoles;
 
@@ -25,12 +29,15 @@ public class ToolsController {
 
 	private ArchiveValidationService archiveValidationService;
 
+	private ArchiveMetadataService archiveMetadataService;
+	
 	private Consoles consoles;
 
-	public ToolsController(File archiveFolder, ArchiveValidationService archiveValidationService,
+	public ToolsController(File archiveFolder, ArchiveValidationService archiveValidationService, ArchiveMetadataService archiveMetadataService,
 			Consoles consoles) {
 		this.archiveFolder = archiveFolder;
 		this.archiveValidationService = archiveValidationService;
+		this.archiveMetadataService = archiveMetadataService;
 		this.consoles = consoles;
 		LOG.info("ToolsController started.");
 		LOG.info(String.format("archiveFolder=%s", this.archiveFolder));
@@ -77,5 +84,31 @@ public class ToolsController {
 		return "redirect:/console";
 
 	}
+	
+	@RequestMapping("/tools/inspect-file/{file}")
+	public String dumpFileDetails(Model model, @PathVariable("file")String filename) {
+
+		Console console = consoles.create("inspect-file " + filename);
+
+		new Thread(() -> {
+			File archiveFile = BiographyFileUtils.getArchiveFileFromShortFilename(archiveFolder, filename);
+			
+			BiographyMetadata metadata = archiveMetadataService.getMetadata(archiveFile);
+			
+			console.println(String.format("Filename: %s", archiveFile));
+			console.println(String.format("DateTimeOriginal: %s", metadata.getDateTimeOriginal()));
+			console.println(String.format("Description: %s", metadata.getDescription()));
+			console.println(String.format("Albums: %s", metadata.getAlbums()));
+
+			console.println("");
+			console.println(ExifData.dumpExif(archiveFile));
+
+            console.close();
+            
+		}).start();
+
+		return "redirect:/console";
+	}
+
 
 }

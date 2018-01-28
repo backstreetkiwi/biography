@@ -9,10 +9,6 @@
     		<div th:replace="fragments/page :: header"></div>
     		<div th:replace="fragments/page :: filenameSubheader"></div>
 	<div class="main-content">
-<!-- 
-     		<p th:text="${dateTimeOriginal}" />
-    		<p th:text="${albums}" />
- -->
 		<div class="image-detail-view">
     		<a th:href="@{/file/{fileName}/raw(fileName=${file})}">
 	    		<img th:src="@{/file/{fileName}/raw(fileName=${file})}" />

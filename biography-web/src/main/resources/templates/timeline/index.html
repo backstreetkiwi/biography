@@ -12,6 +12,8 @@
 			<div th:each="file,iter : ${list}">
 				<a th:text="${file}"
 					th:href="@{/file/{fileName}/(fileName=${file})}"></a>
+				<a th:text="(inspect)"
+					th:href="@{/tools/inspect-file/{fileName}/(fileName=${file})}"></a>
 			</div>
     		</div>
         
