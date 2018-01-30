@@ -62,8 +62,6 @@ public class ArchiveIndexingService {
 
 		albumTitles = biographyMetadata.getAlbums().stream().map(Album::getTitle).collect(Collectors.toSet());
 
-		albumChapters = biographyMetadata.getAlbums().stream().map(Album::getId).collect(Collectors.toSet());
-
 		LocalDateTime dateTime = biographyMetadata.getDateTimeOriginal();
 
 		SolrInputDocument document = new SolrInputDocument();

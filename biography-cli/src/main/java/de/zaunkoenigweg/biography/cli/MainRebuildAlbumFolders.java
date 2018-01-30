@@ -125,9 +125,9 @@ public class MainRebuildAlbumFolders {
         
     }
     
-    private static File getAlbumFolder(File baseFolder, Album album, Integer albumYear, Integer albumIndexInYear) {
-        return new File(new File(new File(baseFolder, albumYear.toString()), String.format("%03d %s", albumIndexInYear+1, album.getTitle())), album.getChapter().orElse(""));        
-    }
+//    private static File getAlbumFolder(File baseFolder, Album album, Integer albumYear, Integer albumIndexInYear) {
+//        return new File(new File(new File(baseFolder, albumYear.toString()), String.format("%03d %s", albumIndexInYear+1, album.getTitle())), album.getChapter().orElse(""));        
+//    }
     
     static class Counter{
         private int counter;

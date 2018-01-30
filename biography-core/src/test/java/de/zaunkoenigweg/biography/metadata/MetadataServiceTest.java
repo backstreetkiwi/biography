@@ -15,7 +15,7 @@ import org.junit.Test;
 
 public class MetadataServiceTest {
 
-    private static final String METADATA_JSON = "{\"dateTimeOriginal\":\"2005-02-05T15:27:33.123\",\"description\":\"Cathedral Square in Christchurch\",\"albums\":[{\"title\":\"NZ 2005\",\"chapter\":\"03 Christchurch\"},{\"title\":\"NZ 2007\"}]}";
+    private static final String METADATA_JSON = "{\"dateTimeOriginal\":\"2005-02-05T15:27:33.123\",\"description\":\"Cathedral Square in Christchurch\",\"albums\":[{\"title\":\"NZ 2005\"},{\"title\":\"NZ 2007\"}]}";
     private static final BiographyMetadata METADATA = BiographyMetadata.from(METADATA_JSON);
     private MetadataService sut;
     private File someFolder;

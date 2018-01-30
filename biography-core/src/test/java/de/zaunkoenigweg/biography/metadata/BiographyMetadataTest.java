@@ -18,7 +18,7 @@ import org.junit.Test;
 
 public class BiographyMetadataTest {
 
-	private static final Album ALBUM_1 = new Album("album_1_title_aksdfj", "album_1_chapter_adsgfe");
+	private static final Album ALBUM_1 = new Album("album_1_title_aksdfj");
     private static final Album ALBUM_2 = new Album("album_2_title_gdtfbf");
     private static final LocalDateTime DATE_TIME_ORIGINAL = LocalDateTime.of(2005, 02, 05, 15, 27, 33, 123000000);
 	private static final Set<Album> ALBUMS = new HashSet<>(Arrays.asList(ALBUM_1, ALBUM_2));
@@ -31,11 +31,10 @@ public class BiographyMetadataTest {
 		json = String.format(
 				"{\"dateTimeOriginal\":\"2005-02-05T15:27:33.123\","
 				+ "\"description\":\"%s\","
-				+ "\"albums\":[{\"title\":\"%s\",\"chapter\":\"%s\"},"
+				+ "\"albums\":[{\"title\":\"%s\"},"
 				+ "{\"title\":\"%s\"}]}", 
 				DESCRIPTION, 
 				ALBUM_1.getTitle(), 
-				ALBUM_1.getChapter().get(), 
 				ALBUM_2.getTitle());
 		
 		
@@ -53,9 +52,7 @@ public class BiographyMetadataTest {
     	assertNotNull(json);
     	assertTrue(StringUtils.isNotBlank(json));
     	assertTrue(StringUtils.contains(json, ALBUM_1.getTitle()));
-    	assertTrue(StringUtils.contains(json, ALBUM_1.getChapter().orElse("")));
     	assertTrue(StringUtils.contains(json, ALBUM_2.getTitle()));
-    	assertTrue(StringUtils.contains(json, ALBUM_2.getChapter().orElse("")));
     }
 
     @Test
@@ -106,7 +103,7 @@ public class BiographyMetadataTest {
     public void testWithAlbums() {
     	Set<Album> newAlbums = new HashSet<>();
     	newAlbums.add(new Album("new_album_1_title_azdteg"));
-    	newAlbums.add(new Album("new_album_2_title_ssrcwg", "new_album_2_chapter_zdgtsg"));
+    	newAlbums.add(new Album("new_album_2_title_ssrcwg"));
 		BiographyMetadata biographyMetadata = BIOGRAPHY_METADATA.withAlbums(newAlbums);
 		
 		assertNotNull(biographyMetadata);
@@ -120,7 +117,7 @@ public class BiographyMetadataTest {
     public void testWithMergedAlbums() {
     	Set<Album> newAlbums = new HashSet<>();
     	newAlbums.add(new Album("new_album_1_title_azdteg"));
-    	newAlbums.add(new Album("new_album_2_title_ssrcwg", "new_album_2_chapter_zdgtsg"));
+    	newAlbums.add(new Album("new_album_2_title_ssrcwg"));
     	newAlbums.add(ALBUM_1);
 		BiographyMetadata biographyMetadata = BIOGRAPHY_METADATA.withMergedAlbums(newAlbums);
 		
@@ -140,7 +137,7 @@ public class BiographyMetadataTest {
     public void testWithMergedAlbumsDisjoint() {
     	Set<Album> newAlbums = new HashSet<>();
     	newAlbums.add(new Album("new_album_1_title_azdteg"));
-    	newAlbums.add(new Album("new_album_2_title_ssrcwg", "new_album_2_chapter_zdgtsg"));
+    	newAlbums.add(new Album("new_album_2_title_ssrcwg"));
 		BiographyMetadata biographyMetadata = BIOGRAPHY_METADATA.withMergedAlbums(newAlbums);
 		
 		assertNotNull(biographyMetadata);
