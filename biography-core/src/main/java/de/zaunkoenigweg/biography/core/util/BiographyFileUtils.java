@@ -19,7 +19,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 import javax.imageio.ImageIO;
 
@@ -262,9 +261,4 @@ public class BiographyFileUtils {
         return Paths.get(archiveFolder.getPath(), folderInArchive, fileName);
     }
     
-    public static Function<MediaFileType, Stream<File>> streamFilesOfMediaFileType(final File folder) {
-        return mediaFileType -> Arrays
-                .stream(folder.listFiles(pathname -> StringUtils.endsWithIgnoreCase(pathname.getName(), mediaFileType.getFileExtension())));
-    }
-
 }

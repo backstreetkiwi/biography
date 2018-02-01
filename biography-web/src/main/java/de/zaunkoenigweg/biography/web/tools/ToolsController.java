@@ -71,6 +71,7 @@ public class ToolsController {
 					check.getRight().stream().forEach(pair -> {
 						console.println(String.format("%-100s [%s]", pair.getLeft(), pair.getRight() ? "OK" : "ERROR"));
 					});
+	                console.println("");
 				}
 
 			});
@@ -93,7 +94,20 @@ public class ToolsController {
 		new Thread(() -> {
 			File archiveFile = BiographyFileUtils.getArchiveFileFromShortFilename(archiveFolder, filename);
 			
-			BiographyMetadata metadata = archiveMetadataService.getMetadata(archiveFile);
+            Pair<Boolean, List<Pair<String, Boolean>>> check = archiveValidationService.check(archiveFile);
+            if (!check.getLeft()) {
+                console.println(String.format("ERROR in file '%s'", archiveFile.getAbsolutePath()));
+                check.getRight().stream().forEach(pair -> {
+                    console.println(String.format("%-100s [%s]", pair.getLeft(), pair.getRight() ? "OK" : "ERROR"));
+                });
+                console.println("");
+                console.close();
+                return;
+            }
+            
+            console.println(String.format("File '%s' -> [OK]", archiveFile.getAbsolutePath()));
+
+            BiographyMetadata metadata = archiveMetadataService.getMetadata(archiveFile);
 			
 			console.println(String.format("Filename: %s", archiveFile));
 			console.println(String.format("DateTimeOriginal: %s", metadata.getDateTimeOriginal()));

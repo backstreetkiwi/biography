@@ -1,25 +1,23 @@
 package de.zaunkoenigweg.biography.core.archive;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Component;
 
 import de.zaunkoenigweg.biography.core.MediaFileType;
-import de.zaunkoenigweg.biography.core.TimestampExtractor;
 import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
+import de.zaunkoenigweg.biography.metadata.Album;
 import de.zaunkoenigweg.biography.metadata.BiographyMetadata;
 import de.zaunkoenigweg.biography.metadata.ExifData;
 import de.zaunkoenigweg.biography.metadata.MetadataService;
@@ -31,97 +29,90 @@ public class ArchiveImportService {
 
     private MetadataService metadataService;
     private File archiveFolder;
-    private File importFolder;
-    
-    public ArchiveImportService(MetadataService metadataService, File archiveFolder, File importFolder) {
-		this.metadataService = metadataService;
-		this.archiveFolder = archiveFolder;
-		this.importFolder = importFolder;
-		LOG.info("ArchiveImportService started.");
-		LOG.info(String.format("archiveFolder=%s", this.archiveFolder));
-		LOG.info(String.format("importFolder=%s", this.importFolder));
-	}
+
+    public ArchiveImportService(MetadataService metadataService, File archiveFolder) {
+        this.metadataService = metadataService;
+        this.archiveFolder = archiveFolder;
+        LOG.info("ArchiveImportService started.");
+        LOG.info(String.format("archiveFolder=%s", this.archiveFolder));
+    }
 
     /**
-     * Imports all images from import folder into the archive.
+     * Imports given media file.
+     * @param album 
      */
-    public void importAll(boolean dryRun) {
+    public ImportResult importFile(File file, boolean readLegacyDescription, String album) {
 
-        Set<File> mediaFilesInImportFolder = MediaFileType.all()
-                .flatMap(BiographyFileUtils.streamFilesOfMediaFileType(importFolder))
-                .collect(Collectors.toSet());
-
-        LOG.info(String.format("Found %d media files to import in %s", mediaFilesInImportFolder.size(), importFolder.getAbsolutePath()));
-
-        Map<File, Path> filesToArchive = new HashMap<>();
-        Map<Path, File> filesToArchiveReverseMap = new HashMap<>();
-        ImportLog importLog = new ImportLog();
-
-        mediaFilesInImportFolder.stream().forEach(file -> {
-            MediaFileType fileType = MediaFileType.of(file).get();
-            TimestampExtractor timestampExtractor = fileType.getTimestampExtractorForUntrackedFiles();
-            LocalDateTime timestamp = timestampExtractor.apply(file);
-            if (timestamp==null) {
-                importLog.notImported(file, "No timestamp could be extracted.");
-                return;
-            }
-            Path archiveFilename = BiographyFileUtils.buildArchiveFilename(archiveFolder, file, timestamp, fileType);
-            if (filesToArchiveReverseMap.containsKey(archiveFilename)) {
-                importLog.notImported(file, String.format("File is obviously a copy of '%s'.", filesToArchiveReverseMap.get(archiveFilename).getName()));
-                return;
-            }
-            filesToArchive.put(file, archiveFilename);
-            filesToArchiveReverseMap.put(archiveFilename, file);
-        });
-
-        filesToArchive.forEach((file, archivePath) -> {
-            try {
-                if(Files.exists(archivePath)) {
-                    importLog.notImported(file, String.format("File already exists in archive as '%s'.", archivePath));
-                    return;
-                }
-                if(!dryRun) {
-                    Files.createDirectories(archivePath.getParent());
-                    Files.copy(Paths.get(file.toURI()), archivePath);
-                    setBiographyMetadata(archivePath.toFile());
-                    LOG.trace(String.format("Copied file %s to %s.", file.getAbsolutePath(), archivePath));
-                }
-                importLog.imported(file, archivePath);
-            } catch (Exception e) {
-                LOG.error(e);
-                throw new RuntimeException(String.format("Error copying file %s to %s.", file, archivePath));
-            }
-        });
-
-        LocalDateTime now = LocalDateTime.now();
-        File logFile = new File(importFolder, String.format("%04d-%02d-%02d--%02d-%02d-%02d-%09d.%slog", now.getYear(), now.getMonthValue(),
-                now.getDayOfMonth(), now.getHour(), now.getMinute(), now.getSecond(), now.getNano(), dryRun ? "dry." : ""));
-        
-        String logFileContent = importLog.toString();
-        
-        try {
-            FileUtils.writeStringToFile(logFile, logFileContent, "UTF-8");
-        } catch (Exception e) {
-            LOG.error(e);
-            throw new RuntimeException(String.format("Error writing logfile %s.", logFile));
+        if (!file.exists() || file.isDirectory()) {
+            return ImportResult.FILE_NOT_FOUND;
         }
+
+        Optional<MediaFileType> mediaFileType = MediaFileType.of(file);
+
+        if (!mediaFileType.isPresent()) {
+            return ImportResult.UNKNOWN_FILE_TYPE;
+        }
+
+        if (!ExifData.supports(mediaFileType.get())) {
+            return ImportResult.NO_TIMESTAMP_DETECTED;
+        }
+
+        ExifData exifData = ExifData.of(file);
+
+        if (exifData == null) {
+            return ImportResult.NO_TIMESTAMP_DETECTED;
+        }
+
+        LocalDateTime dateTimeOriginal = exifData.getDateTimeOriginal();
+        
+        File archiveFile = BiographyFileUtils.buildArchiveFilename(archiveFolder, file,
+                dateTimeOriginal, mediaFileType.get()).toFile();
+
+        if (archiveFile.exists()) {
+            return ImportResult.FILE_ALREADY_ARCHIVED;
+        }
+
+        try {
+            FileUtils.copyFile(file, archiveFile);
+        } catch (IOException e) {
+            LOG.error("File cannot be stored in archive.", e);
+        }
+
+        setBiographyMetadata(archiveFile, dateTimeOriginal, readLegacyDescription, album);
+        
+        return ImportResult.SUCCESS;
     }
-    
-    private void setBiographyMetadata(File file) {
+
+    private void setBiographyMetadata(File file, LocalDateTime dateTimeOriginal, boolean readLegacyDescription, String album) {
         MediaFileType mediaFileType = MediaFileType.of(file).get();
-        LocalDateTime dateTimeOriginal = mediaFileType.getTimestampExtractorForArchivedFiles().apply(file);
         String description = null;
-        if(ExifData.supports(mediaFileType)) {
+        if (readLegacyDescription && ExifData.supports(mediaFileType)) {
             description = ExifData.of(file, StandardCharsets.ISO_8859_1).getDescription().orElse(null);
         }
-        BiographyMetadata metadata = new BiographyMetadata(dateTimeOriginal, description, Collections.emptySet());
         
-        if(ExifData.supports(mediaFileType)) {
-        	metadataService.writeMetadataIntoExif(file, metadata);
-        	return;
+        Set<Album> albums = new HashSet<>();
+        if(StringUtils.isNotBlank(album)) {
+            albums.add(new Album(StringUtils.trim(album)));
         }
         
-        File jsonFile = new File(file.getParentFile(), "b" + BiographyFileUtils.getSha1FromArchiveFilename(file) + ".json");
+        BiographyMetadata metadata = new BiographyMetadata(dateTimeOriginal, description, albums);
+
+        if (ExifData.supports(mediaFileType)) {
+            metadataService.writeMetadataIntoExif(file, metadata);
+            return;
+        }
+
+        File jsonFile = new File(file.getParentFile(),
+                "b" + BiographyFileUtils.getSha1FromArchiveFilename(file) + ".json");
         metadataService.writeMetadataToJsonFile(jsonFile, metadata);
+    }
+
+    public enum ImportResult {
+        FILE_NOT_FOUND,
+        UNKNOWN_FILE_TYPE,
+        NO_TIMESTAMP_DETECTED,
+        FILE_ALREADY_ARCHIVED,
+        FILE_CANNOT_BE_STORED,
+        SUCCESS;
     }
 }

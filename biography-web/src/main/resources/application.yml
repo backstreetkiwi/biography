@@ -11,3 +11,7 @@ solr:
 spring:
   resources:
     static-locations: classpath:/static/
+  http:
+    multipart:
+      max-file-size: 128MB
+      max-request-size: 128MB

@@ -1,0 +1,39 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<title>Biography</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link th:href="@{/styles/main.css}" href="../styles/main.css"
+	rel="stylesheet" type="text/css" />
+</head>
+<body>
+	<div th:replace="fragments/page :: header"></div>
+	<div th:replace="fragments/page :: menu"></div>
+	<div class="main-content">
+		<div>
+			<form method="POST" enctype="multipart/form-data" th:action="@{/import}">
+				<table>
+					<tr>
+						<td>Image to upload:</td>
+						<td><input type="file" name="file" /></td>
+					</tr>
+					<tr>
+						<td></td>
+						<td><input type="submit" value="upload" /></td>
+					</tr>
+					<tr>
+						<td>read legacy description</td>
+						<td><input type="checkbox" name="readLegacyDescription"/></td>
+					</tr>
+					<tr>
+						<td>album</td>
+						<td><input type="text" name="album"/></td>
+					</tr>
+				</table>
+			</form>
+		</div>
+	</div>
+
+</body>
+
+</html>
