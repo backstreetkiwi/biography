@@ -18,16 +18,20 @@
 						<td><input type="file" name="file" /></td>
 					</tr>
 					<tr>
-						<td></td>
-						<td><input type="submit" value="upload" /></td>
+						<td>Read Description as ISO-8859-1 (legacy)</td>
+						<td><input type="checkbox" name="readLegacyDescription" checked="checked"/></td>
 					</tr>
 					<tr>
-						<td>read legacy description</td>
-						<td><input type="checkbox" name="readLegacyDescription"/></td>
+						<td>dateTimeOriginal (fallback)</td>
+						<td><input type="datetime-local" name="dateTimeOriginal"/></td>
 					</tr>
 					<tr>
 						<td>album</td>
 						<td><input type="text" name="album"/></td>
+					</tr>
+					<tr>
+						<td></td>
+						<td><input type="submit" value="upload" /></td>
 					</tr>
 				</table>
 			</form>

@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -39,9 +38,13 @@ public class ArchiveImportService {
 
     /**
      * Imports given media file.
-     * @param album 
+     * 
+     * 
+     * 
+     * @param album
      */
-    public ImportResult importFile(File file, boolean readLegacyDescription, String album) {
+    public ImportResult importFile(File file, boolean readLegacyDescription, LocalDateTime dateTimeOriginalFallback, String album) {
+
 
         if (!file.exists() || file.isDirectory()) {
             return ImportResult.FILE_NOT_FOUND;
@@ -50,20 +53,36 @@ public class ArchiveImportService {
         Optional<MediaFileType> mediaFileType = MediaFileType.of(file);
 
         if (!mediaFileType.isPresent()) {
-            return ImportResult.UNKNOWN_FILE_TYPE;
+            return ImportResult.UNKNOWN_MEDIA_FILE_TYPE;
         }
+        
+        LocalDateTime dateTimeOriginal = null;
 
-        if (!ExifData.supports(mediaFileType.get())) {
-            return ImportResult.NO_TIMESTAMP_DETECTED;
+        if(ExifData.supports(mediaFileType.get())) {
+
+            ExifData exifData = ExifData.of(file);
+
+            if (exifData == null) {
+                return ImportResult.NO_EXIF_DATA_PRESENT;
+            }
+            
+            dateTimeOriginal = exifData.getDateTimeOriginal();
+            
+            if (dateTimeOriginal == null) {
+                if(dateTimeOriginalFallback==null) {
+                    return ImportResult.NO_TIMESTAMP_DETECTED;
+                }
+                dateTimeOriginal = dateTimeOriginalFallback;
+            }
+            
+        } else {
+
+            if(dateTimeOriginalFallback==null) {
+                return ImportResult.NO_EXIF_DATA_SUPPORTED;
+            }
+            dateTimeOriginal = dateTimeOriginalFallback;
+            
         }
-
-        ExifData exifData = ExifData.of(file);
-
-        if (exifData == null) {
-            return ImportResult.NO_TIMESTAMP_DETECTED;
-        }
-
-        LocalDateTime dateTimeOriginal = exifData.getDateTimeOriginal();
         
         File archiveFile = BiographyFileUtils.buildArchiveFilename(archiveFolder, file,
                 dateTimeOriginal, mediaFileType.get()).toFile();
@@ -79,22 +98,23 @@ public class ArchiveImportService {
         }
 
         setBiographyMetadata(archiveFile, dateTimeOriginal, readLegacyDescription, album);
-        
+
         return ImportResult.SUCCESS;
     }
 
-    private void setBiographyMetadata(File file, LocalDateTime dateTimeOriginal, boolean readLegacyDescription, String album) {
+    private void setBiographyMetadata(File file, LocalDateTime dateTimeOriginal, boolean readLegacyDescription,
+            String album) {
         MediaFileType mediaFileType = MediaFileType.of(file).get();
         String description = null;
         if (readLegacyDescription && ExifData.supports(mediaFileType)) {
             description = ExifData.of(file, StandardCharsets.ISO_8859_1).getDescription().orElse(null);
         }
-        
+
         Set<Album> albums = new HashSet<>();
-        if(StringUtils.isNotBlank(album)) {
+        if (StringUtils.isNotBlank(album)) {
             albums.add(new Album(StringUtils.trim(album)));
         }
-        
+
         BiographyMetadata metadata = new BiographyMetadata(dateTimeOriginal, description, albums);
 
         if (ExifData.supports(mediaFileType)) {
@@ -109,10 +129,28 @@ public class ArchiveImportService {
 
     public enum ImportResult {
         FILE_NOT_FOUND,
-        UNKNOWN_FILE_TYPE,
-        NO_TIMESTAMP_DETECTED,
+        UNKNOWN_MEDIA_FILE_TYPE,
+        NO_EXIF_DATA_SUPPORTED(true),
+        NO_EXIF_DATA_PRESENT,
+        NO_TIMESTAMP_DETECTED(true),
         FILE_ALREADY_ARCHIVED,
         FILE_CANNOT_BE_STORED,
         SUCCESS;
+        
+        private boolean dateTimeOriginalRequired = false;
+
+        private ImportResult() {
+        }
+        
+        private ImportResult(boolean dateTimeOriginalRequired) {
+            this.dateTimeOriginalRequired = dateTimeOriginalRequired;
+        }
+        
+        @Override
+        public String toString() {
+            return super.toString() + (this.dateTimeOriginalRequired ? " (requires dateTimeOriginal)" : "");
+        }
+        
+        
     }
 }

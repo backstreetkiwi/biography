@@ -2,6 +2,7 @@ package de.zaunkoenigweg.biography.web.fileimport;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
@@ -40,14 +41,20 @@ public class ImportController {
 
     @PostMapping("/import")
     public String handleFileUpload(@RequestParam("file") MultipartFile file,
-            @RequestParam(name="readLegacyDescription", required=false, defaultValue="false") boolean readLegacyDescription, @RequestParam("album") String album, RedirectAttributes redirectAttributes) {
+            @RequestParam(name="readLegacyDescription", required=false, defaultValue="false") boolean readLegacyDescription, @RequestParam(name="dateTimeOriginal", required=false) String dateTimeOriginalParam, @RequestParam("album") String album, RedirectAttributes redirectAttributes) {
 
+        LocalDateTime dateTimeOriginal = null;
+        try {
+            dateTimeOriginal = LocalDateTime.parse(dateTimeOriginalParam);
+        } catch (Exception e1) {
+        }
+        
         File localFile = new File(importFolder, file.getOriginalFilename());
 
         ImportResult result;
         try {
             FileUtils.writeByteArrayToFile(localFile, file.getBytes(), false);
-            result = archiveImportService.importFile(localFile, readLegacyDescription, album);
+            result = archiveImportService.importFile(localFile, readLegacyDescription, dateTimeOriginal, album);
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

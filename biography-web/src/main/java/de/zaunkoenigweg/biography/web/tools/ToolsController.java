@@ -105,7 +105,7 @@ public class ToolsController {
                 return;
             }
             
-            console.println(String.format("File '%s' -> [OK]", archiveFile.getAbsolutePath()));
+            console.println(String.format("File '%s' -> [OK]%n", archiveFile.getAbsolutePath()));
 
             BiographyMetadata metadata = archiveMetadataService.getMetadata(archiveFile);
 			
