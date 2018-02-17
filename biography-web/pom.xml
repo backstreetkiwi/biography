@@ -44,6 +44,25 @@
 
 
     <build>
+		<resources>
+			<resource>
+				<directory>${basedir}/src/main/resources</directory>
+				<filtering>true</filtering>
+				<includes>
+					<include>templates/fragments/page.html</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>${basedir}/src/main/resources</directory>
+				<filtering>false</filtering>
+				<includes>
+					<include>**/*</include>
+				</includes>
+				<excludes>
+					<exclude>templates/fragments/page.html</exclude>
+				</excludes>
+			</resource>
+		</resources>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>

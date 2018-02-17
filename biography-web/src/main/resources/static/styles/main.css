@@ -4,6 +4,7 @@ body {
 	padding: 0px;
 	margin: 0px;
 	height: 100%;
+	width: 100%;
     font: normal 14px Arial, sans-serif;
     color: #c0c0c0;
     background-color: #101010;
@@ -19,11 +20,21 @@ div.header {
     background-color: #292929;
 }
 
-div.header h1 {
+div.header div.title h1 {
+	float:left;
 	margin: 0px;
 	padding: 10px 0px 0px 0px;
 	font-size: 30px;
 	font-weight: normal;
+}
+
+div.header div.version h1 {
+	float:right;
+	margin: 0px;
+	padding: 10px 60px 0px 0px;
+	font-size: 15px;
+	font-weight: normal;
+    color: #a0a0a0;
 }
 
 div.menu-bar {
