@@ -3,3 +3,4 @@ target/
 .classpath
 .project
 .sts4-cache/
+*.versionsBackup
