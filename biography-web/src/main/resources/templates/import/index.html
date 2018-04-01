@@ -11,23 +11,43 @@
 	<div th:replace="fragments/page :: menu"></div>
 	<div class="main-content">
 		<div>
-			<form method="POST" enctype="multipart/form-data" th:action="@{/import}">
+			<div th:if="${importJob.running}">
+				<span>IMPORT JOB IS RUNNING ...</span>
+			</div>
+			<div th:unless="${importJob.running}">
+				<form method="POST" th:action="@{/import/start}">
+				    Album: <input type="text" name="album"/>
+					<input type="submit" value="START IMPORT JOB" />
+				</form>
+			</div>
+			<div th:unless="${importJob.running}">
+				<form method="POST" th:action="@{/import/clear}">
+					<input type="submit" value="CLEAR IMPORT JOB" />
+				</form>
+			</div>
+			<table>
+				<tr>
+					<th>File</th>
+					<th>Type</th>
+					<th>EXIF?</th>
+					<th>Datetime original</th>
+					<th>Ready to import?</th>
+					<th>Import Result</th>
+				</tr>
+				<tr th:each="file,iter : ${importJob.importFiles}">
+					<td th:text="${file.name}"></td>
+					<td th:text="${importJob.getMediaFileType(file)}"></td>
+					<td th:text="${importJob.getExifData(file)}? 'YES' : 'NO'"></td>
+					<td th:text="${importJob.getDateTimeOriginal(file)}"></td>
+					<td th:text="${importJob.isReadyToImport(file)}? 'YES' : 'NO'"></td>
+					<td th:text="${importJob.getImportResult(file)}"></td>
+				</tr>
+			</table>
+			<form method="POST" enctype="multipart/form-data" th:action="@{/import/add}">
 				<table>
 					<tr>
 						<td>Image to upload:</td>
 						<td><input type="file" name="file" /></td>
-					</tr>
-					<tr>
-						<td>Read Description as ISO-8859-1 (legacy)</td>
-						<td><input type="checkbox" name="readLegacyDescription" checked="checked"/></td>
-					</tr>
-					<tr>
-						<td>dateTimeOriginal (fallback)</td>
-						<td><input type="datetime-local" name="dateTimeOriginal"/></td>
-					</tr>
-					<tr>
-						<td>album</td>
-						<td><input type="text" name="album"/></td>
 					</tr>
 					<tr>
 						<td></td>

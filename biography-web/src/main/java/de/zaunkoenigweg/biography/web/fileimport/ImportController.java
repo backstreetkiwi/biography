@@ -2,7 +2,6 @@ package de.zaunkoenigweg.biography.web.fileimport;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.LocalDateTime;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
@@ -15,8 +14,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import de.zaunkoenigweg.biography.core.archive.ArchiveImportService;
-import de.zaunkoenigweg.biography.core.archive.ArchiveImportService.ImportResult;
+import de.zaunkoenigweg.biography.core.archive.ArchiveBulkImportService;
+import de.zaunkoenigweg.biography.core.archive.BulkImportJob;
 
 @Controller
 public class ImportController {
@@ -25,10 +24,10 @@ public class ImportController {
 
     private File importFolder;
 
-    private ArchiveImportService archiveImportService;
+    private ArchiveBulkImportService archiveBulkImportService;
 
-    public ImportController(ArchiveImportService archiveImportService, File importFolder) {
-        this.archiveImportService = archiveImportService;
+    public ImportController(ArchiveBulkImportService archiveBulkImportService, File importFolder) {
+        this.archiveBulkImportService = archiveBulkImportService;
         this.importFolder = importFolder;
         LOG.info("ImportController started.");
         LOG.info(String.format("importFolder=%s", this.importFolder));
@@ -36,39 +35,35 @@ public class ImportController {
 
     @GetMapping("/import")
     public String importMain(Model model) {
+        BulkImportJob importJob = archiveBulkImportService.getImportJob();
+        model.addAttribute("importJob", importJob);
         return "import/index";
     }
 
-    @PostMapping("/import")
-    public String handleFileUpload(@RequestParam("file") MultipartFile file,
-            @RequestParam(name="readLegacyDescription", required=false, defaultValue="false") boolean readLegacyDescription, @RequestParam(name="dateTimeOriginal", required=false) String dateTimeOriginalParam, @RequestParam("album") String album, RedirectAttributes redirectAttributes) {
+    @PostMapping("/import/add")
+    public String handleFileUpload(@RequestParam("file") MultipartFile file, RedirectAttributes redirectAttributes) {
 
-        LocalDateTime dateTimeOriginal = null;
-        try {
-            dateTimeOriginal = LocalDateTime.parse(dateTimeOriginalParam);
-        } catch (Exception e1) {
-        }
-        
         File localFile = new File(importFolder, file.getOriginalFilename());
 
-        ImportResult result;
         try {
             FileUtils.writeByteArrayToFile(localFile, file.getBytes(), false);
-            result = archiveImportService.importFile(localFile, readLegacyDescription, dateTimeOriginal, album);
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            return "import/index";
         }
-
-        redirectAttributes.addFlashAttribute("importResult", result);
-        
-        return "redirect:/import-success";
+        this.archiveBulkImportService.clearImportFolder();
+        return "redirect:/import";
     }
 
-    @GetMapping("/import-success")
-    public String importSuccess(Model model) {
-        return "import/success";
+    @PostMapping("/import/start")
+    public String startImport(@RequestParam("album") String album, Model model) {
+        this.archiveBulkImportService.startImport(album);
+        return "redirect:/import";
     }
 
+    @PostMapping("/import/clear")
+    public String clearImport(Model model) {
+        this.archiveBulkImportService.clearImportFolder();
+        return "redirect:/import";
+    }
 }
