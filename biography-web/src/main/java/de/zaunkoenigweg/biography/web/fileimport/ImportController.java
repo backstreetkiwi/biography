@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -46,72 +47,40 @@ public class ImportController {
     }
 
     @PostMapping("/import/add")
-    public String handleFileUpload(@RequestParam("file") MultipartFile file, RedirectAttributes redirectAttributes) {
+    public String handleFileUpload(@RequestParam("file") MultipartFile[] files, RedirectAttributes redirectAttributes) {
 
-        File localFile = new File(importFolder, file.getOriginalFilename());
+        Arrays.stream(files).forEach(uploadFile -> {
+            
+            File fileInImportFolder = fileInImportFolder(uploadFile);
 
-        if (localFile.exists()) {
-            // TODO Proper error message
-            return "redirect:/alreadyexists";
-        }
-
-        try {
-            FileUtils.writeByteArrayToFile(localFile, file.getBytes(), false);
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-        if (StringUtils.equals(file.getContentType(), "application/zip")) {
-            unzip(localFile);
-            FileUtils.deleteQuietly(localFile);
-            this.archiveBulkImportService.clearImportFolder();
-            return "redirect:/import";
-        }
-
-        this.archiveBulkImportService.clearImportFolder();
-        return "redirect:/import";
-    }
-
-    // TODO: Do it better ;-)
-    // TODO: Handle existing files...
-    private void unzip(File zipFile) {
-        
-        byte[] buffer = new byte[1024];
-        
-        ZipInputStream zis = null;
-        try {
-            zis = new ZipInputStream(new FileInputStream(zipFile));
-            ZipEntry ze = zis.getNextEntry();
-            while (ze != null) {
-                if (ze.isDirectory() || ze.getName().startsWith(".") || ze.getName().startsWith("_")
-                        || ze.getName().contains("/")) {
-                    ze = zis.getNextEntry();
-                    continue;
-                }
-                File newFile = new File(importFolder + File.separator + ze.getName());
-
-                FileOutputStream fos = new FileOutputStream(newFile);
-
-                int len;
-                while ((len = zis.read(buffer)) > 0) {
-                    fos.write(buffer, 0, len);
-                }
-                fos.close();
-
-                ze = zis.getNextEntry();
-            }
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } finally {
             try {
-                zis.close();
+                FileUtils.writeByteArrayToFile(fileInImportFolder, uploadFile.getBytes(), false);
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
+        });
+
+        this.archiveBulkImportService.clearImportFolder();
+        return "redirect:/import";
+    }
+    
+    private File fileInImportFolder(MultipartFile uploadFile) {
+        File fileInImportFolder = new File(importFolder, uploadFile.getOriginalFilename());   
+        if(!fileInImportFolder.exists()) {
+            return fileInImportFolder;
         }
+        int indexOfFileExtension = StringUtils.lastIndexOf(uploadFile.getOriginalFilename(), ".");
+        String fileNameWithIndexPattern = uploadFile.getOriginalFilename() + "_" + "%05d";
+        if(indexOfFileExtension>=0) {
+            fileNameWithIndexPattern = StringUtils.substring(uploadFile.getOriginalFilename(), 0, indexOfFileExtension) + "_" + "%05d" + StringUtils.substring(uploadFile.getOriginalFilename(), indexOfFileExtension);
+        }
+        int suffix = 1;
+        while(fileInImportFolder.exists()) {
+            fileInImportFolder = new File(importFolder, String.format(fileNameWithIndexPattern, suffix++));
+        }
+        return fileInImportFolder;
+        
     }
 
     @PostMapping("/import/start")
