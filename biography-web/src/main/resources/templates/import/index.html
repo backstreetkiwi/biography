@@ -33,6 +33,7 @@
 					<th>Datetime original</th>
 					<th>Ready to import?</th>
 					<th>Import Result</th>
+					<th>set date</th>
 				</tr>
 				<tr th:each="file,iter : ${importJob.importFiles}">
 					<td th:text="${file.name}"></td>
@@ -41,6 +42,11 @@
 					<td th:text="${importJob.getDateTimeOriginal(file)}"></td>
 					<td th:text="${importJob.isReadyToImport(file)}? 'YES' : 'NO'"></td>
 					<td th:text="${importJob.getImportResult(file)}"></td>
+					<td>
+						<form method="POST" th:action="@{/import/file/__${file.name}__/setdatetimeoriginal}">
+							<input type="datetime-local" name="dateTimeOriginal"/> <input type="submit" value="SET" />
+						</form>
+					</td>
 				</tr>
 			</table>
 			<form method="POST" enctype="multipart/form-data" th:action="@{/import/add}">

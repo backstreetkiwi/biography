@@ -14,6 +14,11 @@ import java.util.stream.Collectors;
 import de.zaunkoenigweg.biography.core.MediaFileType;
 import de.zaunkoenigweg.biography.metadata.ExifData;
 
+/**
+ * Holds the data of a bulk import job
+ * 
+ * @author mail@nikolaus-winter.de
+ */
 public class BulkImportJob {
     
     private boolean running;
