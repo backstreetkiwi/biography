@@ -1,60 +1,19 @@
 package de.zaunkoenigweg.biography.core.index;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Stream;
 
 public interface Index {
 
-    String KEY_FIELD_NAME = "name";
-    String KEY_FIELD_MULTI_VALUED = "multiValued";
-    String KEY_FIELD_TYPE = "type";
-
-    String FIELD_TYPE_LONG_POINT = "long";
-    String FIELD_TYPE_TEXT = "text_general";
-    String FIELD_TYPE_STRING = "string";
-
     String FIELD_ID = "fileName";
     String FIELD_DESCRIPTION = "description";
-    String FIELD_ALBUM_TITLES = "albumTitles";
-    String FIELD_ALBUM_CHAPTERS = "albumChapters";
-    String FIELD_DATE_TIME_ORIGINAL = "dateTimeOriginal";
-    String FIELD_DATE_ORIGINAL_LONG_POINT = "dateOriginal";
-    String FIELD_YEAR = "year";
-    String FIELD_MONTH = "month";
-    String FIELD_DAY = "day";
+    String FIELD_ALBUMS = "albums";
+    String FIELD_DATETIME_ORIGINAL = "dateTimeOriginal";
+    String FIELD_YEAR_LONG_POINT = "yearLongPoint";
+    String FIELD_YEAR_MONTH_LONG_POINT = "yearMonthLongPoint";
+    String FIELD_DATE_LONG_POINT = "dateLongPoint";
 
-    public static String toFieldName(Map<String, Object> fieldAttributes) {
-    		return fieldAttributes.get(KEY_FIELD_NAME).toString();
-    }
-    
     public static Long toLongPoint(LocalDateTime localDateTime) {
     		return Long.valueOf(localDateTime.getYear() * 10000 + localDateTime.getMonthValue() * 100 + localDateTime.getDayOfMonth());
-    }
-    
-    static Stream<Map<String, Object>> fields() {
-        List<Map<String, Object>> fields = new ArrayList<>();
-        fields.add(fieldAttributes(FIELD_ID, FIELD_TYPE_STRING, false));
-        fields.add(fieldAttributes(FIELD_DESCRIPTION, FIELD_TYPE_TEXT, false));
-        fields.add(fieldAttributes(FIELD_ALBUM_TITLES, FIELD_TYPE_STRING, true));
-        fields.add(fieldAttributes(FIELD_ALBUM_CHAPTERS, FIELD_TYPE_STRING, true));
-        fields.add(fieldAttributes(FIELD_DATE_TIME_ORIGINAL, FIELD_TYPE_STRING, false));
-        fields.add(fieldAttributes(FIELD_DATE_ORIGINAL_LONG_POINT, FIELD_TYPE_LONG_POINT, false));
-        fields.add(fieldAttributes(FIELD_YEAR, FIELD_TYPE_LONG_POINT, false));
-        fields.add(fieldAttributes(FIELD_MONTH, FIELD_TYPE_LONG_POINT, false));
-        fields.add(fieldAttributes(FIELD_DAY, FIELD_TYPE_LONG_POINT, false));
-        return fields.stream();
-    }
-
-    static Map<String, Object> fieldAttributes(String fieldName, String type, boolean multiValued) {
-        Map<String, Object> fieldAttributes = new HashMap<>();
-        fieldAttributes.put(KEY_FIELD_NAME, fieldName);
-        fieldAttributes.put(KEY_FIELD_TYPE, type);
-        fieldAttributes.put(KEY_FIELD_MULTI_VALUED, multiValued);
-        return fieldAttributes;
     }
     
     public static String queryString(String fieldName, String value) {

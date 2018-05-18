@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import de.zaunkoenigweg.biography.core.archive.ArchiveMetadataService;
 import de.zaunkoenigweg.biography.core.archive.ArchiveValidationService;
+import de.zaunkoenigweg.biography.core.index.ArchiveIndexingService;
 import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
 import de.zaunkoenigweg.biography.metadata.BiographyMetadata;
 import de.zaunkoenigweg.biography.metadata.ExifData;
@@ -27,17 +28,20 @@ public class ToolsController {
 
 	private File archiveFolder;
 
-	private ArchiveValidationService archiveValidationService;
+    private ArchiveIndexingService archiveIndexingService;
+
+    private ArchiveValidationService archiveValidationService;
 
 	private ArchiveMetadataService archiveMetadataService;
 	
 	private Consoles consoles;
 
 	public ToolsController(File archiveFolder, ArchiveValidationService archiveValidationService, ArchiveMetadataService archiveMetadataService,
-			Consoles consoles) {
+			ArchiveIndexingService archiveIndexingService, Consoles consoles) {
 		this.archiveFolder = archiveFolder;
 		this.archiveValidationService = archiveValidationService;
 		this.archiveMetadataService = archiveMetadataService;
+		this.archiveIndexingService = archiveIndexingService;
 		this.consoles = consoles;
 		LOG.info("ToolsController started.");
 		LOG.info(String.format("archiveFolder=%s", this.archiveFolder));
@@ -124,5 +128,23 @@ public class ToolsController {
 		return "redirect:/console";
 	}
 
+    @RequestMapping("/tools/rebuild-index")
+    public String rebuildIndex(Model model) {
+
+        Console console = consoles.create("Rebuild Solr index");
+
+        new Thread(() -> {
+            List<File> mediaFiles = BiographyFileUtils.getMediaFiles(archiveFolder);
+
+            console.println(mediaFiles.size() + " to index.");
+            // TODO incremental output to console?
+            this.archiveIndexingService.rebuildIndex();
+            console.println("Finished.");
+            console.close();
+        }).start();
+        
+        return "redirect:/console";
+    }
+    
 
 }

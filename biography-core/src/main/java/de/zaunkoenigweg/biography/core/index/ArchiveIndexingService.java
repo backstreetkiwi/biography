@@ -12,10 +12,8 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
-import org.apache.solr.client.solrj.request.schema.SchemaRequest;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrInputDocument;
-import org.apache.solr.common.util.NamedList;
 import org.springframework.stereotype.Component;
 
 import de.zaunkoenigweg.biography.core.archive.ArchiveMetadataService;
@@ -58,7 +56,6 @@ public class ArchiveIndexingService {
 		BiographyMetadata biographyMetadata = archiveMetadataService.getMetadata(archiveFile);
 
 		Set<String> albumTitles = null;
-		Set<String> albumChapters = null;
 
 		albumTitles = biographyMetadata.getAlbums().stream().map(Album::getTitle).collect(Collectors.toSet());
 
@@ -67,57 +64,14 @@ public class ArchiveIndexingService {
 		SolrInputDocument document = new SolrInputDocument();
 		document.addField(Index.FIELD_ID, archiveFile.getName());
 		document.addField(Index.FIELD_DESCRIPTION, biographyMetadata.getDescription());
-		document.addField(Index.FIELD_ALBUM_TITLES, albumTitles);
-		document.addField(Index.FIELD_ALBUM_CHAPTERS, albumChapters);
-		document.addField(Index.FIELD_DATE_ORIGINAL_LONG_POINT, Index.toLongPoint(dateTime));
-		document.addField(Index.FIELD_DATE_TIME_ORIGINAL, dateTime.toString());
-		document.addField(Index.FIELD_YEAR, dateTime.getYear());
-		document.addField(Index.FIELD_MONTH, dateTime.getMonthValue());
-		document.addField(Index.FIELD_DAY, dateTime.getDayOfMonth());
+		document.addField(Index.FIELD_ALBUMS, albumTitles);
+		document.addField(Index.FIELD_DATETIME_ORIGINAL, dateTime.toString());
+		document.addField(Index.FIELD_DATE_LONG_POINT, Index.toLongPoint(dateTime));
+		document.addField(Index.FIELD_YEAR_LONG_POINT, dateTime.getYear());
+		document.addField(Index.FIELD_YEAR_MONTH_LONG_POINT, dateTime.getYear() * 100 + dateTime.getMonthValue());
 		return document;
 	};
 	
-	/**
-	 * Definies the Solr index.
-	 */
-	public boolean defineIndex() {
-
-		try {
-			SolrClient solr = new HttpSolrClient.Builder(solrIndexUrl).build();
-
-			UpdateResponse deleteByQuery = solr.deleteByQuery("*:*");
-			LOG.info(String.format("Deleted all rows in %s -> Status %d", solrIndexUrl,
-					deleteByQuery.getStatus()));
-
-			Index.fields().map(Index::toFieldName).map(SchemaRequest.DeleteField::new).forEach(deleteFieldRequest -> {
-				try {
-					NamedList<Object> response = solr.request(deleteFieldRequest);
-					LOG.info(String.format("Deleted field (request: '%s') -> Response %s", deleteFieldRequest,
-							response));
-				} catch (SolrServerException | IOException e) {
-					LOG.error(String.format("Error deleting field (request: '%s')", deleteFieldRequest), e);
-				}
-			});
-
-			Index.fields().map(SchemaRequest.AddField::new).forEach(addFieldRequest -> {
-				try {
-					NamedList<Object> response = solr.request(addFieldRequest);
-					LOG.info(String.format("Added field (request: '%s') -> Response %s", addFieldRequest, response));
-				} catch (SolrServerException | IOException e) {
-					LOG.error(String.format("Error adding field (request: '%s')", addFieldRequest), e);
-				}
-			});
-
-			solr.commit();
-
-		} catch (SolrServerException | IOException e) {
-			LOG.error("Error defining index structure.", e);
-			return false;
-		}
-
-		return true;
-
-	}
 
 	/**
 	 * Creates an index of all Media Files
@@ -138,7 +92,7 @@ public class ArchiveIndexingService {
 					.forEach(document -> {
 						try {
 							UpdateResponse response = solr.add(document);
-							LOG.trace(response);
+							LOG.info(response);
 						} catch (IOException | SolrServerException e) {
 							LOG.error("Document could not be written to Solr.");
 							LOG.error(e);

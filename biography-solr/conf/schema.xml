@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<schema name="biography" version="1.4">
+  <uniqueKey>fileName</uniqueKey>
+  <types>
+    <fieldType name="string" class="solr.StrField" />
+    <fieldType name="text_general" class="solr.TextField" />
+    <fieldType name="long" class="solr.LongPointField" omitNorms="true" positionIncrementGap="0"/>
+  </types>
+  <fields>
+    <field name="fileName" type="string" indexed="true" stored="true" required="true" />
+    <field name="description" type="text_general" indexed="true" stored="true" required="false" />
+    <field name="albums" type="string" indexed="true" stored="true" required="false" multiValued="true"/>
+    <field name="dateTimeOriginal" type="string" indexed="true" stored="true" required="true" />
+    <field name="yearLongPoint" type="long" indexed="true" stored="true" required="true" docValues="true"/>
+    <field name="yearMonthLongPoint" type="long" indexed="true" stored="true" required="true" docValues="true"/>
+    <field name="dateLongPoint" type="long" indexed="true" stored="true" required="true" />
+    <dynamicField name="*" type="string" indexed="true" stored="true" />
+  </fields>
+</schema>
