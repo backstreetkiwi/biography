@@ -1,3 +1,11 @@
+spring:
+  resources:
+    static-locations: classpath:/static/
+  servlet:
+    multipart:
+      max-file-size: "1024MB"
+      max-request-size: "1024MB"
+
 archive:
   path: /path/to/archive/
   
@@ -8,10 +16,3 @@ solr:
   index:
     url: http://solr.url
     
-spring:
-  resources:
-    static-locations: classpath:/static/
-  http:
-    multipart:
-      max-file-size: 1024MB
-      max-request-size: 1024MB
