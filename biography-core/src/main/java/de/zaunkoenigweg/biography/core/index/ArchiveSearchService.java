@@ -2,17 +2,23 @@ package de.zaunkoenigweg.biography.core.index;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.Year;
+import java.time.YearMonth;
+import java.util.Comparator;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
 import javax.annotation.PreDestroy;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.response.FacetField.Count;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.springframework.stereotype.Component;
 
@@ -99,19 +105,33 @@ public class ArchiveSearchService {
 //        return query;
 //    }
 
-//    private Stream<Count> streamFacets(String facetField) {
-//        return streamFacets(facetField, q->{});
-//    }
+    public Stream<Pair<YearMonth, Long>> getMonthCount(Year year) {
+        return streamFacets(Index.FIELD_YEAR_MONTH_LONG_POINT, query -> {
+            query.setQuery(Index.queryString(Index.FIELD_YEAR_LONG_POINT, year.toString()));
+        }).map(count-> {
+            return Pair.of(Index.yearMonthFromLongPoint(count.getName()), Long.valueOf(count.getCount()));
+        }).sorted(Comparator.comparing(Pair::getLeft));
+    }
+    
+    public Stream<Pair<Year, Long>> getYearCount() {
+        return streamFacets(Index.FIELD_YEAR_LONG_POINT).map(count-> {
+            return Pair.of(Year.parse(count.getName()), Long.valueOf(count.getCount()));
+        }).sorted(Comparator.comparing(Pair::getLeft));
+    }
+    
+    private Stream<Count> streamFacets(String facetField) {
+        return streamFacets(facetField, q->{});
+    }
 
-//    private Stream<Count> streamFacets(String facetField, Consumer<SolrQuery> additionalQueryDefinitions) {
-//        SolrQuery query = new SolrQuery();
-//        query.setQuery("*:*");
-//        query.setRows(0);
-//        query.setFacet(true);
-//        query.addFacetField(facetField);
-//        additionalQueryDefinitions.accept(query);
-//        return query(query, (response) -> response.getFacetField(facetField).getValues().stream());
-//    }
+    private Stream<Count> streamFacets(String facetField, Consumer<SolrQuery> additionalQueryDefinitions) {
+        SolrQuery query = new SolrQuery();
+        query.setQuery("*:*");
+        query.setRows(0);
+        query.setFacet(true);
+        query.addFacetField(facetField);
+        additionalQueryDefinitions.accept(query);
+        return query(query, (response) -> response.getFacetField(facetField).getValues().stream());
+    }
 
     /**
      * Executes given query and maps the result with the given extractor.

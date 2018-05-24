@@ -9,11 +9,15 @@
     		<div th:replace="fragments/page :: header"></div>
     		<div th:replace="fragments/page :: menu"></div>
     		<div class="main-content">
-			<div th:each="file,iter : ${list}">
-				<a th:text="${file}"
-					th:href="@{/file/{fileName}/(fileName=${file})}"></a>
-				<a th:text="(inspect)"
-					th:href="@{/tools/inspect-file/{fileName}/(fileName=${file})}"></a>
+			<div th:each="year,iter : ${years}">
+				<a th:if="${year.left!=selectedYear}" th:text="${year.left} + ' (' + ${year.right} + ')'"
+					th:href="@{/timeline/{year}/(year=${year.left})}"></a>
+				<a th:if="${year.left==selectedYear}" th:text="${year.left} + ' (' + ${year.right} + ')'"
+					th:href="@{/timeline}"></a>
+				<div th:if="${year.left==selectedYear}" th:each="month,iter : ${months}">
+					<a th:text="${month.left.month} + ' (' + ${month.right} + ')'"
+						th:href="@{/timeline/{year}/{month}/(year=${selectedYear}, month=${month.left.monthValue})}"></a>
+				</div>
 			</div>
     		</div>
         
