@@ -1,6 +1,8 @@
 package de.zaunkoenigweg.biography.web.timeline;
 
 import java.io.File;
+import java.time.LocalDate;
+import java.time.Month;
 import java.time.Year;
 import java.time.YearMonth;
 import java.util.List;
@@ -15,8 +17,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import de.zaunkoenigweg.biography.core.index.ArchiveSearchService;
-import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
-import de.zaunkoenigweg.biography.metadata.BiographyMetadata;
 
 @Controller
 public class TimelineController {
@@ -37,13 +37,7 @@ public class TimelineController {
     @RequestMapping("/timeline")
     public String timeline(Model model) {
 
-        List<Pair<Year, Long>> years = archiveSearchService.getYearCount().collect(Collectors.toList());
-
-//		List<File> mediaFiles = BiographyFileUtils.getMediaFiles(archiveFolder);
-//		
-//		List<String> list = mediaFiles.stream().map(File::getName).collect(Collectors.toList());
-//		
-//		BiographyFileUtils.getDatetimeOriginalFromArchiveFilename(mediaFiles.stream().findFirst().get());
+        List<Pair<Year, Long>> years = archiveSearchService.getYearCounts().collect(Collectors.toList());
 
         model.addAttribute("years", years);
 
@@ -51,11 +45,11 @@ public class TimelineController {
     }
 
     @RequestMapping("/timeline/{year}")
-    public String fileDetails(Model model, @PathVariable("year") Year year) {
+    public String timeline(Model model, @PathVariable("year") Year year) {
 
-        List<Pair<Year, Long>> years = archiveSearchService.getYearCount().collect(Collectors.toList());
+        List<Pair<Year, Long>> years = archiveSearchService.getYearCounts().collect(Collectors.toList());
 
-        List<Pair<YearMonth, Long>> months = archiveSearchService.getMonthCount(year).collect(Collectors.toList());
+        List<Pair<YearMonth, Long>> months = archiveSearchService.getMonthCounts(year).collect(Collectors.toList());
 
         model.addAttribute("years", years);
         model.addAttribute("months", months);
@@ -64,5 +58,43 @@ public class TimelineController {
         return "timeline/index";
     }
 
+    @RequestMapping("/timeline/{year}/{month}")
+    public String timeline(Model model, @PathVariable("year") Year year, @PathVariable("month") int month) {
+
+        YearMonth yearMonth = YearMonth.of(year.getValue(), Month.of(month));
+
+        List<Pair<Year, Long>> years = archiveSearchService.getYearCounts().collect(Collectors.toList());
+        List<Pair<YearMonth, Long>> months = archiveSearchService.getMonthCounts(year).collect(Collectors.toList());
+        List<Pair<LocalDate, Long>> days = archiveSearchService.getDayCounts(yearMonth).collect(Collectors.toList());
+
+        model.addAttribute("years", years);
+        model.addAttribute("months", months);
+        model.addAttribute("days", days);
+        model.addAttribute("selectedYear", year);
+        model.addAttribute("selectedMonth", yearMonth);
+
+        return "timeline/index";
+    }
+
+    @RequestMapping("/timeline/{year}/{month}/{day}")
+    public String timeline(Model model, @PathVariable("year") Year year, @PathVariable("month") int month, @PathVariable("day") int day) {
+
+        LocalDate localDate = LocalDate.of(year.getValue(), month, day);
+
+        List<Pair<Year, Long>> years = archiveSearchService.getYearCounts().collect(Collectors.toList());
+        List<Pair<YearMonth, Long>> months = archiveSearchService.getMonthCounts(year).collect(Collectors.toList());
+        List<Pair<LocalDate, Long>> days = archiveSearchService.getDayCounts(YearMonth.from(localDate)).collect(Collectors.toList());
+        
+        archiveSearchService.findByDate(localDate).forEach(System.out::println);
+
+        model.addAttribute("years", years);
+        model.addAttribute("months", months);
+        model.addAttribute("days", days);
+        model.addAttribute("selectedYear", year);
+        model.addAttribute("selectedMonth", YearMonth.from(localDate));
+        model.addAttribute("selectedDay", localDate);
+
+        return "timeline/index";
+    }
 
 }

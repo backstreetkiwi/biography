@@ -110,3 +110,44 @@ div.image-detail-view a img {
 	image-orientation: from-image;
 }
 
+div.timeline-menu div {
+	margin: 5px 0px;
+}
+
+div.timeline-menu div a {
+	color: #808080;
+	text-decoration: none;
+}
+
+div.timeline-menu div a.selected {
+	color: #fbea58;
+	text-decoration: none;
+}
+
+div.timeline-menu div div {
+	margin: 5px 0px 5px 20px;
+}
+
+div.timeline-menu div div a {
+	color: #808080;
+	text-decoration: none;
+}
+
+div.timeline-menu div div a.selected {
+	color: #fbea58;
+	text-decoration: none;
+}
+
+div.timeline-menu div div div {
+	margin: 5px 0px 5px 20px;
+}
+
+div.timeline-menu div div div a {
+	color: #808080;
+	text-decoration: none;
+}
+
+div.timeline-menu div div div span {
+	color: #fbea58;
+}
+

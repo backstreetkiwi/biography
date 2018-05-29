@@ -66,7 +66,7 @@ public class ArchiveIndexingService {
 		document.addField(Index.FIELD_DESCRIPTION, biographyMetadata.getDescription());
 		document.addField(Index.FIELD_ALBUMS, albumTitles);
 		document.addField(Index.FIELD_DATETIME_ORIGINAL, dateTime.toString());
-		document.addField(Index.FIELD_DATE_LONG_POINT, Index.toLongPoint(dateTime));
+		document.addField(Index.FIELD_DATE_LONG_POINT, Long.valueOf(Index.localDateToLongPoint(dateTime.toLocalDate())));
 		document.addField(Index.FIELD_YEAR_LONG_POINT, dateTime.getYear());
 		document.addField(Index.FIELD_YEAR_MONTH_LONG_POINT, dateTime.getYear() * 100 + dateTime.getMonthValue());
 		return document;

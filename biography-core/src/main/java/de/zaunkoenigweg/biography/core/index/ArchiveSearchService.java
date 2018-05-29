@@ -1,7 +1,7 @@
 package de.zaunkoenigweg.biography.core.index;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.time.Year;
 import java.time.YearMonth;
 import java.util.Comparator;
@@ -53,9 +53,9 @@ public class ArchiveSearchService {
         return query(query, response -> response.getResults().stream().map(doc -> String.format("%s -> '%s'", doc.get(Index.FIELD_ID), doc.get(Index.FIELD_DESCRIPTION))));
     }
     
-    public Stream<String> findByDate(LocalDateTime dateTime) {
+    public Stream<String> findByDate(LocalDate dateTime) {
         SolrQuery query = new SolrQuery();
-        query.setQuery(String.format("dateOriginal:%s", Index.toLongPoint(dateTime)));
+        query.setQuery(String.format("%s:%s", Index.FIELD_DATE_LONG_POINT, Index.localDateToLongPoint(dateTime)));
         query.setRows(1000);
         return query(query, response -> response.getResults().stream().map(doc -> String.format("%s -> '%s'", doc.get(Index.FIELD_ID), doc.get(Index.FIELD_DESCRIPTION))));
     }
@@ -105,25 +105,33 @@ public class ArchiveSearchService {
 //        return query;
 //    }
 
-    public Stream<Pair<YearMonth, Long>> getMonthCount(Year year) {
-        return streamFacets(Index.FIELD_YEAR_MONTH_LONG_POINT, query -> {
-            query.setQuery(Index.queryString(Index.FIELD_YEAR_LONG_POINT, year.toString()));
+    public Stream<Pair<LocalDate, Long>> getDayCounts(YearMonth yearMonth) {
+        return streamFacetCounts(Index.FIELD_DATE_LONG_POINT, query -> {
+            query.setQuery(Index.queryString(Index.FIELD_YEAR_MONTH_LONG_POINT, Index.yearMonthToLongPoint(yearMonth)));
         }).map(count-> {
-            return Pair.of(Index.yearMonthFromLongPoint(count.getName()), Long.valueOf(count.getCount()));
+            return Pair.of(Index.longPointToLocalDate(count.getName()), Long.valueOf(count.getCount()));
         }).sorted(Comparator.comparing(Pair::getLeft));
     }
     
-    public Stream<Pair<Year, Long>> getYearCount() {
-        return streamFacets(Index.FIELD_YEAR_LONG_POINT).map(count-> {
+    public Stream<Pair<YearMonth, Long>> getMonthCounts(Year year) {
+        return streamFacetCounts(Index.FIELD_YEAR_MONTH_LONG_POINT, query -> {
+            query.setQuery(Index.queryString(Index.FIELD_YEAR_LONG_POINT, year.toString()));
+        }).map(count-> {
+            return Pair.of(Index.longPointToYearMonth(count.getName()), Long.valueOf(count.getCount()));
+        }).sorted(Comparator.comparing(Pair::getLeft));
+    }
+    
+    public Stream<Pair<Year, Long>> getYearCounts() {
+        return streamFacetCounts(Index.FIELD_YEAR_LONG_POINT).map(count-> {
             return Pair.of(Year.parse(count.getName()), Long.valueOf(count.getCount()));
         }).sorted(Comparator.comparing(Pair::getLeft));
     }
     
-    private Stream<Count> streamFacets(String facetField) {
-        return streamFacets(facetField, q->{});
+    private Stream<Count> streamFacetCounts(String facetField) {
+        return streamFacetCounts(facetField, q->{});
     }
 
-    private Stream<Count> streamFacets(String facetField, Consumer<SolrQuery> additionalQueryDefinitions) {
+    private Stream<Count> streamFacetCounts(String facetField, Consumer<SolrQuery> additionalQueryDefinitions) {
         SolrQuery query = new SolrQuery();
         query.setQuery("*:*");
         query.setRows(0);

@@ -1,26 +1,51 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
-    <head> 
-        <title>Biography</title> 
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-		<link th:href="@{/styles/main.css}" href="../styles/main.css" rel="stylesheet" type="text/css"  />
-    </head>
-    <body>
-    		<div th:replace="fragments/page :: header"></div>
-    		<div th:replace="fragments/page :: menu"></div>
-    		<div class="main-content">
+<head>
+<title>Biography</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link th:href="@{/styles/main.css}" href="../styles/main.css"
+	rel="stylesheet" type="text/css" />
+</head>
+<body>
+	<div th:replace="fragments/page :: header"></div>
+	<div th:replace="fragments/page :: menu"></div>
+	<div class="main-content">
+	
+		<div class="timeline-menu">
+
 			<div th:each="year,iter : ${years}">
-				<a th:if="${year.left!=selectedYear}" th:text="${year.left} + ' (' + ${year.right} + ')'"
-					th:href="@{/timeline/{year}/(year=${year.left})}"></a>
-				<a th:if="${year.left==selectedYear}" th:text="${year.left} + ' (' + ${year.right} + ')'"
+				<a th:if="${year.key!=selectedYear}"
+					th:text="${year.key} + ' (' + ${year.value} + ')'"
+					th:href="@{/timeline/{year}/(year=${year.key})}"></a> 
+				<a th:if="${year.key==selectedYear}"
+					class="selected" 
+					th:text="${year.key} + ' (' + ${year.value} + ')'"
 					th:href="@{/timeline}"></a>
-				<div th:if="${year.left==selectedYear}" th:each="month,iter : ${months}">
-					<a th:text="${month.left.month} + ' (' + ${month.right} + ')'"
-						th:href="@{/timeline/{year}/{month}/(year=${selectedYear}, month=${month.left.monthValue})}"></a>
+				<div th:if="${year.key==selectedYear}"
+					th:each="month,iter : ${months}">
+					<a th:if="${month.key!=selectedMonth}"
+						th:text="${month.key.month} + ' (' + ${month.value} + ')'"
+						th:href="@{/timeline/{year}/{month}/(year=${selectedYear}, month=${month.key.monthValue})}"></a>
+					<a th:if="${month.key==selectedMonth}"
+						class="selected" 
+						th:text="${month.key.month} + ' (' + ${month.value} + ')'"
+						th:href="@{/timeline/{year}/(year=${selectedYear})}"></a>
+					<div th:if="${month.key==selectedMonth}"
+						th:each="day,iter : ${days}">
+						<a th:if="${day.key!=selectedDay}"
+							th:text="${day.key.dayOfMonth} + ' (' + ${day.value} + ')'"
+							th:href="@{/timeline/{year}/{month}/{day}(year=${selectedYear}, month=${month.key.monthValue}, day=${day.key.dayOfMonth})}"></a>
+						<span th:if="${day.key==selectedDay}"
+							th:text="${day.key.dayOfMonth} + ' (' + ${day.value} + ')'"></span>
+					</div>
 				</div>
 			</div>
-    		</div>
-        
-    </body>
-    
+
+		</div>
+
+
+	</div>
+
+</body>
+
 </html>

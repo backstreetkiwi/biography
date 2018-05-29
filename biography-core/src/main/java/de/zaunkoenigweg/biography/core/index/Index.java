@@ -1,6 +1,6 @@
 package de.zaunkoenigweg.biography.core.index;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 
@@ -14,12 +14,24 @@ public interface Index {
     String FIELD_YEAR_MONTH_LONG_POINT = "yearMonthLongPoint";
     String FIELD_DATE_LONG_POINT = "dateLongPoint";
 
-    public static Long toLongPoint(LocalDateTime localDateTime) {
-    		return Long.valueOf(localDateTime.getYear() * 10000 + localDateTime.getMonthValue() * 100 + localDateTime.getDayOfMonth());
+    public static final DateTimeFormatter YEAR_MONTH_LONG_POINT_FORMATTER = DateTimeFormatter.ofPattern("yyyyMM");
+    
+    public static final DateTimeFormatter LOCAL_DATE_LONG_POINT_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
+    
+    public static String localDateToLongPoint(LocalDate localDate) {
+    		return LOCAL_DATE_LONG_POINT_FORMATTER.format(localDate);
     }
 
-    public static YearMonth yearMonthFromLongPoint(String longPoint) {
-        return YearMonth.parse(longPoint, DateTimeFormatter.ofPattern("yyyyMM"));
+    public static LocalDate longPointToLocalDate(String longPoint) {
+        return LocalDate.parse(longPoint, LOCAL_DATE_LONG_POINT_FORMATTER);
+    }
+    
+    public static String yearMonthToLongPoint(YearMonth yearMonth) {
+        return YEAR_MONTH_LONG_POINT_FORMATTER.format(yearMonth);
+    }
+    
+    public static YearMonth longPointToYearMonth(String longPoint) {
+        return YearMonth.parse(longPoint, YEAR_MONTH_LONG_POINT_FORMATTER);
     }
     
     public static String queryString(String fieldName, String value) {
