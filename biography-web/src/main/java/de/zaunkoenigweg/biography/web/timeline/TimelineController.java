@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import de.zaunkoenigweg.biography.core.index.ArchiveSearchService;
+import de.zaunkoenigweg.biography.core.index.MediaFile;
 
 @Controller
 public class TimelineController {
@@ -85,7 +86,7 @@ public class TimelineController {
         List<Pair<YearMonth, Long>> months = archiveSearchService.getMonthCounts(year).collect(Collectors.toList());
         List<Pair<LocalDate, Long>> days = archiveSearchService.getDayCounts(YearMonth.from(localDate)).collect(Collectors.toList());
         
-        archiveSearchService.findByDate(localDate).forEach(System.out::println);
+        List<MediaFile> mediaFiles = archiveSearchService.findByDate(localDate).collect(Collectors.toList());
 
         model.addAttribute("years", years);
         model.addAttribute("months", months);
@@ -93,6 +94,7 @@ public class TimelineController {
         model.addAttribute("selectedYear", year);
         model.addAttribute("selectedMonth", YearMonth.from(localDate));
         model.addAttribute("selectedDay", localDate);
+        model.addAttribute("mediaFiles", mediaFiles);
 
         return "timeline/index";
     }

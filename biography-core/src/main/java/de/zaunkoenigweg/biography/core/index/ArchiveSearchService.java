@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.Year;
 import java.time.YearMonth;
 import java.util.Comparator;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -20,6 +21,7 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.FacetField.Count;
 import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.common.SolrDocument;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -53,11 +55,19 @@ public class ArchiveSearchService {
         return query(query, response -> response.getResults().stream().map(doc -> String.format("%s -> '%s'", doc.get(Index.FIELD_ID), doc.get(Index.FIELD_DESCRIPTION))));
     }
     
-    public Stream<String> findByDate(LocalDate dateTime) {
+    public Stream<MediaFile> findByDate(LocalDate dateTime) {
         SolrQuery query = new SolrQuery();
         query.setQuery(String.format("%s:%s", Index.FIELD_DATE_LONG_POINT, Index.localDateToLongPoint(dateTime)));
         query.setRows(1000);
-        return query(query, response -> response.getResults().stream().map(doc -> String.format("%s -> '%s'", doc.get(Index.FIELD_ID), doc.get(Index.FIELD_DESCRIPTION))));
+        return query(query, response -> response.getResults().stream().map(this::toFileInfo));
+    }
+    
+    @SuppressWarnings("unchecked")
+    private MediaFile toFileInfo(SolrDocument doc) {
+        String fileName = doc.get(Index.FIELD_ID).toString();
+        String description = doc.get(Index.FIELD_DESCRIPTION)!=null ? doc.get(Index.FIELD_DESCRIPTION).toString() : null;
+        List<String> albums = doc.get(Index.FIELD_ALBUMS) instanceof List<?> ? (List<String>)doc.get(Index.FIELD_ALBUMS) : null;
+        return new MediaFile(fileName, description, albums);
     }
     
 //    public ArchiveInfo getArchiveInfo() {
