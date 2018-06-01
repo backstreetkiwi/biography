@@ -17,6 +17,8 @@ If the config has changed, just remove the core in the mapped host dir and it ge
 docker run --name biography_solr -it --rm -p 8983:8983 -v <your local dir>:/opt/solr/server/solr/mycores de.zaunkoenigweg/biography-solr:latest solr-precreate biography /opt/solr/temp/biography/
 ```
 
+See [here](https://github.com/docker-solr/docker-solr/blob/master/scripts/solr-precreate) for help on `solr-precreate`.
+
 Stop and remove container:
 
 ```

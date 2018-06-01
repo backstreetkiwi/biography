@@ -17,6 +17,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrQuery.ORDER;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.FacetField.Count;
@@ -50,7 +51,7 @@ public class ArchiveSearchService {
 
     public Stream<String> findByDescription(String queryString) {
         SolrQuery query = new SolrQuery();
-        query.setQuery(String.format("description:\"%s\"", queryString));
+        query.setQuery(String.format("%s:\"%s\"", Index.FIELD_DESCRIPTION, queryString));
         query.setRows(1000);
         return query(query, response -> response.getResults().stream().map(doc -> String.format("%s -> '%s'", doc.get(Index.FIELD_ID), doc.get(Index.FIELD_DESCRIPTION))));
     }
@@ -58,6 +59,13 @@ public class ArchiveSearchService {
     public Stream<MediaFile> findByDate(LocalDate dateTime) {
         SolrQuery query = new SolrQuery();
         query.setQuery(String.format("%s:%s", Index.FIELD_DATE_LONG_POINT, Index.localDateToLongPoint(dateTime)));
+        query.setRows(1000);
+        return query(query, response -> response.getResults().stream().map(this::toFileInfo));
+    }
+    
+    public Stream<MediaFile> findByAlbum(String album) {
+        SolrQuery query = new SolrQuery();
+        query.setQuery(String.format("%s:\"%s\"", Index.FIELD_ALBUMS, album));
         query.setRows(1000);
         return query(query, response -> response.getResults().stream().map(this::toFileInfo));
     }
@@ -115,6 +123,27 @@ public class ArchiveSearchService {
 //        return query;
 //    }
 
+    public Stream<Album> getAlbumCounts() {
+        return streamFacetCounts(Index.FIELD_ALBUMS).map(this::createAlbum).sorted(Comparator.comparing(Album::getBegin));
+    }
+    
+    private Album createAlbum(Count albumFacetCount) {
+        SolrQuery query = new SolrQuery();
+        query.setQuery(String.format("%s:\"%s\"", Index.FIELD_ALBUMS, albumFacetCount.getName()));
+        query.setSort(Index.FIELD_DATE_LONG_POINT, ORDER.asc);
+        query.setRows(1);
+        LocalDate begin = query(query, response -> response.getResults().stream().map(result -> Index.longPointToLocalDate(result.get(Index.FIELD_DATE_LONG_POINT).toString())).findAny().get());
+        
+        query = new SolrQuery();
+        query.setQuery(String.format("%s:\"%s\"", Index.FIELD_ALBUMS, albumFacetCount.getName()));
+        query.setSort(Index.FIELD_DATE_LONG_POINT, ORDER.desc);
+        query.setRows(1);
+        LocalDate end = query(query, response -> response.getResults().stream().map(result -> Index.longPointToLocalDate(result.get(Index.FIELD_DATE_LONG_POINT).toString())).findAny().get());
+        
+        return new Album(albumFacetCount.getName(), albumFacetCount.getCount(), begin, end);
+    }
+    
+    
     public Stream<Pair<LocalDate, Long>> getDayCounts(YearMonth yearMonth) {
         return streamFacetCounts(Index.FIELD_DATE_LONG_POINT, query -> {
             query.setQuery(Index.queryString(Index.FIELD_YEAR_MONTH_LONG_POINT, Index.yearMonthToLongPoint(yearMonth)));

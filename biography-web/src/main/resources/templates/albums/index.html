@@ -9,7 +9,25 @@
     		<div th:replace="fragments/page :: header"></div>
     		<div th:replace="fragments/page :: menu"></div>
     		<div class="main-content">
-	    		<p>albums tbd</p>
+
+				<div class="album-menu">
+		
+					<div th:each="album,iter : ${albums}">
+						<a  th:text="${album.name} + ' (' + ${album.size} + ') ' + ${album.begin} + '-' + ${album.end}"
+							th:href="@{/album/{name}/(name=${album.name})}"></a> 
+					</div>
+		
+				</div>
+
+				<div class="media-files">
+		
+					<div th:each="mediaFile,iter : ${mediaFiles}">
+								<a th:href="@{/file/{fileName}/(fileName=${mediaFile.fileName})}"
+									th:text="${#strings.substring(mediaFile.fileName, 0, 20)} + ':&nbsp;&nbsp;' + ${mediaFile.description} + ''"></a>
+					</div>
+		
+				</div>
+		
     		</div>
         
     </body>

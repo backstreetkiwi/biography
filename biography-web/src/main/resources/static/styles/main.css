@@ -179,3 +179,9 @@ span.album-tag {
 	border-radius:7px;
 }
 
+div.album-menu {
+	width: 500px;
+	float: left;
+	padding: 10px;	
+}
+

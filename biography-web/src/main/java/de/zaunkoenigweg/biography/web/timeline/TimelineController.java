@@ -49,7 +49,7 @@ public class TimelineController {
     public String timeline(Model model, @PathVariable("year") Year year) {
 
         List<Pair<Year, Long>> years = archiveSearchService.getYearCounts().collect(Collectors.toList());
-
+        
         List<Pair<YearMonth, Long>> months = archiveSearchService.getMonthCounts(year).collect(Collectors.toList());
 
         model.addAttribute("years", years);
