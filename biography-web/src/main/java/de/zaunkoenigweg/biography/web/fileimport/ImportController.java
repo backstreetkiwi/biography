@@ -36,6 +36,7 @@ public class ImportController {
 
     @GetMapping("/import")
     public String importMain(Model model) {
+        model.addAttribute("selectedMenuItem", "IMPORT");
         return "import/index";
     }
 
@@ -68,6 +69,7 @@ public class ImportController {
 
     @GetMapping("/import-success")
     public String importSuccess(Model model) {
+        model.addAttribute("selectedMenuItem", "IMPORT");
         return "import/success";
     }
 

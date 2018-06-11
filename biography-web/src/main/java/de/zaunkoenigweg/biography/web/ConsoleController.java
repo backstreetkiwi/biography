@@ -24,12 +24,14 @@ public class ConsoleController {
 		model.addAttribute("closed", console.isClosed());
 		model.addAttribute("startTime", console.getStartTime());
 		model.addAttribute("content", console.getContent());
+        model.addAttribute("selectedMenuItem", "CONSOLE");
         return "console/console";
     }
 
 	@RequestMapping("/console")
     public String consoles(Model model) {
 		model.addAttribute("consoles", consoles.getAll());
+        model.addAttribute("selectedMenuItem", "CONSOLE");
         return "console/index";
     }
 

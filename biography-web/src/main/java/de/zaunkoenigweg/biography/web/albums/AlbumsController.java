@@ -1,8 +1,6 @@
 package de.zaunkoenigweg.biography.web.albums;
 
 import java.io.File;
-import java.time.Year;
-import java.time.YearMonth;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,6 +37,7 @@ public class AlbumsController {
         List<Album> albums = archiveSearchService.getAlbumCounts().collect(Collectors.toList());
         
         model.addAttribute("albums", albums);
+        model.addAttribute("selectedMenuItem", "ALBUMS");
         
         return "albums/index";
     }
@@ -54,6 +53,7 @@ public class AlbumsController {
 
         model.addAttribute("albums", albums);
         model.addAttribute("mediaFiles", mediaFiles);
+        model.addAttribute("selectedMenuItem", "ALBUMS");
         
         return "albums/index";
     }

@@ -15,22 +15,28 @@
  		</div>
  		<div th:fragment="menu" class="menu-bar">
  			<div>
-				<a th:href="@{/}">HOME</a>
+				<a th:href="@{/timeline}" th:if="${selectedMenuItem!='TIMELINE'}">TIMELINE</a>
+				<span th:if="${selectedMenuItem=='TIMELINE'}">TIMELINE</span>
  			</div>
  			<div>
-				<a th:href="@{/timeline}">TIMELINE</a>
+				<a th:href="@{/albums}" th:if="${selectedMenuItem!='ALBUMS'}">ALBUMS</a>
+				<span th:if="${selectedMenuItem=='ALBUMS'}">ALBUMS</span>
  			</div>
  			<div>
-				<a th:href="@{/albums}">ALBUMS</a>
+				<a th:href="@{/search}" th:if="${selectedMenuItem!='SEARCH'}">SEARCH</a>
+				<span th:if="${selectedMenuItem=='SEARCH'}">SEARCH</span>
  			</div>
  			<div>
-				<a th:href="@{/import}">IMPORT</a>
+				<a th:href="@{/import}" th:if="${selectedMenuItem!='IMPORT'}">IMPORT</a>
+				<span th:if="${selectedMenuItem=='IMPORT'}">IMPORT</span>
  			</div>
  			<div>
-				<a th:href="@{/tools}">TOOLS</a>
+				<a th:href="@{/tools}" th:if="${selectedMenuItem!='TOOLS'}">TOOLS</a>
+				<span th:if="${selectedMenuItem=='TOOLS'}">TOOLS</span>
  			</div>
  			<div>
-				<a th:href="@{/console}">CONSOLE</a>
+				<a th:href="@{/console}" th:if="${selectedMenuItem!='CONSOLE'}">CONSOLE</a>
+				<span th:if="${selectedMenuItem=='CONSOLE'}">CONSOLE</span>
  			</div>
  		</div>
  		<div th:fragment="filenameSubheader" class="filename-bar">

@@ -35,12 +35,18 @@ public class TimelineController {
         LOG.info(String.format("archiveFolder=%s", this.archiveFolder));
     }
 
+    @RequestMapping("/")
+    public String home() {
+        return "redirect:/timeline";
+    }
+
     @RequestMapping("/timeline")
     public String timeline(Model model) {
 
         List<Pair<Year, Long>> years = archiveSearchService.getYearCounts().collect(Collectors.toList());
 
         model.addAttribute("years", years);
+        model.addAttribute("selectedMenuItem", "TIMELINE");
 
         return "timeline/index";
     }
@@ -49,12 +55,13 @@ public class TimelineController {
     public String timeline(Model model, @PathVariable("year") Year year) {
 
         List<Pair<Year, Long>> years = archiveSearchService.getYearCounts().collect(Collectors.toList());
-        
+
         List<Pair<YearMonth, Long>> months = archiveSearchService.getMonthCounts(year).collect(Collectors.toList());
 
         model.addAttribute("years", years);
         model.addAttribute("months", months);
         model.addAttribute("selectedYear", year);
+        model.addAttribute("selectedMenuItem", "TIMELINE");
 
         return "timeline/index";
     }
@@ -73,19 +80,22 @@ public class TimelineController {
         model.addAttribute("days", days);
         model.addAttribute("selectedYear", year);
         model.addAttribute("selectedMonth", yearMonth);
+        model.addAttribute("selectedMenuItem", "TIMELINE");
 
         return "timeline/index";
     }
 
     @RequestMapping("/timeline/{year}/{month}/{day}")
-    public String timeline(Model model, @PathVariable("year") Year year, @PathVariable("month") int month, @PathVariable("day") int day) {
+    public String timeline(Model model, @PathVariable("year") Year year, @PathVariable("month") int month,
+            @PathVariable("day") int day) {
 
         LocalDate localDate = LocalDate.of(year.getValue(), month, day);
 
         List<Pair<Year, Long>> years = archiveSearchService.getYearCounts().collect(Collectors.toList());
         List<Pair<YearMonth, Long>> months = archiveSearchService.getMonthCounts(year).collect(Collectors.toList());
-        List<Pair<LocalDate, Long>> days = archiveSearchService.getDayCounts(YearMonth.from(localDate)).collect(Collectors.toList());
-        
+        List<Pair<LocalDate, Long>> days = archiveSearchService.getDayCounts(YearMonth.from(localDate))
+                .collect(Collectors.toList());
+
         List<MediaFile> mediaFiles = archiveSearchService.findByDate(localDate).collect(Collectors.toList());
 
         model.addAttribute("years", years);
@@ -95,6 +105,7 @@ public class TimelineController {
         model.addAttribute("selectedMonth", YearMonth.from(localDate));
         model.addAttribute("selectedDay", localDate);
         model.addAttribute("mediaFiles", mediaFiles);
+        model.addAttribute("selectedMenuItem", "TIMELINE");
 
         return "timeline/index";
     }

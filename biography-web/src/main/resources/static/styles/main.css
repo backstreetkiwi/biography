@@ -55,8 +55,16 @@ div.menu-bar div {
     background-color: #292929;
 }
 
+/* clickable menu item */
 div.menu-bar div a {
 	color: #808080;
+	font-size: 20px;
+	text-decoration: none;
+}
+
+/* selected (= not clickable) menu item */
+div.menu-bar div span {
+	color: #fbea58;
 	font-size: 20px;
 	text-decoration: none;
 }

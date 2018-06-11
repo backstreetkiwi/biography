@@ -49,6 +49,7 @@ public class ToolsController {
 
 	@RequestMapping("/tools")
 	public String statistics(Model model) {
+        model.addAttribute("selectedMenuItem", "TOOLS");
 		return "tools/index";
 	}
 
