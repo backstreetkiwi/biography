@@ -1,0 +1,16 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+	<head>
+        <title>Biography</title> 
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	</head>
+	<body>
+		<div th:fragment="mediaFiles" class="media-files">
+			<div th:each="mediaFile,iter : ${mediaFiles}">
+				<a th:href="@{/file/{fileName}/(fileName=${mediaFile.fileName})}"
+					th:text="${#strings.substring(mediaFile.fileName, 0, 20)} + ':&nbsp;&nbsp;' + ${mediaFile.description} + ''"></a>
+					<span class="album-tag" th:each="album, iter : ${mediaFile.albums}" th:text="${album}"></span>
+			</div>
+		</div>
+ 	</body>
+</html>

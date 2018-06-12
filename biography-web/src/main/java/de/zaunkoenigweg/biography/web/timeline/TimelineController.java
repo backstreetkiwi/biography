@@ -1,6 +1,5 @@
 package de.zaunkoenigweg.biography.web.timeline;
 
-import java.io.File;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.Year;
@@ -24,15 +23,11 @@ public class TimelineController {
 
     private final static Log LOG = LogFactory.getLog(TimelineController.class);
 
-    private File archiveFolder;
-
     private ArchiveSearchService archiveSearchService;
 
-    public TimelineController(File archiveFolder, ArchiveSearchService archiveSearchService) {
-        this.archiveFolder = archiveFolder;
+    public TimelineController(ArchiveSearchService archiveSearchService) {
         this.archiveSearchService = archiveSearchService;
         LOG.info("TimelineController started.");
-        LOG.info(String.format("archiveFolder=%s", this.archiveFolder));
     }
 
     @RequestMapping("/")

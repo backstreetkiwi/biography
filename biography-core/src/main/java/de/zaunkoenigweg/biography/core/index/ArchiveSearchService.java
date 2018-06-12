@@ -49,11 +49,11 @@ public class ArchiveSearchService {
         LOG.info("Index stopped.");
     }
 
-    public Stream<String> findByDescription(String queryString) {
+    public Stream<MediaFile> findByDescription(String queryString) {
         SolrQuery query = new SolrQuery();
         query.setQuery(String.format("%s:\"%s\"", Index.FIELD_DESCRIPTION, queryString));
         query.setRows(1000);
-        return query(query, response -> response.getResults().stream().map(doc -> String.format("%s -> '%s'", doc.get(Index.FIELD_ID), doc.get(Index.FIELD_DESCRIPTION))));
+        return query(query, response -> response.getResults().stream().map(this::toFileInfo));
     }
     
     public Stream<MediaFile> findByDate(LocalDate dateTime) {

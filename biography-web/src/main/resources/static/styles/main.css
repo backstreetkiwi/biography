@@ -248,3 +248,17 @@ div.import-table table tr td {
 	font-size: 16px;
 }
 
+/* ------------------------------------------ */
+/* SEARCH                                     */
+/* ------------------------------------------ */
+
+div.search-input {
+	text-align: center;
+	padding: 10px;
+}
+
+div.search-input form input.query {
+	width: 600px;
+	font-size: 16px;
+	
+}
