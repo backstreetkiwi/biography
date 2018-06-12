@@ -10,21 +10,39 @@
 	<div th:replace="fragments/page :: header"></div>
 	<div th:replace="fragments/page :: menu"></div>
 	<div class="main-content">
-		<div>
+		<div class="import-upload">
+			<form method="POST" enctype="multipart/form-data" th:action="@{/import/add}">
+				<table>
+					<tr>
+						<td>Image(s) to upload:</td>
+						<td><input type="file" name="file" multiple="multiple"/></td>
+					</tr>
+					<tr>
+						<td></td>
+						<td><input type="submit" value="upload" /></td>
+					</tr>
+				</table>
+			</form>
+		</div>
+		<div class="import-job">
 			<div th:if="${importJob.running}">
 				<span>IMPORT JOB IS RUNNING ...</span>
 			</div>
-			<div th:unless="${importJob.running}">
-				<form method="POST" th:action="@{/import/start}">
-				    Album: <input type="text" name="album"/>
-					<input type="submit" value="START IMPORT JOB" />
-				</form>
-			</div>
+			<form method="POST" th:action="@{/import/start}">
+				<div th:unless="${importJob.running}">
+					    Albumname: <input type="text" name="album" class="albumname"/>
+				</div>
+				<div th:unless="${importJob.running}">
+						<input type="submit" value="Start import job" class="submit-startjob"/>
+				</div>
+			</form>
 			<div th:unless="${importJob.running}">
 				<form method="POST" th:action="@{/import/clear}">
-					<input type="submit" value="CLEAR IMPORT JOB" />
+					<input type="submit" value="Clear import job" class="submit-clearjob"/>
 				</form>
 			</div>
+		</div>
+		<div class="import-table">
 			<table>
 				<tr>
 					<th>File</th>
@@ -33,7 +51,7 @@
 					<th>Datetime original</th>
 					<th>Ready to import?</th>
 					<th>Import Result</th>
-					<th>set date</th>
+					<th>Set date</th>
 				</tr>
 				<tr th:each="file,iter : ${importJob.importFiles}">
 					<td th:text="${file.name}"></td>
@@ -49,18 +67,6 @@
 					</td>
 				</tr>
 			</table>
-			<form method="POST" enctype="multipart/form-data" th:action="@{/import/add}">
-				<table>
-					<tr>
-						<td>Image to upload:</td>
-						<td><input type="file" name="file" multiple="multiple"/></td>
-					</tr>
-					<tr>
-						<td></td>
-						<td><input type="submit" value="upload" /></td>
-					</tr>
-				</table>
-			</form>
 		</div>
 	</div>
 

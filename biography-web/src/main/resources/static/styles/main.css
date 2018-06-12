@@ -110,3 +110,59 @@ div.image-detail-view a img {
 	image-orientation: from-image;
 }
 
+/* ------------------------------------------ */
+/* IMPORT                                     */
+/* ------------------------------------------ */
+div.import-upload {
+	margin: 20px 0px;
+}
+
+div.import-upload form table tr td {
+	color: #808080;
+	font-size: 20px;
+}
+
+div.import-upload form table tr td input {
+	font-size: 20px;
+}
+
+div.import-job {
+	margin: 20px 0px;
+}
+
+div.import-job div {
+	margin: 10px 0px;
+	color: #808080;
+	font-size: 20px;
+}
+
+div.import-job form div input.albumname {
+	width: 300px;
+}
+
+div.import-job form div input.submit-startjob {
+	font-size: 20px;
+}
+
+div.import-job div form input.submit-clearjob {
+	font-size: 20px;
+}
+
+div.import-table {
+	margin: 20px 0px;
+}
+
+div.import-table table tr th {
+	text-align: left;
+	padding: 5px 20px 5px 0px;
+	font-size: 16px;
+	text-decoration: underline;
+}
+
+div.import-table table tr td {
+	text-align: left;
+	padding: 5px 20px 5px 0px;
+	font-size: 16px;
+}
+
+
