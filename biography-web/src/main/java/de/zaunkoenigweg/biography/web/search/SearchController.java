@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import de.zaunkoenigweg.biography.core.index.ArchiveSearchService;
+import de.zaunkoenigweg.biography.core.index.ArchiveSearchService.QueryMode;
 import de.zaunkoenigweg.biography.core.index.MediaFile;
 
 @Controller
@@ -30,17 +31,19 @@ public class SearchController {
 
         model.addAttribute("selectedMenuItem", "SEARCH");
         model.addAttribute("q", "");
+        model.addAttribute("mode", QueryMode.ALL.toString());
 
         return "search/index";
     }
 
     @RequestMapping("/search/query/")
-    public String timeline(Model model, @RequestParam("q") String queryString) {
+    public String timeline(Model model, @RequestParam("q") String queryString, @RequestParam("mode") QueryMode queryMode) {
 
-        List<MediaFile> mediaFiles = archiveSearchService.findByDescription(queryString).collect(Collectors.toList());;
+        List<MediaFile> mediaFiles = archiveSearchService.findByDescription(queryString, queryMode).collect(Collectors.toList());;
         
         model.addAttribute("selectedMenuItem", "SEARCH");
         model.addAttribute("q", queryString);
+        model.addAttribute("mode", queryMode.toString());
         model.addAttribute("mediaFiles", mediaFiles);
 
         return "search/index";

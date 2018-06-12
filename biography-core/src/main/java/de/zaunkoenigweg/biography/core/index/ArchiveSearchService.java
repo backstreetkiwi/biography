@@ -4,14 +4,18 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.Year;
 import java.time.YearMonth;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.PreDestroy;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -31,6 +35,10 @@ public class ArchiveSearchService {
     private final static Log LOG = LogFactory.getLog(ArchiveSearchService.class);
 
     private String solrIndexUrl;
+    
+    public enum QueryMode {
+        ANY, ALL;
+    }
 
 //    private final static Predicate<Count> COUNT_NOT_EMPTY = count -> count.getCount() > 0;
 //    private final static Comparator<Count> COMPARE_COUNT_BY_NUMERIC_NAME = Comparator.comparingInt(count -> Integer.valueOf(count.getName()));
@@ -49,11 +57,18 @@ public class ArchiveSearchService {
         LOG.info("Index stopped.");
     }
 
-    public Stream<MediaFile> findByDescription(String queryString) {
+    public Stream<MediaFile> findByDescription(String searchString, QueryMode mode) {
         SolrQuery query = new SolrQuery();
-        query.setQuery(String.format("%s:\"%s\"", Index.FIELD_DESCRIPTION, queryString));
+        String queryString = Arrays.stream(StringUtils.split(searchString))
+            .map(querySnippet(Index.FIELD_DESCRIPTION, mode))
+            .collect(Collectors.joining(" "));
+        query.setQuery(queryString);
         query.setRows(1000);
         return query(query, response -> response.getResults().stream().map(this::toFileInfo));
+    }
+    
+    private UnaryOperator<String> querySnippet(String fieldName, QueryMode mode) {
+        return token -> String.format("%s%s:%s", mode==QueryMode.ALL ? "+" : "", fieldName, token);
     }
     
     public Stream<MediaFile> findByDate(LocalDate dateTime) {

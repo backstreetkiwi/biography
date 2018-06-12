@@ -13,6 +13,10 @@
 		<div class="search-input">
 			<form method="GET" th:action="@{/search/query/}">
 				<input type="text" name="q" autocomplete="off" class="query" th:value="${q}"></input>
+				<input th:if="${mode=='ALL'}" type="radio" name="mode" value="ALL" th:text="${'all words'}" checked="checked"></input>
+				<input th:if="${mode!='ALL'}" type="radio" name="mode" value="ALL" th:text="${'all words'}"></input>
+				<input th:if="${mode=='ANY'}" type="radio" name="mode" value="ANY" th:text="${'any word'}" checked="checked"></input>
+				<input th:if="${mode!='ANY'}" type="radio" name="mode" value="ANY" th:text="${'any word'}"></input>
 			</form>
 		</div>
 		<div class="search-output">
