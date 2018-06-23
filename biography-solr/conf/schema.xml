@@ -21,6 +21,7 @@
     <field name="yearLongPoint" type="long" indexed="true" stored="true" required="true" docValues="true"/>
     <field name="yearMonthLongPoint" type="long" indexed="true" stored="true" required="true" docValues="true"/>
     <field name="dateLongPoint" type="long" indexed="true" stored="true" required="true" docValues="true"/>
+    <field name="dateTimeLongPoint" type="long" indexed="true" stored="true" required="true" docValues="true"/>
     <dynamicField name="*" type="string" indexed="true" stored="true" />
   </fields>
 </schema>

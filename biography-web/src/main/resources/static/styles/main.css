@@ -62,6 +62,13 @@ div.menu-bar div a {
 	text-decoration: none;
 }
 
+/* clickable menu item (hover) */
+div.menu-bar div a :hover {
+	color: #808080;
+	font-size: 20px;
+	text-decoration: underline;
+}
+
 /* selected (= not clickable) menu item */
 div.menu-bar div span {
 	color: #fbea58;
@@ -92,10 +99,10 @@ div.filename-bar div span {
 	text-decoration: none;
 }
 
-div.menu-bar div a :hover {
-	color: #808080;
+div.filename-bar div a {
+	color: #fbea58;
 	font-size: 20px;
-	text-decoration: underline;
+	text-decoration: none;
 }
 
 div.main-content {
@@ -112,10 +119,36 @@ div.image-detail-view {
 	height: 100%;
 }
 
-div.image-detail-view a img {
-	max-width: 100%;
-	max-height:100%;
+div.image-detail-view-image {
+	float:left;
+}
+
+div.image-detail-view-image a img {
+	max-height:480px;
 	image-orientation: from-image;
+}
+
+div.image-detail-view-data {
+	float:right;
+}
+
+div.image-detail-view-data table tr th {
+	color: #808080;
+	font-size: 18px;
+	text-decoration: bold;
+	text-align: left;
+	padding: 5px 40px 5px 5px;
+}
+
+div.image-detail-view-data table tr td {
+	color: #808080;
+	font-size: 18px;
+	text-align: left;
+	padding: 5px 40px 5px 5px;
+}
+
+div.image-detail-view-data table {
+	margin-top: 20px;
 }
 
 div.timeline-menu {

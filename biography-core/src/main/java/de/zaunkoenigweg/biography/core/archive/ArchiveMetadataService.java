@@ -79,6 +79,24 @@ public class ArchiveMetadataService {
     	}
     }
     
+    public void removeAlbums(File file, Set<Album> albums) {
+    	BiographyMetadata metadata = getMetadata(file);
+    	metadata = metadata.withReducedAlbums(albums);
+    	Optional<MediaFileType> mediaFileType = MediaFileType.of(file);
+    	if(!mediaFileType.isPresent()) {
+    		throw new IllegalStateException(String.format("The file type '%s' is not known.", file.getAbsolutePath()));
+    	}
+		if(ExifData.supports(mediaFileType.get())) {
+			metadataService.writeMetadataIntoExif(file, metadata);
+    	} else {
+    		metadataService.writeMetadataToJsonFile(getMetadataJsonFile(file), metadata);
+    	}
+    }
+    
+    public void removeAlbum(File file, Album album) {
+    	removeAlbums(file, Collections.singleton(album));
+    }
+    
     public void addAlbums(File file, Set<Album> albums) {
     	BiographyMetadata metadata = getMetadata(file);
     	metadata = metadata.withMergedAlbums(albums);
@@ -97,6 +115,26 @@ public class ArchiveMetadataService {
     	addAlbums(file, Collections.singleton(album));
     }
     
+    public String fixSha1InMetadata(File file) {
+    	Optional<MediaFileType> mediaFileType = MediaFileType.of(file);
+    	if(!mediaFileType.isPresent()) {
+    		throw new IllegalStateException(String.format("The file type '%s' is not known.", file.getAbsolutePath()));
+    	}
+    	BiographyMetadata metadata = null;
+		if(ExifData.supports(mediaFileType.get())) {
+			metadata = metadataService.readMetadataFromExif(file);
+    	} else {
+    		metadata = metadataService.readMetadataFromJsonFile(getMetadataJsonFile(file));
+    	}
+    	BiographyMetadata newMetadata = new BiographyMetadata(metadata.getDateTimeOriginal(), BiographyFileUtils.getSha1FromArchiveFilename(file), metadata.getDescription(), metadata.getAlbums());
+		if(ExifData.supports(mediaFileType.get())) {
+			metadataService.writeMetadataIntoExif(file, newMetadata);
+    	} else {
+    		metadataService.writeMetadataToJsonFile(getMetadataJsonFile(file), newMetadata);
+    	}
+    	
+    	return StringUtils.trimToEmpty(metadata.getDescription());
+    }
     
     private File getMetadataJsonFile(File file) {
     	return new File(file.getParent(), String.format("b%s.json", BiographyFileUtils.getSha1FromArchiveFilename(file)));

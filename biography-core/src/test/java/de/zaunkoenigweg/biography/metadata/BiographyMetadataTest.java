@@ -22,18 +22,21 @@ public class BiographyMetadataTest {
     private static final Album ALBUM_2 = new Album("album_2_title_gdtfbf");
     private static final LocalDateTime DATE_TIME_ORIGINAL = LocalDateTime.of(2005, 02, 05, 15, 27, 33, 123000000);
 	private static final Set<Album> ALBUMS = new HashSet<>(Arrays.asList(ALBUM_1, ALBUM_2));
+	private static final String SHA_1 = "10dabe94c1b81e8b2186472f58b99755cf351166";
 	private static final String DESCRIPTION = "description";
-	private static final BiographyMetadata BIOGRAPHY_METADATA = new BiographyMetadata(DATE_TIME_ORIGINAL, DESCRIPTION, ALBUMS);
+	private static final BiographyMetadata BIOGRAPHY_METADATA = new BiographyMetadata(DATE_TIME_ORIGINAL, SHA_1, DESCRIPTION, ALBUMS);
 	private String json;
 
 	@Before
     public void setUp() throws IOException {
 		json = String.format(
 				"{\"dateTimeOriginal\":\"2005-02-05T15:27:33.123\","
+				+ "\"sha1\":\"%s\","
 				+ "\"description\":\"%s\","
 				+ "\"albums\":[{\"title\":\"%s\"},"
 				+ "{\"title\":\"%s\"}]}", 
-				DESCRIPTION, 
+				SHA_1,
+				DESCRIPTION,
 				ALBUM_1.getTitle(), 
 				ALBUM_2.getTitle());
 		
@@ -51,6 +54,7 @@ public class BiographyMetadataTest {
     	String json = BIOGRAPHY_METADATA.toJson();
     	assertNotNull(json);
     	assertTrue(StringUtils.isNotBlank(json));
+    	assertTrue(StringUtils.contains(json, SHA_1));
     	assertTrue(StringUtils.contains(json, ALBUM_1.getTitle()));
     	assertTrue(StringUtils.contains(json, ALBUM_2.getTitle()));
     }
@@ -68,6 +72,7 @@ public class BiographyMetadataTest {
         BiographyMetadata biographyMetadata = BiographyMetadata.from(json);
         assertNotNull(biographyMetadata);
         assertNull(biographyMetadata.getDateTimeOriginal());
+        assertNull(biographyMetadata.getSha1());
         assertNull(biographyMetadata.getDescription());
         assertNotNull(biographyMetadata.getAlbums());
         assertEquals(0, biographyMetadata.getAlbums().size());

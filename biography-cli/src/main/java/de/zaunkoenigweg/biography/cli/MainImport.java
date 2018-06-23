@@ -1,15 +1,7 @@
 package de.zaunkoenigweg.biography.cli;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.support.AbstractApplicationContext;
-
-import de.zaunkoenigweg.biography.core.archive.ArchiveImportService;
 
 public class MainImport {
     

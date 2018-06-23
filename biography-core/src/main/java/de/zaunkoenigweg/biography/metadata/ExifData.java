@@ -52,6 +52,7 @@ public class ExifData {
     private LocalDateTime dateTimeOriginal;
     private Optional<String> description;
     private Optional<String> userComment;
+    private Optional<String> cameraModel;
     
     private ExifData() {
     }
@@ -111,6 +112,7 @@ public class ExifData {
         exifData.dateTimeOriginal = readDateTimeOriginal(jpegMetadata, file);
         exifData.description = Optional.ofNullable(readDescription(jpegMetadata, file, readDescriptionCharset));
         exifData.userComment = Optional.ofNullable(readUserComment(jpegMetadata, file));
+        exifData.cameraModel = Optional.ofNullable(readCameraModel(jpegMetadata, file));
 
         return exifData;
     }
@@ -133,11 +135,13 @@ public class ExifData {
      */
     public static void setDescription(File file, String description) {
 
-        if (StringUtils.isBlank(description)) {
-            return;
+    	String descriptionToWriteToExif = "";
+    	
+        if (StringUtils.isNotBlank(description)) {
+            descriptionToWriteToExif = description;
         }
         
-        byte[] descriptionBytes = description.getBytes(StandardCharsets.UTF_8);
+        byte[] descriptionBytes = descriptionToWriteToExif.getBytes(StandardCharsets.UTF_8);
         setField(file, TiffOutputSet::getOrCreateRootDirectory, TiffTagConstants.TIFF_TAG_IMAGE_DESCRIPTION, FieldType.ASCII, descriptionBytes);
     }
     
@@ -321,6 +325,35 @@ public class ExifData {
     }
 
     /**
+     * Reads camera model from given EXIF metadata
+     * 
+     * @param metadata image metadata
+     * @param file original file, only used for logging purposes
+     * @return Camera make and model
+     */
+    private static String readCameraModel(JpegImageMetadata metadata, File file) {
+
+        if (metadata == null) {
+            LOG.trace(String.format("File %s: metadata is null", file.getAbsolutePath()));
+            return null;
+        }
+
+        TiffField cameraModel = metadata.findEXIFValueWithExactMatch(TiffTagConstants.TIFF_TAG_MODEL);
+
+        if (cameraModel == null) {
+            LOG.trace(String.format("File %s has no TIFF_TAG_MODEL", file.getAbsolutePath()));
+            return null;
+        }
+
+        byte[] modelRaw = cameraModel.getByteArrayValue();
+        int nullPosition = ArrayUtils.indexOf(modelRaw, (byte) 0);
+        if (nullPosition != -1) {
+            modelRaw = ArrayUtils.subarray(modelRaw, 0, nullPosition);
+        }
+        return new String(modelRaw, StandardCharsets.ISO_8859_1);
+    }
+
+    /**
      * Reads USER_COMMENT from given EXIF metadata
      * 
      * @param metadata image metadata
@@ -363,6 +396,10 @@ public class ExifData {
 
     public Optional<String> getDescription() {
         return description;
+    }
+
+    public Optional<String> getCameraModel() {
+        return cameraModel;
     }
 
     public Optional<String> getUserComment() {

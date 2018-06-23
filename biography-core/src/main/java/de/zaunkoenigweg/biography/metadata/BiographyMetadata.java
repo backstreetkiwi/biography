@@ -23,6 +23,7 @@ import com.google.gson.JsonSyntaxException;
 public class BiographyMetadata {
 
     private LocalDateTime dateTimeOriginal;
+    private String sha1;
     private String description;
     private Set<Album> albums = new HashSet<>();
 
@@ -47,8 +48,9 @@ public class BiographyMetadata {
     private BiographyMetadata() {
     }
 
-    public BiographyMetadata(LocalDateTime dateTimeOriginal, String description, Set<Album> albums) {
+    public BiographyMetadata(LocalDateTime dateTimeOriginal, String sha1, String description, Set<Album> albums) {
         this.dateTimeOriginal = dateTimeOriginal;
+        this.sha1 = sha1;
         this.description = description;
         this.albums = albums;
     }
@@ -81,8 +83,15 @@ public class BiographyMetadata {
         return dateTimeOriginal;
     }
 
-    public String getDescription() {
-        return description;
+    public String getSha1() {
+		return sha1;
+	}
+
+	public String getDescription() {
+    	if(description==null) {
+    		return null;
+    	}
+        return description.trim();
     }
 
     public Set<Album> getAlbums() {
@@ -98,7 +107,7 @@ public class BiographyMetadata {
      * @return metadata object with new description
      */
     public BiographyMetadata withDescription(String newDescription) {
-        return new BiographyMetadata(this.dateTimeOriginal, newDescription, Collections.unmodifiableSet(albums));
+        return new BiographyMetadata(this.dateTimeOriginal, this.sha1, newDescription, Collections.unmodifiableSet(albums));
     }
 
     /**
@@ -110,7 +119,7 @@ public class BiographyMetadata {
      * @return metadata object with new description
      */
     public BiographyMetadata withAlbums(Set<Album> newAlbums) {
-        return new BiographyMetadata(this.dateTimeOriginal, this.description, Collections.unmodifiableSet(newAlbums));
+        return new BiographyMetadata(this.dateTimeOriginal, this.sha1, this.description, Collections.unmodifiableSet(newAlbums));
     }
 
 
@@ -120,51 +129,70 @@ public class BiographyMetadata {
      * 
      * @param newAlbums
      *            list of albums to merge into the existing album list
-     * @return metadata object with new description
+     * @return metadata object with new album set
      */
     public BiographyMetadata withMergedAlbums(Set<Album> newAlbums) {
         HashSet<Album> mergedAlbums = new HashSet<>(this.albums);
         mergedAlbums.addAll(newAlbums);
-        return new BiographyMetadata(this.dateTimeOriginal, this.description,
+        return new BiographyMetadata(this.dateTimeOriginal, this.sha1, this.description,
                 Collections.unmodifiableSet(mergedAlbums));
     }
 
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((albums == null) ? 0 : albums.hashCode());
-        result = prime * result + ((dateTimeOriginal == null) ? 0 : dateTimeOriginal.hashCode());
-        result = prime * result + ((description == null) ? 0 : description.hashCode());
-        return result;
+    /**
+     * Produces a metadata object that contains the same data as this one, with the albums reduced by the albums of the
+     * given album list.
+     * 
+     * @param albumsToRemove
+     *            list of albums to subtract from the existing album list (set, actually)
+     * @return metadata object with new album set
+     */
+    public BiographyMetadata withReducedAlbums(Set<Album> albumsToRemove) {
+        HashSet<Album> reducedAlbums = new HashSet<>(this.albums);
+        reducedAlbums.removeAll(albumsToRemove);
+        return new BiographyMetadata(this.dateTimeOriginal, this.sha1, this.description,
+                Collections.unmodifiableSet(reducedAlbums));
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        BiographyMetadata other = (BiographyMetadata) obj;
-        if (albums == null) {
-            if (other.albums != null)
-                return false;
-        } else if (!albums.equals(other.albums))
-            return false;
-        if (dateTimeOriginal == null) {
-            if (other.dateTimeOriginal != null)
-                return false;
-        } else if (!dateTimeOriginal.equals(other.dateTimeOriginal))
-            return false;
-        if (description == null) {
-            if (other.description != null)
-                return false;
-        } else if (!description.equals(other.description))
-            return false;
-        return true;
-    }
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((albums == null) ? 0 : albums.hashCode());
+		result = prime * result + ((dateTimeOriginal == null) ? 0 : dateTimeOriginal.hashCode());
+		result = prime * result + ((description == null) ? 0 : description.hashCode());
+		result = prime * result + ((sha1 == null) ? 0 : sha1.hashCode());
+		return result;
+	}
 
-
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		BiographyMetadata other = (BiographyMetadata) obj;
+		if (albums == null) {
+			if (other.albums != null)
+				return false;
+		} else if (!albums.equals(other.albums))
+			return false;
+		if (dateTimeOriginal == null) {
+			if (other.dateTimeOriginal != null)
+				return false;
+		} else if (!dateTimeOriginal.equals(other.dateTimeOriginal))
+			return false;
+		if (description == null) {
+			if (other.description != null)
+				return false;
+		} else if (!description.equals(other.description))
+			return false;
+		if (sha1 == null) {
+			if (other.sha1 != null)
+				return false;
+		} else if (!sha1.equals(other.sha1))
+			return false;
+		return true;
+	}
 }

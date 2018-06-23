@@ -186,14 +186,13 @@ public class ArchiveValidationServiceTest {
 		String imageFileName = "2017-05-12--21-25-08---2d1d6ced6c4df4f018f10f7697e9453fc1cfc86f.jpg";
 		File imageFile = new File(archiveFolder, "2017/05/" + imageFileName);
         TestUtil.copyFromResources("/archivevalidationservicetest/" + imageFileName, imageFile);
+        
         assertTrue(sut.isHashcodeCorrect(imageFile));
         
 		String imageFileNotMatchingHashcodeName = "2017-05-12--21-25-08---affeaffeaffeaffeaffeaffeaffeaffeaffeaffe.jpg";
 		File imageFileNotMatchingHashcode = new File(archiveFolder, "2017/05/" + imageFileNotMatchingHashcodeName);
         TestUtil.copyFromResources("/archivevalidationservicetest/" + imageFileNotMatchingHashcodeName, imageFileNotMatchingHashcode);
         assertFalse(sut.isHashcodeCorrect(imageFileNotMatchingHashcode));
-        
-        
 	}
 
 }

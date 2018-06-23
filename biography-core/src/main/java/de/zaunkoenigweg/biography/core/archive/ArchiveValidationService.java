@@ -128,10 +128,10 @@ public class ArchiveValidationService {
         checks.add(Pair.of("No mismatch between EXIF metadata and BiographyMetadata", Boolean.TRUE));
 
         if (!isHashcodeCorrect(file)) {
-            checks.add(Pair.of("SHA-1 hashcode does not match media file content", Boolean.FALSE));
+            checks.add(Pair.of("SHA-1 hashcode in the filename does not match the hashcode in the BiographyMetadata", Boolean.FALSE));
             return Pair.of(Boolean.FALSE, checks);
         }
-        checks.add(Pair.of("SHA-1 hashcode matches media file content", Boolean.TRUE));
+        checks.add(Pair.of("SHA-1 hashcode in the filename does matches the hashcode in the BiographyMetadata", Boolean.TRUE));
 
         return Pair.of(Boolean.TRUE, checks);
     }
@@ -306,11 +306,11 @@ public class ArchiveValidationService {
     }
 
     /**
-     * Is the hashcode in the filename matching the file content?
+     * Is the hashcode in the filename matching the hashcode in the metadata?
      * 
      * @param file
      *            media file
-     * @return Is the hashcode in the filename matching the file content?
+     * @return Is the hashcode in the filename matching the hashcode in the metadata?
      * @throws {@link
      *             NullPointerException} if the file object is <code>null</code>
      * @throws {@link
@@ -324,7 +324,21 @@ public class ArchiveValidationService {
                     String.format("File '%s' does not have biography metadata attached.", file.getAbsolutePath()));
         }
 
-        return BiographyFileUtils.getSha1FromArchiveFilename(file).equals(BiographyFileUtils.sha1(file));
+        Optional<MediaFileType> mediaFileType = MediaFileType.of(file);
+        if (!mediaFileType.isPresent()) {
+            LOG.warn("Unknown Media File Type."); // should never happen due to filename check
+            return false;
+        }
+
+        BiographyMetadata metadata;
+
+        if (ExifData.supports(mediaFileType.get())) {
+            metadata = metadataService.readMetadataFromExif(file);
+        } else {
+            metadata = metadataService.readMetadataFromJsonFile(getMetadataJsonFile(file));
+        }
+
+        return BiographyFileUtils.getSha1FromArchiveFilename(file).equals(metadata.getSha1());
     }
 
     private File getMetadataJsonFile(File file) {

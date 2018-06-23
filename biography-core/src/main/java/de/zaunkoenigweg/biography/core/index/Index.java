@@ -1,6 +1,7 @@
 package de.zaunkoenigweg.biography.core.index;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 
@@ -13,13 +14,20 @@ public interface Index {
     String FIELD_YEAR_LONG_POINT = "yearLongPoint";
     String FIELD_YEAR_MONTH_LONG_POINT = "yearMonthLongPoint";
     String FIELD_DATE_LONG_POINT = "dateLongPoint";
+    String FIELD_DATETIME_LONG_POINT = "dateTimeLongPoint";
 
     public static final DateTimeFormatter YEAR_MONTH_LONG_POINT_FORMATTER = DateTimeFormatter.ofPattern("yyyyMM");
     
     public static final DateTimeFormatter LOCAL_DATE_LONG_POINT_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
     
+    public static final DateTimeFormatter LOCAL_DATETIME_LONG_POINT_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+    
     public static String localDateToLongPoint(LocalDate localDate) {
-    		return LOCAL_DATE_LONG_POINT_FORMATTER.format(localDate);
+		return LOCAL_DATE_LONG_POINT_FORMATTER.format(localDate);
+    }
+
+    public static String localDateTimeToLongPoint(LocalDateTime localDateTime) {
+		return LOCAL_DATETIME_LONG_POINT_FORMATTER.format(localDateTime);
     }
 
     public static LocalDate longPointToLocalDate(String longPoint) {

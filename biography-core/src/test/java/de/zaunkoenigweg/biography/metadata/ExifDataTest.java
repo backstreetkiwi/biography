@@ -213,6 +213,16 @@ public class ExifDataTest {
         assertEquals("Landeanflug auf NZ, Nordteil der S\u00fcdinsel", exifData.getDescription().get());
     }
     
+    @Test
+    public void testReadCameraMakeModel() {
+        File file = new File(getClass().getResource("/exifdatatest/NikonD60.jpg").getFile());
+        ExifData exifData = ExifData.of(file);
+        assertNotNull(exifData);
+        assertNotNull(exifData.getCameraModel());
+        assertTrue(exifData.getCameraModel().isPresent());
+        assertEquals("NIKON D70", exifData.getCameraModel().get());
+    }
+
     private int toNanos(int millis) {
     	return millis * 1000000;
     }

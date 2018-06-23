@@ -7,6 +7,9 @@ import java.time.YearMonth;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -17,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import de.zaunkoenigweg.biography.core.index.ArchiveSearchService;
 import de.zaunkoenigweg.biography.core.index.MediaFile;
+import de.zaunkoenigweg.biography.web.BackLink;
 
 @Controller
 public class TimelineController {
@@ -24,7 +28,7 @@ public class TimelineController {
     private final static Log LOG = LogFactory.getLog(TimelineController.class);
 
     private ArchiveSearchService archiveSearchService;
-
+    
     public TimelineController(ArchiveSearchService archiveSearchService) {
         this.archiveSearchService = archiveSearchService;
         LOG.info("TimelineController started.");
@@ -81,7 +85,7 @@ public class TimelineController {
     }
 
     @RequestMapping("/timeline/{year}/{month}/{day}")
-    public String timeline(Model model, @PathVariable("year") Year year, @PathVariable("month") int month,
+    public String timeline(HttpSession session, HttpServletRequest request, Model model, @PathVariable("year") Year year, @PathVariable("month") int month,
             @PathVariable("day") int day) {
 
         LocalDate localDate = LocalDate.of(year.getValue(), month, day);
@@ -93,6 +97,9 @@ public class TimelineController {
 
         List<MediaFile> mediaFiles = archiveSearchService.findByDate(localDate).collect(Collectors.toList());
 
+        BackLink backLink = new BackLink("BACK TO TIMELINE", request.getRequestURI());
+		session.setAttribute(BackLink.class.getName(), backLink);
+        
         model.addAttribute("years", years);
         model.addAttribute("months", months);
         model.addAttribute("days", days);

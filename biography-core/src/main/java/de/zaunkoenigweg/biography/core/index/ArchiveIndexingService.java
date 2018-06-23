@@ -67,6 +67,7 @@ public class ArchiveIndexingService {
 		document.addField(Index.FIELD_ALBUMS, albumTitles);
 		document.addField(Index.FIELD_DATETIME_ORIGINAL, dateTime.toString());
 		document.addField(Index.FIELD_DATE_LONG_POINT, Long.valueOf(Index.localDateToLongPoint(dateTime.toLocalDate())));
+		document.addField(Index.FIELD_DATETIME_LONG_POINT, Long.valueOf(Index.localDateTimeToLongPoint(dateTime)));
 		document.addField(Index.FIELD_YEAR_LONG_POINT, dateTime.getYear());
 		document.addField(Index.FIELD_YEAR_MONTH_LONG_POINT, dateTime.getYear() * 100 + dateTime.getMonthValue());
 		return document;
@@ -88,16 +89,16 @@ public class ArchiveIndexingService {
 
 			List<File> mediaFiles = BiographyFileUtils.getMediaFiles(archiveFolder);
 
-			mediaFiles.stream().filter(archiveValidationService::isValid).map(this::toSolrDocument)
-					.forEach(document -> {
-						try {
-							UpdateResponse response = solr.add(document);
-							LOG.info(response);
-						} catch (IOException | SolrServerException e) {
-							LOG.error("Document could not be written to Solr.");
-							LOG.error(e);
-						}
-					});
+			List<SolrInputDocument> documents = mediaFiles.stream().filter(archiveValidationService::isValid).map(this::toSolrDocument).collect(Collectors.toList());
+			
+			try {
+				UpdateResponse response = solr.add(documents);
+				LOG.info(response);
+			} catch (IOException | SolrServerException e) {
+				LOG.error("Document could not be written to Solr.");
+				LOG.error(e);
+			}
+			
 
 			solr.commit();
 
@@ -107,4 +108,30 @@ public class ArchiveIndexingService {
 		}
 	}
 
+    /**
+     * Re-indexes the given media file.
+     */
+    public void reIndex(File archiveFile) {
+
+        try {
+
+            SolrClient solr = new HttpSolrClient.Builder(solrIndexUrl).build();
+
+            SolrInputDocument solrDocument = toSolrDocument(archiveFile);
+            
+            try {
+            	UpdateResponse response = solr.add(solrDocument);
+            	LOG.info(response);
+            } catch (IOException | SolrServerException e) {
+            	LOG.error("Document could not be written to Solr.");
+            	LOG.error(e);
+            }
+
+            solr.commit();
+
+        } catch (SolrServerException | IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
 }

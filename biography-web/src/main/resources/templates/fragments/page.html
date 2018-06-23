@@ -40,8 +40,12 @@
  			</div>
  		</div>
  		<div th:fragment="filenameSubheader" class="filename-bar">
+ 			<div th:if="${backLink}">
+	 			<a th:href="@{__${backLink.href}__}" th:text="${backLink.text}"></a>
+	 			<span>&nbsp;|&nbsp;</span>
+ 			</div>
  			<div>
-	 			<span th:text="${filename}"></span>
+	 			<span th:text="${fileName}"></span>
  			</div>
  		</div>
  	</body>

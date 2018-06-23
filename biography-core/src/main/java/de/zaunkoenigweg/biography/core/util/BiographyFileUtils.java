@@ -254,10 +254,10 @@ public class BiographyFileUtils {
 
     };
 
-    public static Path buildArchiveFilename(File archiveFolder, File file, LocalDateTime dateTimeOriginal, MediaFileType mediaFileType) {
+    public static Path buildArchiveFilename(File archiveFolder, File file, LocalDateTime dateTimeOriginal, MediaFileType mediaFileType, String sha1) {
         String folderInArchive = String.format("%04d/%02d", dateTimeOriginal.getYear(), dateTimeOriginal.getMonthValue());
         String fileName = String.format("%04d-%02d-%02d--%02d-%02d-%02d---%s.%s", dateTimeOriginal.getYear(), dateTimeOriginal.getMonthValue(),
-                dateTimeOriginal.getDayOfMonth(), dateTimeOriginal.getHour(), dateTimeOriginal.getMinute(), dateTimeOriginal.getSecond(), sha1(file), mediaFileType.getFileExtension());
+                dateTimeOriginal.getDayOfMonth(), dateTimeOriginal.getHour(), dateTimeOriginal.getMinute(), dateTimeOriginal.getSecond(), sha1, mediaFileType.getFileExtension());
         return Paths.get(archiveFolder.getPath(), folderInArchive, fileName);
     }
     

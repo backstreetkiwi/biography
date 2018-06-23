@@ -91,6 +91,33 @@ public class ToolsController {
 
 	}
 	
+	@RequestMapping("/tools/fix-hashcodes")
+	public String fixHashcode(Model model) {
+
+		Console console = consoles.create("fix hashcodes");
+
+		new Thread(() -> {
+			List<File> mediaFiles = BiographyFileUtils.getMediaFiles(archiveFolder);
+
+			int totalNumberOfFiles = mediaFiles.size();
+			AtomicInteger numberOfCorruptFiles = new AtomicInteger(0);
+
+			mediaFiles.stream().forEach(file -> {
+
+				archiveMetadataService.fixSha1InMetadata(file);
+				console.println(String.format("File '%s' -> [OK]", file.getAbsolutePath()));
+			});
+
+			console.println(String.format("%n%nValidated files #: %d, # of corrupt files: %d%n", totalNumberOfFiles,
+					numberOfCorruptFiles.get()));
+			console.close();
+		}).start();
+		
+
+		return "redirect:/console";
+
+	}
+	
 	@RequestMapping("/tools/inspect-file/{file}")
 	public String dumpFileDetails(Model model, @PathVariable("file")String filename) {
 

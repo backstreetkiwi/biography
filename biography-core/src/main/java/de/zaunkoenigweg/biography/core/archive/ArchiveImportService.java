@@ -15,6 +15,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Component;
 
 import de.zaunkoenigweg.biography.core.MediaFileType;
+import de.zaunkoenigweg.biography.core.index.ArchiveIndexingService;
 import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
 import de.zaunkoenigweg.biography.metadata.Album;
 import de.zaunkoenigweg.biography.metadata.BiographyMetadata;
@@ -27,10 +28,12 @@ public class ArchiveImportService {
     private final static Log LOG = LogFactory.getLog(ArchiveImportService.class);
 
     private MetadataService metadataService;
+    private ArchiveIndexingService archiveIndexingService;
     private File archiveFolder;
 
-    public ArchiveImportService(MetadataService metadataService, File archiveFolder) {
+    public ArchiveImportService(MetadataService metadataService, ArchiveIndexingService archiveIndexingService, File archiveFolder) {
         this.metadataService = metadataService;
+        this.archiveIndexingService = archiveIndexingService;
         this.archiveFolder = archiveFolder;
         LOG.info("ArchiveImportService started.");
         LOG.info(String.format("archiveFolder=%s", this.archiveFolder));
@@ -80,8 +83,10 @@ public class ArchiveImportService {
             
         }
         
+        String sha1 = BiographyFileUtils.sha1(file);
+        
         File archiveFile = BiographyFileUtils.buildArchiveFilename(archiveFolder, file,
-                dateTimeOriginal, mediaFileType.get()).toFile();
+                dateTimeOriginal, mediaFileType.get(), sha1).toFile();
 
         if (archiveFile.exists()) {
             return ImportResult.FILE_ALREADY_ARCHIVED;
@@ -93,12 +98,14 @@ public class ArchiveImportService {
             LOG.error("File cannot be stored in archive.", e);
         }
 
-        setBiographyMetadata(archiveFile, dateTimeOriginal, readLegacyDescription, album);
+        setBiographyMetadata(archiveFile, dateTimeOriginal, sha1, readLegacyDescription, album);
+        
+        archiveIndexingService.reIndex(archiveFile);
 
         return ImportResult.SUCCESS;
     }
 
-    private void setBiographyMetadata(File file, LocalDateTime dateTimeOriginal, boolean readLegacyDescription,
+    private void setBiographyMetadata(File file, LocalDateTime dateTimeOriginal, String sha1, boolean readLegacyDescription,
             String album) {
         MediaFileType mediaFileType = MediaFileType.of(file).get();
         String description = null;
@@ -111,7 +118,7 @@ public class ArchiveImportService {
             albums.add(new Album(StringUtils.trim(album)));
         }
 
-        BiographyMetadata metadata = new BiographyMetadata(dateTimeOriginal, description, albums);
+        BiographyMetadata metadata = new BiographyMetadata(dateTimeOriginal, sha1, description, albums);
 
         if (ExifData.supports(mediaFileType)) {
             metadataService.writeMetadataIntoExif(file, metadata);
