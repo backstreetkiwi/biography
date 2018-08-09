@@ -41,7 +41,7 @@
  		</div>
  		<div th:fragment="filenameSubheader" class="filename-bar">
  			<div th:if="${backLink}">
-	 			<a th:href="@{__${backLink.href}__}" th:text="${backLink.text}"></a>
+	 			<a th:href="@{__${backLink.href}__}" th:text="${backLink.text}" accesskey="b"></a>
 	 			<span>&nbsp;|&nbsp;</span>
  			</div>
  			<div>

@@ -21,7 +21,7 @@
 					<tr th:if="${!editMode}">
 						<th>Description</th>
 						<td th:text="${description}"></td>
-						<td><a
+						<td><a accesskey="e" autofocus
 							th:href="@{/file/{fileName}/edit/(fileName=${fileName})}"
 							th:text="'EDIT'"></a></td>
 					</tr>
@@ -30,7 +30,7 @@
 						<td>
 							<form method="POST"
 								th:action="@{/file/__${fileName}__/save/}">
-								<input type="text" name="description" th:value="${description}" /> 
+								<input class="description" type="text" name="description" th:value="${description}" tabindex="10"/> 
 								<input type="submit" value="Save" />
 							</form>
 						</td>
