@@ -42,8 +42,16 @@
 			</div>
 
 		</div>
+		
+		<div><a	th:if="${!editMode && selectedDay!=null}" th:href="@{/timeline/{year}/{month}/{day}/edit/(year=${selectedYear}, month=${selectedMonth.monthValue}, day=${selectedDay.dayOfMonth})}" th:text="'EDIT'"></a></div>
 
-		<div th:replace="fragments/mediaFiles :: mediaFiles"></div>
+		<form th:if="${editMode}" method="POST"
+			th:action="@{/timeline/__${selectedYear}__/__${selectedMonth.monthValue}__/__${selectedDay.dayOfMonth}__/save}">
+			<input type="submit" value="Save all changes" />
+			<div th:replace="fragments/mediaFiles :: mediaFiles"></div>
+		</form>
+		
+     	<div th:if="${!editMode}"><div th:replace="fragments/mediaFiles :: mediaFiles"></div></div>
 
 	</div>
 

@@ -213,6 +213,15 @@ div.media-files div a {
 	line-height: 25px;
 }
 
+div.media-files div img {
+	max-height:160px;
+	image-orientation: from-image;
+}
+
+div.media-files div input.description {
+	width: 500px;
+}
+
 div.media-files div a:hover {
     text-decoration: underline;
 }

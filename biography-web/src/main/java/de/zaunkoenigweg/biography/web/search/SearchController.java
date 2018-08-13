@@ -51,6 +51,7 @@ public class SearchController {
         model.addAttribute("selectedMenuItem", "SEARCH");
         model.addAttribute("q", queryString);
         model.addAttribute("mode", queryMode.toString());
+        model.addAttribute("editMode", false);
         model.addAttribute("mediaFiles", mediaFiles);
 
         return "search/index";
