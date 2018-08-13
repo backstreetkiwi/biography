@@ -1,21 +1,27 @@
 package de.zaunkoenigweg.biography.web.tools;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import de.zaunkoenigweg.biography.core.archive.ArchiveMetadataService;
 import de.zaunkoenigweg.biography.core.archive.ArchiveValidationService;
 import de.zaunkoenigweg.biography.core.index.ArchiveIndexingService;
 import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
+import de.zaunkoenigweg.biography.metadata.Album;
 import de.zaunkoenigweg.biography.metadata.BiographyMetadata;
 import de.zaunkoenigweg.biography.metadata.ExifData;
 import de.zaunkoenigweg.biography.web.console.Console;
@@ -116,6 +122,45 @@ public class ToolsController {
 
 		return "redirect:/console";
 
+	}
+	
+	@GetMapping("/tools/bulk-tagging")
+	public String bulkTagging(Model model) {
+
+        model.addAttribute("selectedMenuItem", "TOOLS");
+		return "tools/bulk-tagging";
+	}
+	
+	@PostMapping("/tools/bulk-tagging")
+	public String bulkTagging(Model model, @RequestParam("album") String albumname, @RequestParam("files") String files) {
+
+		Console console = consoles.create("bulk-tagging " + albumname);
+
+		new Thread(() -> {
+			console.println(String.format("Bulk tagging '%s'", albumname));
+            if(StringUtils.isBlank(albumname)) {
+            	console.println("Album must not be blank.");
+            	return;
+            }
+            Album album = new Album(albumname);
+            Arrays.stream(StringUtils.split(files)).forEach(filepath -> {
+            	String filename = StringUtils.trim(StringUtils.substringAfterLast(filepath, "/"));
+                File archiveFile = BiographyFileUtils.getArchiveFileFromShortFilename(archiveFolder, filename);
+                if(archiveFile==null) {	
+                	console.println(String.format("'%s' is not a valid archive file.", filename));
+                }
+                console.println(String.format("Tagging '%s'", archiveFile));
+                
+                archiveMetadataService.addAlbum(archiveFile, album);
+
+                //archiveIndexingService.reIndex(archiveFile);
+                
+            });
+            console.close();
+		}).start();
+
+		return "redirect:/console";
+		
 	}
 	
 	@RequestMapping("/tools/inspect-file/{file}")

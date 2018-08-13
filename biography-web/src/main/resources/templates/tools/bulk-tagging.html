@@ -9,10 +9,23 @@
     		<div th:replace="fragments/page :: header"></div>
     		<div th:replace="fragments/page :: menu"></div>
     		<div class="main-content">
-	    		<p><a th:href="@{/tools/inspect-archive}">inspect archive</a></p>
-	    		<p><a th:href="@{/tools/rebuild-index}">rebuild Solr index</a></p>
-	    		<p><a th:href="@{/tools/bulk-tagging}">bulk tagging</a></p>
-	    		<!-- <p><a th:href="@{/tools/fix-hashcodes}">fix hashcodes</a></p> -->
+				<form method="POST"
+					th:action="@{/tools/bulk-tagging/}">
+					<table>
+						<tr>
+							<th>Album</th>
+							<td><input type="text" name="album"/></td>
+						</tr>
+						<tr>
+							<th>Files</th>
+							<td><textarea name="files" rows="20" cols="150"></textarea></td>
+						</tr>
+						<tr>
+							<th></th>
+							<td><input type="submit" value="Start" /></td>
+						</tr>
+					</table>
+				</form>
     		</div>
         
     </body>
