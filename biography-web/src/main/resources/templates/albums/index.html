@@ -21,6 +21,9 @@
 
 				<div class="media-files">
 		
+					<a  th:text="'export ' + ${selectedAlbum}"
+						th:href="@{/album/{name}/export/(name=${selectedAlbum})}"></a> 
+
 					<div th:each="mediaFile,iter : ${mediaFiles}">
 								<a th:href="@{/file/{fileName}/(fileName=${mediaFile.fileName})}"
 									th:text="${#strings.substring(mediaFile.fileName, 0, 20)} + ':&nbsp;&nbsp;' + ${mediaFile.description} + ''"></a>
