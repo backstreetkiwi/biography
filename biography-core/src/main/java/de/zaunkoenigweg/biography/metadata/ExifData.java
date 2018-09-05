@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Optional;
 
@@ -159,6 +160,8 @@ public class ExifData {
         if (dateTimeOriginal==null) {
             return;
         }
+        
+        dateTimeOriginal = dateTimeOriginal.truncatedTo(ChronoUnit.MILLIS);
         
         String dateTimeOriginalText = EXIF_DATE_TIME_FORMATTER.format(dateTimeOriginal);
         byte[] exifDateTimeOriginal = StringUtils.substringBeforeLast(dateTimeOriginalText, ":").getBytes(StandardCharsets.US_ASCII);

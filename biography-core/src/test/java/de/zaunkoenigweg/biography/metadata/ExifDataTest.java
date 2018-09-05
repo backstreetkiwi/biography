@@ -12,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.stream.IntStream;
 
 import org.junit.Before;
@@ -114,7 +115,7 @@ public class ExifDataTest {
         ExifData exifData = ExifData.of(file);
         assertNotNull(exifData);
         assertNotNull(exifData.getDateTimeOriginal());
-        assertEquals(dateTimeOriginal, exifData.getDateTimeOriginal());
+        assertEquals(dateTimeOriginal.truncatedTo(ChronoUnit.MILLIS), exifData.getDateTimeOriginal());
     }
     
     @Test
