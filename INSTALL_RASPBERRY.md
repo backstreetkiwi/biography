@@ -1,5 +1,7 @@
 # Install Biography on a Raspberry PI
 
+I tried this to have a server running in my home network that does not consume that much energy. As expected, it turns out that the PI is not powerful enough to do the import of large image data. So I ended up doing the imports with an instance of **Biography** that I start on my laptop and use the PI only for viewing the photos. Maybe I should consider buying an Intel NUC one day?
+
 ## Prepare Raspberry PI
 
 - Format SD with exactly one `fat32` Partition (Ubuntu: `gparted`)
