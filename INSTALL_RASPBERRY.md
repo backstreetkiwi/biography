@@ -52,6 +52,8 @@ I tried this to have a server running in my home network that does not consume t
       # or use mounted HDD instead
       archive:
         path: /home/pi/biography/data/archive
+      thumbnails:
+        path: /home/pi/biography/data/thumbnails
 
       import:
         path: /home/pi/biography/data/import/
@@ -59,3 +61,7 @@ I tried this to have a server running in my home network that does not consume t
       solr:
         index:
         url: http://localhost:8983/solr/biography
+
+      thumbor:
+    	url: http://localhost:8000/unsafe/
+
