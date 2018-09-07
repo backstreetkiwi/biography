@@ -32,15 +32,20 @@ public class FileController {
 	private final static Log LOG = LogFactory.getLog(FileController.class);
 
 	private File archiveFolder;
-	
-	private ArchiveMetadataService archiveMetadataService;
+    private File thumbnailsFolder;
+    private File thumbsFolder200;
+    private File thumbsFolder300;
 
+    private ArchiveMetadataService archiveMetadataService;
 	private ArchiveIndexingService archiveIndexingService;
 
-	public FileController(File archiveFolder, ArchiveMetadataService archiveMetadataService, ArchiveIndexingService archiveIndexingService) {
+	public FileController(File archiveFolder, ArchiveMetadataService archiveMetadataService, ArchiveIndexingService archiveIndexingService, File thumbnailsFolder) {
 		this.archiveFolder = archiveFolder;
 		this.archiveMetadataService = archiveMetadataService;
 		this.archiveIndexingService = archiveIndexingService;
+        this.thumbnailsFolder = thumbnailsFolder;
+        this.thumbsFolder200 = new File(this.thumbnailsFolder, "200");
+        this.thumbsFolder300 = new File(this.thumbnailsFolder, "300");
 		LOG.info("FileController started.");
 		LOG.info(String.format("archiveFolder=%s", this.archiveFolder));
 	}
@@ -121,6 +126,20 @@ public class FileController {
 	@RequestMapping(value = "/file/{file}/raw", method = RequestMethod.GET, produces = MediaType.IMAGE_JPEG_VALUE)
 	public byte[] rawFile(@PathVariable("file")String filename) throws IOException {
 		File archiveFile = BiographyFileUtils.getArchiveFileFromShortFilename(archiveFolder, filename);
+		return FileUtils.readFileToByteArray(archiveFile);
+	}
+	
+	@ResponseBody
+	@RequestMapping(value = "/file/{file}/200", method = RequestMethod.GET, produces = MediaType.IMAGE_JPEG_VALUE)
+	public byte[] thumbnail200(@PathVariable("file")String filename) throws IOException {
+		File archiveFile = BiographyFileUtils.getArchiveFileFromShortFilename(thumbsFolder200, filename);
+		return FileUtils.readFileToByteArray(archiveFile);
+	}
+	
+	@ResponseBody
+	@RequestMapping(value = "/file/{file}/300", method = RequestMethod.GET, produces = MediaType.IMAGE_JPEG_VALUE)
+	public byte[] thumbnail300(@PathVariable("file")String filename) throws IOException {
+		File archiveFile = BiographyFileUtils.getArchiveFileFromShortFilename(thumbsFolder300, filename);
 		return FileUtils.readFileToByteArray(archiveFile);
 	}
 	
