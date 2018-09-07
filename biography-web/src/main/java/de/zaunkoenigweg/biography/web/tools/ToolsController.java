@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import de.zaunkoenigweg.biography.core.MediaFileType;
+import de.zaunkoenigweg.biography.core.archive.ArchiveImportService;
 import de.zaunkoenigweg.biography.core.archive.ArchiveMetadataService;
 import de.zaunkoenigweg.biography.core.archive.ArchiveValidationService;
 import de.zaunkoenigweg.biography.core.index.ArchiveIndexingService;
@@ -33,8 +35,10 @@ public class ToolsController {
 	private final static Log LOG = LogFactory.getLog(ToolsController.class);
 
 	private File archiveFolder;
-
+	
     private ArchiveIndexingService archiveIndexingService;
+
+    private ArchiveImportService archiveImportService;
 
     private ArchiveValidationService archiveValidationService;
 
@@ -43,11 +47,12 @@ public class ToolsController {
 	private Consoles consoles;
 
 	public ToolsController(File archiveFolder, ArchiveValidationService archiveValidationService, ArchiveMetadataService archiveMetadataService,
-			ArchiveIndexingService archiveIndexingService, Consoles consoles) {
+			ArchiveIndexingService archiveIndexingService, ArchiveImportService archiveImportService, Consoles consoles) {
 		this.archiveFolder = archiveFolder;
 		this.archiveValidationService = archiveValidationService;
 		this.archiveMetadataService = archiveMetadataService;
 		this.archiveIndexingService = archiveIndexingService;
+		this.archiveImportService = archiveImportService;
 		this.consoles = consoles;
 		LOG.info("ToolsController started.");
 		LOG.info(String.format("archiveFolder=%s", this.archiveFolder));
@@ -116,6 +121,27 @@ public class ToolsController {
 
 			console.println(String.format("%n%nValidated files #: %d, # of corrupt files: %d%n", totalNumberOfFiles,
 					numberOfCorruptFiles.get()));
+			console.close();
+		}).start();
+		
+
+		return "redirect:/console";
+
+	}
+	
+	@RequestMapping("/tools/generate-thumbnails")
+	public String generateThumbnails(Model model) {
+
+		Console console = consoles.create("generate thumbnails");
+
+		new Thread(() -> {
+			List<File> mediaFiles = BiographyFileUtils.getMediaFiles(archiveFolder);
+
+			// TODO Thumbnails for every media file type
+			mediaFiles.stream().filter(MediaFileType.JPEG::isTypeOf).forEach(file -> {
+				console.println(String.format("File '%s' -> [%s]", file.getName(), archiveImportService.generateThumbnails(file)));
+			});
+
 			console.close();
 		}).start();
 		

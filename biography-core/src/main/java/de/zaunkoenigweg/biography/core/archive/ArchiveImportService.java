@@ -1,6 +1,9 @@
 package de.zaunkoenigweg.biography.core.archive;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -12,6 +15,10 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.springframework.stereotype.Component;
 
 import de.zaunkoenigweg.biography.core.MediaFileType;
@@ -30,11 +37,15 @@ public class ArchiveImportService {
     private MetadataService metadataService;
     private ArchiveIndexingService archiveIndexingService;
     private File archiveFolder;
+    private File thumbnailsFolder;
+    private String thumborUrl;
 
-    public ArchiveImportService(MetadataService metadataService, ArchiveIndexingService archiveIndexingService, File archiveFolder) {
+    public ArchiveImportService(MetadataService metadataService, ArchiveIndexingService archiveIndexingService, File archiveFolder, File thumbnailsFolder, String thumborUrl) {
         this.metadataService = metadataService;
         this.archiveIndexingService = archiveIndexingService;
         this.archiveFolder = archiveFolder;
+        this.thumbnailsFolder = thumbnailsFolder;
+        this.thumborUrl = thumborUrl;
         LOG.info("ArchiveImportService started.");
         LOG.info(String.format("archiveFolder=%s", this.archiveFolder));
     }
@@ -128,5 +139,53 @@ public class ArchiveImportService {
         File jsonFile = new File(file.getParentFile(),
                 "b" + BiographyFileUtils.getSha1FromArchiveFilename(file) + ".json");
         metadataService.writeMetadataToJsonFile(jsonFile, metadata);
+    }
+    
+    public boolean generateThumbnails(File file) {
+    	
+    	File thumbsFolder200 = new File(this.thumbnailsFolder, "200");
+    	File thumbsFolder300 = new File(this.thumbnailsFolder, "300");
+    	HttpClient client;
+
+    	try {
+			client = new DefaultHttpClient();
+
+			// TODO method for one resizing w/param (200, 300, ...)
+			String thumborUri = this.thumborUrl + "fit-in/200x200/filters:fill(black)/" + archiveFolder.toPath().relativize(file.toPath()).toString();
+			HttpGet request = new HttpGet(thumborUri);
+			HttpResponse response = client.execute(request);
+			if(response.getStatusLine().getStatusCode()==200) {
+				BufferedInputStream bis = new BufferedInputStream(response.getEntity().getContent());
+				File file200 = BiographyFileUtils.getArchiveFileFromShortFilename(thumbsFolder200, file.getName());
+				file200.getParentFile().mkdirs();
+				BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file200));
+				int inByte;
+				while((inByte = bis.read()) != -1) bos.write(inByte);
+				bis.close();
+				bos.close();
+			}
+			thumborUri = this.thumborUrl + "fit-in/300x300/filters:fill(black)/" + archiveFolder.toPath().relativize(file.toPath()).toString();
+			request = new HttpGet(thumborUri);
+			response = client.execute(request);
+			if(response.getStatusLine().getStatusCode()==200) {
+				BufferedInputStream bis = new BufferedInputStream(response.getEntity().getContent());
+				File file300 = BiographyFileUtils.getArchiveFileFromShortFilename(thumbsFolder300, file.getName());
+				file300.getParentFile().mkdirs();
+				BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file300));
+				int inByte;
+				while((inByte = bis.read()) != -1) bos.write(inByte);
+				bis.close();
+				bos.close();
+				return true;
+			}
+			return false;
+    	} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return false;
+		} finally {
+			// TODO 
+			// close client ?
+		}
     }
 }
