@@ -1,0 +1,5 @@
+<div class="timelineYears">
+	<div [ngClass]="{'timelineYearSelected': isSelected(timelineYear.year), 'timelineYear': !isSelected(timelineYear.year)}" *ngFor="let timelineYear of timelineYears">
+		<a (click)="selectYear(timelineYear.year)">{{timelineYear.year}}</a>
+	</div>
+</div>

@@ -1,0 +1,5 @@
+<div class="timelineMonths">
+	<div [ngClass]="{'timelineMonthSelected': isSelected(timelineMonth.month), 'timelineMonth': !isSelected(timelineMonth.month)}" *ngFor="let timelineMonth of timelineMonths">
+		<a (click)="selectMonth(timelineMonth.month)">{{timelineMonth.monthName}}</a>
+	</div>
+</div>

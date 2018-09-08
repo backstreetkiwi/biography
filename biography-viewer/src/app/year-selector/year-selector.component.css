@@ -1,0 +1,26 @@
+div.timelineYears {
+	clear: both;
+}
+
+div.timelineYears div.timelineYear {
+	float: left;
+	padding: 0px 25px 0px 0px;
+	text-align: center;
+}
+
+div.timelineYears div.timelineYearSelected {
+	float: left;
+	padding: 0px 25px 0px 0px;
+	text-align: center;
+}
+
+div.timelineYears div.timelineYear a {
+	cursor: pointer;
+}
+
+div.timelineYears div.timelineYearSelected a {
+	cursor: pointer;
+	color: blue;
+	font-weight: bolder;
+}
+

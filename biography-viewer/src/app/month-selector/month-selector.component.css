@@ -1,0 +1,26 @@
+div.timelineMonths {
+	padding: 10px 0px;
+	clear: both;
+}
+
+div.timelineMonths div.timelineMonth {
+	float: left;
+	padding: 0px 25px 0px 0px;
+	text-align: center;
+}
+
+div.timelineMonths div.timelineMonthSelected {
+	float: left;
+	text-align: left;
+	padding: 0px 25px 0px 0px;
+}
+
+div.timelineMonths div.timelineMonth a {
+	cursor: pointer;
+}
+
+div.timelineMonths div.timelineMonthSelected a {
+	cursor: pointer;
+	color: blue;
+	font-weight: bolder;
+}

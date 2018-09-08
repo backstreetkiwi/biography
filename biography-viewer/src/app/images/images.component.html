@@ -1,0 +1,5 @@
+<div class="mediaFiles">
+	<div class="mediaFile" *ngFor="let mediaFile of mediaFiles" (click)="show(mediaFile)">
+		<img src="http://localhost:8080/file/{{mediaFile.fileName}}/{{thumbnailSize}}" />
+	</div>
+</div>

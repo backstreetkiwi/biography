@@ -1,0 +1,25 @@
+div.zoomViewer {
+	position: fixed;
+	left: 0px;
+	top: 0px;
+	right: 0px;
+	bottom: 0px;
+	background-color: rgba(0, 0, 0, 0.9);
+	z-index: 1000000;
+}
+
+div.zoomViewer div.zoomViewerInner {
+	position: fixed;
+	left: 20px;
+	top: 20px;
+	right: 20px;
+	bottom: 20px;
+	text-align: center;
+	vertical-align: middle;
+}
+
+div.zoomViewer div.zoomViewerInner img {
+	max-height: 100%;
+	max-width: 100%;
+	image-orientation: from-image;
+}

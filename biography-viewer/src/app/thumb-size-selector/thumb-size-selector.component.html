@@ -1,0 +1,5 @@
+<div class="thumbnailSizeSelector">
+	<div [ngClass]="{'thumbnailSizeSelected': isSelected(thumbnailSize), 'thumbnailSize': !isSelected(thumbnailSize)}" *ngFor="let thumbnailSize of thumbnailSizes">
+		<a (click)="selectSize(thumbnailSize)">{{thumbnailSize}}</a>
+	</div>
+</div>

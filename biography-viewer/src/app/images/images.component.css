@@ -1,0 +1,13 @@
+div.mediaFiles {
+	padding: 10px 0px;
+	clear: both;
+}
+
+div.mediaFiles div.mediaFile {
+	float: left;
+	margin: 5px;
+}
+
+div.mediaFiles div.mediaFile img {
+	image-orientation: from-image;
+}

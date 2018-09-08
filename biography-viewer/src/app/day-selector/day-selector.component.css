@@ -1,0 +1,26 @@
+div.timelineDays {
+	padding: 10px 0px;
+	clear: both;
+}
+
+div.timelineDays div.timelineDay {
+	float: left;
+	padding: 0px 10px 0px 0px;
+	text-align: center;
+}
+
+div.timelineDays div.timelineDaySelected {
+	float: left;
+	padding: 0px 10px 0px 0px;
+	text-align: left;
+}
+
+div.timelineDays div.timelineDay a {
+	cursor: pointer;
+}
+
+div.timelineDays div.timelineDaySelected a {
+	cursor: pointer;
+	color: blue;
+	font-weight: bolder;
+}

@@ -1,0 +1,5 @@
+<div class="timelineDays">
+	<div [ngClass]="{'timelineDaySelected': isSelected(timelineDay.day), 'timelineDay': !isSelected(timelineDay.day)}" *ngFor="let timelineDay of timelineDays">
+		<a (click)="selectDay(timelineDay.day)">{{timelineDay.day}}</a>
+	</div>
+</div>
