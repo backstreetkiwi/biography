@@ -37,14 +37,12 @@ public class ArchiveImportService {
     private MetadataService metadataService;
     private ArchiveIndexingService archiveIndexingService;
     private File archiveFolder;
-    private File thumbnailsFolder;
     private String thumborUrl;
 
-    public ArchiveImportService(MetadataService metadataService, ArchiveIndexingService archiveIndexingService, File archiveFolder, File thumbnailsFolder, String thumborUrl) {
+    public ArchiveImportService(MetadataService metadataService, ArchiveIndexingService archiveIndexingService, File archiveFolder, String thumborUrl) {
         this.metadataService = metadataService;
         this.archiveIndexingService = archiveIndexingService;
         this.archiveFolder = archiveFolder;
-        this.thumbnailsFolder = thumbnailsFolder;
         this.thumborUrl = thumborUrl;
         LOG.info("ArchiveImportService started.");
         LOG.info(String.format("archiveFolder=%s", this.archiveFolder));
@@ -143,8 +141,10 @@ public class ArchiveImportService {
     
     public boolean generateThumbnails(File file, boolean force) {
     	
-    	File thumbsFolder200 = new File(this.thumbnailsFolder, "200");
-    	File thumbsFolder300 = new File(this.thumbnailsFolder, "300");
+    	File thumbnailsFolder = new File(this.archiveFolder, "thumbnails");
+    	
+    	File thumbsFolder200 = new File(thumbnailsFolder, "200");
+    	File thumbsFolder300 = new File(thumbnailsFolder, "300");
     	HttpClient client;
 
     	try {

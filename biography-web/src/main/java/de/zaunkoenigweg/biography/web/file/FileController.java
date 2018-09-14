@@ -32,20 +32,18 @@ public class FileController {
 	private final static Log LOG = LogFactory.getLog(FileController.class);
 
 	private File archiveFolder;
-    private File thumbnailsFolder;
     private File thumbsFolder200;
     private File thumbsFolder300;
 
     private ArchiveMetadataService archiveMetadataService;
 	private ArchiveIndexingService archiveIndexingService;
 
-	public FileController(File archiveFolder, ArchiveMetadataService archiveMetadataService, ArchiveIndexingService archiveIndexingService, File thumbnailsFolder) {
+	public FileController(File archiveFolder, ArchiveMetadataService archiveMetadataService, ArchiveIndexingService archiveIndexingService) {
 		this.archiveFolder = archiveFolder;
 		this.archiveMetadataService = archiveMetadataService;
 		this.archiveIndexingService = archiveIndexingService;
-        this.thumbnailsFolder = thumbnailsFolder;
-        this.thumbsFolder200 = new File(this.thumbnailsFolder, "200");
-        this.thumbsFolder300 = new File(this.thumbnailsFolder, "300");
+        this.thumbsFolder200 = new File(this.archiveFolder, "thumbnails/200");
+        this.thumbsFolder300 = new File(this.archiveFolder, "thumbnails/300");
 		LOG.info("FileController started.");
 		LOG.info(String.format("archiveFolder=%s", this.archiveFolder));
 	}

@@ -40,16 +40,6 @@ public class Application {
     }
 
     @Bean
-    public File thumbnailsFolder(@Value("${thumbnails.path}") String thumbnailsPath) {
-    		File thumbnailsFolder = new File(thumbnailsPath);
-    		if(!thumbnailsFolder.exists()) {
-    			String msg = String.format("The thumbnails folder %s does not exist", thumbnailsPath);
-    			throw new RuntimeException(msg);
-    		}
-    		return thumbnailsFolder;
-    }
-
-    @Bean
     public String solrIndexUrl(@Value("${solr.index.url}") String url) {
     		if(StringUtils.isBlank(url)) {
     			String msg = "The Solr index url must not be empty.";
