@@ -21,6 +21,6 @@ div.timelineDays div.timelineDay a {
 
 div.timelineDays div.timelineDaySelected a {
 	cursor: pointer;
-	color: blue;
+	color: #369;
 	font-weight: bolder;
 }

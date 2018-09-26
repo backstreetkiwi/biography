@@ -5,14 +5,14 @@ div.thumbnailSizeSelector {
 
 div.thumbnailSizeSelector div.thumbnailSize {
 	float: left;
-	padding: 0px 25px 0px 0px;
+	padding: 0px 15px 0px 0px;
 	text-align: center;
 }
 
 div.thumbnailSizeSelector div.thumbnailSizeSelected {
 	float: left;
 	text-align: left;
-	padding: 0px 25px 0px 0px;
+	padding: 0px 15px 0px 0px;
 }
 
 div.thumbnailSizeSelector div.thumbnailSize a {
@@ -21,6 +21,6 @@ div.thumbnailSizeSelector div.thumbnailSize a {
 
 div.thumbnailSizeSelector div.thumbnailSizeSelected a {
 	cursor: pointer;
-	color: blue;
+	color: #369;
 	font-weight: bolder;
 }

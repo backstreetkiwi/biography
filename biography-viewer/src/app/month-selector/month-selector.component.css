@@ -21,6 +21,6 @@ div.timelineMonths div.timelineMonth a {
 
 div.timelineMonths div.timelineMonthSelected a {
 	cursor: pointer;
-	color: blue;
+	color: #369;
 	font-weight: bolder;
 }

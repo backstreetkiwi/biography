@@ -20,7 +20,7 @@ div.timelineYears div.timelineYear a {
 
 div.timelineYears div.timelineYearSelected a {
 	cursor: pointer;
-	color: blue;
+	color: #369;
 	font-weight: bolder;
 }
 

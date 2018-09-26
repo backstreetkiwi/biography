@@ -1,3 +1,8 @@
-div.title h1 {
+div.title {
+	margin: 0px;
+	padding: 10px 20px 10px 0px;
 	float: left;
+    color: #369;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 150%;
 }
