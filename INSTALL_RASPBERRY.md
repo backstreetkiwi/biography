@@ -10,20 +10,20 @@ I tried this to have a server running in my home network that does not consume t
 - Boot PI and follow the instructions (install Raspbian)
 - Once the system is up and running, some settings should be made:
   - rename the PI to `biography` (e.g.)
-  - let the PI boot to command line instead of GUI
+  - (if not used connected to a screen) let the PI boot to command line instead of GUI
   - allow SSHing into it
   - change password of default user `pi`
 
 ## Install and configure Solr
 
-- [Download](http://lucene.apache.org/solr/downloads.html) Solr as ZIP (recommended: Version 7.4.0)
+- [Download](http://lucene.apache.org/solr/downloads.html) Solr as ZIP (recommended: Version 7.5.0)
 - create dir `/home/pi/biography/solr`
 - upload ZIP there using `scp`
 - in `/home/pi/biography/solr`: `unzip solr`...
-- in `/home/pi/biography/solr`: `mkdir config-templates`...
+- in `/home/pi/biography/solr`: `mkdir config-templates`...	
 - upload index config files `biography/biography-solr/conf/*.xml` to `...config-templates` using `scp`
 - Start Solr: `./solr start`
-- Create core/index: `./solr create_core -c biography -d /home/pi/biography/solr/config-templates/``
+- Create core/index: `./solr create_core -c biography -d /home/pi/biography/solr/config-templates/`
 - (To stop Solr: `./solr stop`)
 - Admin UI for Solr is available via Web Browser: http://biography:8983
 
@@ -34,8 +34,8 @@ I tried this to have a server running in my home network that does not consume t
 - Create binary dir: `/home/pi/biography/bin`
 - upload JAR to binary dir using scp: `biography-web-<version>.jar`
 - Create import dir: `/home/pi/biography/data/import`
-- Create archive dir: `/home/pi/biography/data/archive`
-- Copy existing archive into archive dir
+- Create archive dir: `/home/pi/biography/data/archive` (skip if you use external disk)
+- Copy existing archive into archive dir (skip if you use external disk)
 - Create config file `/home/pi/biography/biograpyh.yml`
 
       spring:
@@ -52,9 +52,7 @@ I tried this to have a server running in my home network that does not consume t
       # or use mounted HDD instead
       archive:
         path: /home/pi/biography/data/archive
-      thumbnails:
-        path: /home/pi/biography/data/thumbnails
-
+      
       import:
         path: /home/pi/biography/data/import/
 
@@ -64,4 +62,49 @@ I tried this to have a server running in my home network that does not consume t
 
       thumbor:
     	url: http://localhost:8000/unsafe/
+
+## Install and configure biography viewer (Angular)
+
+Build the Angular app
+
+      (in biography/biography-viewer)
+      ng build
+
+The result is a bunch of web application files in the `dist` folder. They have to be copied in the docroot of the web server.
+
+Install NGINX web server:
+
+      sudo apt-get install nginx
+      sudo /etc/init.d/nginx start  # to test
+      sudo /etc/init.d/nginx stop
+
+The home dir is 
+
+      /var/www/html/
+
+Remove the example data and put the above mentioned Angular app there instead.
+
+## Mount external HDD (or SDD) in Raspberry Pi
+
+To see properties of all block devices:
+
+      sudo blkid
+
+Create mountpoint directory:
+
+      sudo mkdir -p /mnt/biohdd
+
+Open `fstab file`:
+
+      sudo nano /etc/fstab
+
+Add a line similar to that one:
+
+      /dev/sda1       /mnt/biohdd     ext4    defaults        0       0
+
+The actual values may differ, the `blkid` command above helps to find the path and the file system type.
+
+Now, reboot the system to test if the disk is available at startup.
+
+
 
