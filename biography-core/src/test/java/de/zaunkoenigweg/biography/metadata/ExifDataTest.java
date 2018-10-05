@@ -8,7 +8,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
@@ -119,6 +118,19 @@ public class ExifDataTest {
     }
     
     @Test
+    public void testWriteJpegDateTimeOriginalZeroMillis() throws IOException {
+        File fileSource = new File(getClass().getResource("/exifdatatest/NikonD60.jpg").getFile());
+        File file = new File(someFolder, "ImageToSetDateTimeOriginal.jpg");
+        Files.copy(fileSource.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        LocalDateTime dateTimeOriginal = LocalDateTime.now().withNano(0);
+        ExifData.setDateTimeOriginal(file, dateTimeOriginal);
+        ExifData exifData = ExifData.of(file);
+        assertNotNull(exifData);
+        assertNotNull(exifData.getDateTimeOriginal());
+        assertEquals(dateTimeOriginal.truncatedTo(ChronoUnit.MILLIS), exifData.getDateTimeOriginal());
+    }
+    
+    @Test
     public void testWriteJpegDescriptionWithUmlaut() throws IOException {
         File fileSource = new File(getClass().getResource("/exifdatatest/NikonD60.jpg").getFile());
         File file = new File(someFolder, "ImageWithDescriptionWithUmlaut.jpg");
@@ -204,16 +216,6 @@ public class ExifDataTest {
         assertEquals("Christchurch; auf dem Cathedral Square", exifData.getDescription().get());
     }
 
-    @Test
-    public void testReadJpegDescriptionIso8859() {
-        File file = new File(getClass().getResource("/exifdatatest/DescriptionWithUmlaut.jpg").getFile());
-        ExifData exifData = ExifData.of(file, StandardCharsets.ISO_8859_1);
-        assertNotNull(exifData);
-        assertNotNull(exifData.getDescription());
-        assertTrue(exifData.getDescription().isPresent());
-        assertEquals("Landeanflug auf NZ, Nordteil der S\u00fcdinsel", exifData.getDescription().get());
-    }
-    
     @Test
     public void testReadCameraMakeModel() {
         File file = new File(getClass().getResource("/exifdatatest/NikonD60.jpg").getFile());

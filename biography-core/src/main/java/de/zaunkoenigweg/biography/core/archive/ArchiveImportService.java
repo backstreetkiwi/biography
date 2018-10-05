@@ -119,7 +119,7 @@ public class ArchiveImportService {
         MediaFileType mediaFileType = MediaFileType.of(file).get();
         String description = null;
         if (readLegacyDescription && ExifData.supports(mediaFileType)) {
-            description = ExifData.of(file, StandardCharsets.ISO_8859_1).getDescription().orElse(null);
+            description = ExifData.of(file).getDescription().orElse(null);
         }
 
         Set<Album> albums = new HashSet<>();
