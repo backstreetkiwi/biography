@@ -193,6 +193,26 @@ public class ExiftoolTest {
   }
 
   @Test
+  public void testWriteJpegDescriptionWithColon() throws IOException {
+    File fileSource = new File(getClass().getResource("/exifdatatest/NikonD60.jpg").getFile());
+    File file = new File(someFolder, "ImageWithDescription.jpg");
+    Files.copy(fileSource.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+    String description = "Christchurch: Suedinsel";
+
+    Map<Exif, String> exifData = Exiftool.read(file, fieldSet(Exif.IMAGE_DESCRIPTION));
+    assertNotNull(exifData);
+    assertNotEquals(description, exifData.get(Exif.IMAGE_DESCRIPTION));
+
+    Map<Exif, String> values = new HashMap<>();
+    values.put(Exif.IMAGE_DESCRIPTION, description);
+    Exiftool.write(file, values);
+
+    exifData = Exiftool.read(file, fieldSet(Exif.IMAGE_DESCRIPTION));
+    assertNotNull(exifData);
+    assertEquals(description, exifData.get(Exif.IMAGE_DESCRIPTION));
+  }
+
+  @Test
   public void testWriteJpegLongUserComment() throws IOException {
     File fileSource = new File(getClass().getResource("/exifdatatest/NikonD60.jpg").getFile());
     File file = new File(someFolder, "ImageWithDescription.jpg");

@@ -19,7 +19,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 public class Exiftool {
 
-  private static final Pattern LINE_PATTERN = Pattern.compile("^(.+)\\s*:\\s(.+)$");
+  private static final Pattern LINE_PATTERN = Pattern.compile("^([^:]+)\\s*:\\s(.+)$");
 
   /**
    * Reads EXIF metadata from the given mediafile.
