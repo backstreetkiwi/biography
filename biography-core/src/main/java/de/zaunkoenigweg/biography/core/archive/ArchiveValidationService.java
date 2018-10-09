@@ -16,8 +16,9 @@ import org.springframework.stereotype.Component;
 import de.zaunkoenigweg.biography.core.MediaFileType;
 import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
 import de.zaunkoenigweg.biography.metadata.BiographyMetadata;
-import de.zaunkoenigweg.biography.metadata.ExifData;
 import de.zaunkoenigweg.biography.metadata.MetadataService;
+import de.zaunkoenigweg.biography.metadata.exif.ExifData;
+import de.zaunkoenigweg.biography.metadata.exif.ExifDataService;
 
 /**
  * This service offers methods to validate archived media files.
@@ -46,13 +47,16 @@ public class ArchiveValidationService {
 
     private final static Log LOG = LogFactory.getLog(ArchiveValidationService.class);
 
+    private ExifDataService exifDataService;
+    
     private MetadataService metadataService;
 
     private File archiveFolder;
 
-    public ArchiveValidationService(MetadataService metadataService, File archiveFolder) {
+    public ArchiveValidationService(MetadataService metadataService, ExifDataService exifDataService, File archiveFolder) {
         this.metadataService = metadataService;
         this.archiveFolder = archiveFolder;
+        this.exifDataService = exifDataService;
         LOG.info("ArchiveValidationService started.");
         LOG.info(String.format("archiveFolder=%s", this.archiveFolder));
     }
@@ -209,7 +213,7 @@ public class ArchiveValidationService {
 
         BiographyMetadata metadata;
 
-        if (ExifData.supports(mediaFileType.get())) {
+        if (ExifDataService.supports(mediaFileType.get())) {
             metadata = metadataService.readMetadataFromExif(file);
         } else {
             metadata = metadataService.readMetadataFromJsonFile(getMetadataJsonFile(file));
@@ -245,7 +249,7 @@ public class ArchiveValidationService {
 
         BiographyMetadata metadata;
 
-        if (ExifData.supports(mediaFileType.get())) {
+        if (ExifDataService.supports(mediaFileType.get())) {
             metadata = metadataService.readMetadataFromExif(file);
         } else {
             metadata = metadataService.readMetadataFromJsonFile(getMetadataJsonFile(file));
@@ -284,12 +288,12 @@ public class ArchiveValidationService {
             return false;
         }
 
-        if (!ExifData.supports(mediaFileType.get())) {
+        if (!ExifDataService.supports(mediaFileType.get())) {
             return true;
         }
 
         BiographyMetadata metadata = metadataService.readMetadataFromExif(file);
-        ExifData exifData = ExifData.of(file);
+        ExifData exifData = exifDataService.getExifData(file);
 
         if (!metadata.getDateTimeOriginal().equals(exifData.getDateTimeOriginal())) {
             return false;
@@ -332,7 +336,7 @@ public class ArchiveValidationService {
 
         BiographyMetadata metadata;
 
-        if (ExifData.supports(mediaFileType.get())) {
+        if (ExifDataService.supports(mediaFileType.get())) {
             metadata = metadataService.readMetadataFromExif(file);
         } else {
             metadata = metadataService.readMetadataFromJsonFile(getMetadataJsonFile(file));

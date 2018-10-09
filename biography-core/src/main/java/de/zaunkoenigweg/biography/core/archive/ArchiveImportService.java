@@ -5,7 +5,6 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Optional;
@@ -26,8 +25,9 @@ import de.zaunkoenigweg.biography.core.index.ArchiveIndexingService;
 import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
 import de.zaunkoenigweg.biography.metadata.Album;
 import de.zaunkoenigweg.biography.metadata.BiographyMetadata;
-import de.zaunkoenigweg.biography.metadata.ExifData;
 import de.zaunkoenigweg.biography.metadata.MetadataService;
+import de.zaunkoenigweg.biography.metadata.exif.ExifData;
+import de.zaunkoenigweg.biography.metadata.exif.ExifDataService;
 
 @Component
 public class ArchiveImportService {
@@ -36,6 +36,7 @@ public class ArchiveImportService {
 
     private MetadataService metadataService;
     private ArchiveIndexingService archiveIndexingService;
+    private ExifDataService exifDataService;
     private File archiveFolder;
     private String thumborUrl;
 
@@ -66,9 +67,9 @@ public class ArchiveImportService {
         
         LocalDateTime dateTimeOriginal = null;
 
-        if(ExifData.supports(mediaFileType.get())) {
+        if(ExifDataService.supports(mediaFileType.get())) {
 
-            ExifData exifData = ExifData.of(file);
+            ExifData exifData = exifDataService.getExifData(file);
 
             if (exifData == null) {
                 return ImportResult.NO_EXIF_DATA_PRESENT;
@@ -118,8 +119,8 @@ public class ArchiveImportService {
             String album) {
         MediaFileType mediaFileType = MediaFileType.of(file).get();
         String description = null;
-        if (readLegacyDescription && ExifData.supports(mediaFileType)) {
-            description = ExifData.of(file).getDescription().orElse(null);
+        if (readLegacyDescription && ExifDataService.supports(mediaFileType)) {
+            description = exifDataService.getExifData(file).getDescription().orElse(null);
         }
 
         Set<Album> albums = new HashSet<>();
@@ -129,7 +130,7 @@ public class ArchiveImportService {
 
         BiographyMetadata metadata = new BiographyMetadata(dateTimeOriginal, sha1, description, albums);
 
-        if (ExifData.supports(mediaFileType)) {
+        if (ExifDataService.supports(mediaFileType)) {
             metadataService.writeMetadataIntoExif(file, metadata);
             return;
         }

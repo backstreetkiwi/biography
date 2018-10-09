@@ -25,241 +25,272 @@ import de.zaunkoenigweg.biography.core.index.ArchiveIndexingService;
 import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
 import de.zaunkoenigweg.biography.metadata.Album;
 import de.zaunkoenigweg.biography.metadata.BiographyMetadata;
-import de.zaunkoenigweg.biography.metadata.ExifData;
+import de.zaunkoenigweg.biography.metadata.exif.ExifDataService;
 import de.zaunkoenigweg.biography.web.console.Console;
 import de.zaunkoenigweg.biography.web.console.Consoles;
 
 @Controller
 public class ToolsController {
 
-  private final static Log LOG = LogFactory.getLog(ToolsController.class);
+    private final static Log LOG = LogFactory.getLog(ToolsController.class);
 
-  private File archiveFolder;
+    private File archiveFolder;
 
-  private ArchiveIndexingService archiveIndexingService;
+    private ArchiveIndexingService archiveIndexingService;
 
-  private ArchiveImportService archiveImportService;
+    private ArchiveImportService archiveImportService;
 
-  private ArchiveValidationService archiveValidationService;
+    private ArchiveValidationService archiveValidationService;
 
-  private ArchiveMetadataService archiveMetadataService;
+    private ArchiveMetadataService archiveMetadataService;
 
-  private Consoles consoles;
+    private ExifDataService exifDataService;
 
-  public ToolsController(File archiveFolder, ArchiveValidationService archiveValidationService,
-      ArchiveMetadataService archiveMetadataService,
-      ArchiveIndexingService archiveIndexingService, ArchiveImportService archiveImportService, Consoles consoles) {
-    this.archiveFolder = archiveFolder;
-    this.archiveValidationService = archiveValidationService;
-    this.archiveMetadataService = archiveMetadataService;
-    this.archiveIndexingService = archiveIndexingService;
-    this.archiveImportService = archiveImportService;
-    this.consoles = consoles;
-    LOG.info("ToolsController started.");
-    LOG.info(String.format("archiveFolder=%s", this.archiveFolder));
-  }
+    private Consoles consoles;
 
-  @RequestMapping("/tools")
-  public String statistics(Model model) {
-    model.addAttribute("selectedMenuItem", "TOOLS");
-    return "tools/index";
-  }
+    public ToolsController(File archiveFolder, ArchiveValidationService archiveValidationService,
+                    ArchiveMetadataService archiveMetadataService,
+                    ArchiveIndexingService archiveIndexingService, ArchiveImportService archiveImportService, ExifDataService exifDataService, Consoles consoles) {
+        this.archiveFolder = archiveFolder;
+        this.archiveValidationService = archiveValidationService;
+        this.archiveMetadataService = archiveMetadataService;
+        this.archiveIndexingService = archiveIndexingService;
+        this.archiveImportService = archiveImportService;
+        this.exifDataService = exifDataService;
+        this.consoles = consoles;
+        LOG.info("ToolsController started.");
+        LOG.info(String.format("archiveFolder=%s", this.archiveFolder));
+    }
 
-  @RequestMapping("/tools/inspect-archive")
-  public String statisticsInspectArchive(Model model) {
+    @RequestMapping("/tools")
+    public String statistics(Model model) {
+        model.addAttribute("selectedMenuItem", "TOOLS");
+        return "tools/index";
+    }
 
-    Console console = consoles.create("inspect archive");
+    @RequestMapping("/tools/fill-exif-cache")
+    public String fillExifCache(Model model) {
 
-    new Thread(() -> {
-      List<File> mediaFiles = BiographyFileUtils.getMediaFiles(archiveFolder);
+        Console console = consoles.create("fill EXIF cache");
 
-      int totalNumberOfFiles = mediaFiles.size();
-      AtomicInteger numberOfCorruptFiles = new AtomicInteger(0);
+        new Thread(() -> {
+            this.exifDataService.fillCacheFromArchive(this.archiveFolder + "/*/*/*.jpg");
+            console.close();
+        }).start();
 
-      mediaFiles.stream().forEach(file -> {
+        return "redirect:/console";
 
-        Pair<Boolean, List<Pair<String, Boolean>>> check = archiveValidationService.check(file);
-        if (check.getLeft()) {
-          console.println(String.format("File '%s' -> [OK]", file.getAbsolutePath()));
-        } else {
-          numberOfCorruptFiles.incrementAndGet();
-          ;
-          console.println(String.format("ERROR in file '%s'", file.getAbsolutePath()));
-          check.getRight().stream().forEach(pair -> {
-            console.println(String.format("%-100s [%s]", pair.getLeft(), pair.getRight() ? "OK" : "ERROR"));
-          });
-          console.println("");
-        }
+    }
 
-      });
+    @RequestMapping("/tools/clear-exif-cache")
+    public String clearExifCache(Model model) {
 
-      console.println(String.format("%n%nValidated files #: %d, # of corrupt files: %d%n", totalNumberOfFiles,
-          numberOfCorruptFiles.get()));
-      console.close();
-    }).start();
+        Console console = consoles.create("clear EXIF cache");
 
-    return "redirect:/console";
+        new Thread(() -> {
+            this.exifDataService.clearCache();
+            console.close();
+        }).start();
 
-  }
+        return "redirect:/console";
 
-  @RequestMapping("/tools/fix-hashcodes")
-  public String fixHashcode(Model model) {
+    }
 
-    Console console = consoles.create("fix hashcodes");
+    @RequestMapping("/tools/inspect-archive")
+    public String statisticsInspectArchive(Model model) {
 
-    new Thread(() -> {
-      List<File> mediaFiles = BiographyFileUtils.getMediaFiles(archiveFolder);
+        Console console = consoles.create("inspect archive");
 
-      int totalNumberOfFiles = mediaFiles.size();
-      AtomicInteger numberOfCorruptFiles = new AtomicInteger(0);
+        new Thread(() -> {
+            List<File> mediaFiles = BiographyFileUtils.getMediaFiles(archiveFolder);
 
-      mediaFiles.stream().forEach(file -> {
+            int totalNumberOfFiles = mediaFiles.size();
+            AtomicInteger numberOfCorruptFiles = new AtomicInteger(0);
 
-        archiveMetadataService.fixSha1InMetadata(file);
-        console.println(String.format("File '%s' -> [OK]", file.getAbsolutePath()));
-      });
+            mediaFiles.stream().forEach(file -> {
 
-      console.println(String.format("%n%nValidated files #: %d, # of corrupt files: %d%n", totalNumberOfFiles,
-          numberOfCorruptFiles.get()));
-      console.close();
-    }).start();
+                Pair<Boolean, List<Pair<String, Boolean>>> check = archiveValidationService.check(file);
+                if (check.getLeft()) {
+                    console.println(String.format("File '%s' -> [OK]", file.getAbsolutePath()));
+                } else {
+                    numberOfCorruptFiles.incrementAndGet();
+                    ;
+                    console.println(String.format("ERROR in file '%s'", file.getAbsolutePath()));
+                    check.getRight().stream().forEach(pair -> {
+                        console.println(String.format("%-100s [%s]", pair.getLeft(), pair.getRight() ? "OK" : "ERROR"));
+                    });
+                    console.println("");
+                }
 
-    return "redirect:/console";
+            });
 
-  }
+            console.println(String.format("%n%nValidated files #: %d, # of corrupt files: %d%n", totalNumberOfFiles,
+                            numberOfCorruptFiles.get()));
+            console.close();
+        }).start();
 
-  @RequestMapping("/tools/generate-all-thumbnails")
-  public String generateAllThumbnails(Model model) {
+        return "redirect:/console";
 
-    Console console = consoles.create("generate thumbnails");
+    }
 
-    new Thread(() -> {
-      List<File> mediaFiles = BiographyFileUtils.getMediaFiles(archiveFolder);
+    @RequestMapping("/tools/fix-hashcodes")
+    public String fixHashcode(Model model) {
 
-      // TODO Thumbnails for every media file type
-      mediaFiles.stream().filter(MediaFileType.JPEG::isTypeOf).forEach(file -> {
-        console.println(
-            String.format("File '%s' -> [%s]", file.getName(), archiveImportService.generateThumbnails(file, true)));
-      });
+        Console console = consoles.create("fix hashcodes");
 
-      console.close();
-    }).start();
+        new Thread(() -> {
+            List<File> mediaFiles = BiographyFileUtils.getMediaFiles(archiveFolder);
 
-    return "redirect:/console";
+            int totalNumberOfFiles = mediaFiles.size();
+            AtomicInteger numberOfCorruptFiles = new AtomicInteger(0);
 
-  }
+            mediaFiles.stream().forEach(file -> {
 
-  @RequestMapping("/tools/generate-missing-thumbnails")
-  public String generateMissingThumbnails(Model model) {
+                archiveMetadataService.fixSha1InMetadata(file);
+                console.println(String.format("File '%s' -> [OK]", file.getAbsolutePath()));
+            });
 
-    Console console = consoles.create("generate thumbnails");
+            console.println(String.format("%n%nValidated files #: %d, # of corrupt files: %d%n", totalNumberOfFiles,
+                            numberOfCorruptFiles.get()));
+            console.close();
+        }).start();
 
-    new Thread(() -> {
-      List<File> mediaFiles = BiographyFileUtils.getMediaFiles(archiveFolder);
+        return "redirect:/console";
 
-      // TODO Thumbnails for every media file type
-      mediaFiles.stream().filter(MediaFileType.JPEG::isTypeOf).forEach(file -> {
-        console.println(
-            String.format("File '%s' -> [%s]", file.getName(), archiveImportService.generateThumbnails(file, false)));
-      });
+    }
 
-      console.close();
-    }).start();
+    @RequestMapping("/tools/generate-all-thumbnails")
+    public String generateAllThumbnails(Model model) {
 
-    return "redirect:/console";
+        Console console = consoles.create("generate thumbnails");
 
-  }
+        new Thread(() -> {
+            List<File> mediaFiles = BiographyFileUtils.getMediaFiles(archiveFolder);
 
-  @GetMapping("/tools/bulk-tagging")
-  public String bulkTagging(Model model) {
+            // TODO Thumbnails for every media file type
+            mediaFiles.stream().filter(MediaFileType.JPEG::isTypeOf).forEach(file -> {
+                console.println(
+                                String.format("File '%s' -> [%s]", file.getName(), archiveImportService.generateThumbnails(file, true)));
+            });
 
-    model.addAttribute("selectedMenuItem", "TOOLS");
-    return "tools/bulk-tagging";
-  }
+            console.close();
+        }).start();
 
-  @PostMapping("/tools/bulk-tagging")
-  public String bulkTagging(Model model, @RequestParam("album") String albumname, @RequestParam("files") String files) {
+        return "redirect:/console";
 
-    Console console = consoles.create("bulk-tagging " + albumname);
+    }
 
-    new Thread(() -> {
-      console.println(String.format("Bulk tagging '%s'", albumname));
-      if (StringUtils.isBlank(albumname)) {
-        console.println("Album must not be blank.");
-        return;
-      }
-      Album album = new Album(albumname);
-      Arrays.stream(StringUtils.split(files)).forEach(filepath -> {
-        String filename = StringUtils.trim(StringUtils.substringAfterLast(filepath, "/"));
-        File archiveFile = BiographyFileUtils.getArchiveFileFromShortFilename(archiveFolder, filename);
-        if (archiveFile == null) {
-          console.println(String.format("'%s' is not a valid archive file.", filename));
-        }
-        console.println(String.format("Tagging '%s'", archiveFile));
+    @RequestMapping("/tools/generate-missing-thumbnails")
+    public String generateMissingThumbnails(Model model) {
 
-        archiveMetadataService.addAlbum(archiveFile, album);
+        Console console = consoles.create("generate thumbnails");
 
-        // archiveIndexingService.reIndex(archiveFile);
+        new Thread(() -> {
+            List<File> mediaFiles = BiographyFileUtils.getMediaFiles(archiveFolder);
 
-      });
-      console.close();
-    }).start();
+            // TODO Thumbnails for every media file type
+            mediaFiles.stream().filter(MediaFileType.JPEG::isTypeOf).forEach(file -> {
+                console.println(
+                                String.format("File '%s' -> [%s]", file.getName(), archiveImportService.generateThumbnails(file, false)));
+            });
 
-    return "redirect:/console";
+            console.close();
+        }).start();
 
-  }
+        return "redirect:/console";
 
-  @RequestMapping("/tools/inspect-file/{file}")
-  public String dumpFileDetails(Model model, @PathVariable("file") String filename) {
+    }
 
-    Console console = consoles.create("inspect-file " + filename);
+    @GetMapping("/tools/bulk-tagging")
+    public String bulkTagging(Model model) {
 
-    new Thread(() -> {
-      File archiveFile = BiographyFileUtils.getArchiveFileFromShortFilename(archiveFolder, filename);
+        model.addAttribute("selectedMenuItem", "TOOLS");
+        return "tools/bulk-tagging";
+    }
 
-      Pair<Boolean, List<Pair<String, Boolean>>> check = archiveValidationService.check(archiveFile);
-      if (!check.getLeft()) {
-        console.println(String.format("ERROR in file '%s'", archiveFile.getAbsolutePath()));
-        check.getRight().stream().forEach(pair -> {
-          console.println(String.format("%-100s [%s]", pair.getLeft(), pair.getRight() ? "OK" : "ERROR"));
-        });
-        console.println("");
-        console.close();
-        return;
-      }
+    @PostMapping("/tools/bulk-tagging")
+    public String bulkTagging(Model model, @RequestParam("album") String albumname, @RequestParam("files") String files) {
 
-      console.println(String.format("File '%s' -> [OK]%n", archiveFile.getAbsolutePath()));
+        Console console = consoles.create("bulk-tagging " + albumname);
 
-      BiographyMetadata metadata = archiveMetadataService.getMetadata(archiveFile);
+        new Thread(() -> {
+            console.println(String.format("Bulk tagging '%s'", albumname));
+            if (StringUtils.isBlank(albumname)) {
+                console.println("Album must not be blank.");
+                return;
+            }
+            Album album = new Album(albumname);
+            Arrays.stream(StringUtils.split(files)).forEach(filepath -> {
+                String filename = StringUtils.trim(StringUtils.substringAfterLast(filepath, "/"));
+                File archiveFile = BiographyFileUtils.getArchiveFileFromShortFilename(archiveFolder, filename);
+                if (archiveFile == null) {
+                    console.println(String.format("'%s' is not a valid archive file.", filename));
+                }
+                console.println(String.format("Tagging '%s'", archiveFile));
 
-      console.println(String.format("Filename: %s", archiveFile));
-      console.println(String.format("DateTimeOriginal: %s", metadata.getDateTimeOriginal()));
-      console.println(String.format("Description: %s", metadata.getDescription()));
-      console.println(String.format("Albums: %s", metadata.getAlbums()));
+                archiveMetadataService.addAlbum(archiveFile, album);
 
-      console.close();
+                // archiveIndexingService.reIndex(archiveFile);
 
-    }).start();
+            });
+            console.close();
+        }).start();
 
-    return "redirect:/console";
-  }
+        return "redirect:/console";
 
-  @RequestMapping("/tools/rebuild-index")
-  public String rebuildIndex(Model model) {
+    }
 
-    Console console = consoles.create("Rebuild Solr index");
+    @RequestMapping("/tools/inspect-file/{file}")
+    public String dumpFileDetails(Model model, @PathVariable("file") String filename) {
 
-    new Thread(() -> {
-      List<File> mediaFiles = BiographyFileUtils.getMediaFiles(archiveFolder);
+        Console console = consoles.create("inspect-file " + filename);
 
-      console.println(mediaFiles.size() + " to index.");
-      // TODO incremental output to console?
-      this.archiveIndexingService.rebuildIndex();
-      console.println("Finished.");
-      console.close();
-    }).start();
+        new Thread(() -> {
+            File archiveFile = BiographyFileUtils.getArchiveFileFromShortFilename(archiveFolder, filename);
 
-    return "redirect:/console";
-  }
+            Pair<Boolean, List<Pair<String, Boolean>>> check = archiveValidationService.check(archiveFile);
+            if (!check.getLeft()) {
+                console.println(String.format("ERROR in file '%s'", archiveFile.getAbsolutePath()));
+                check.getRight().stream().forEach(pair -> {
+                    console.println(String.format("%-100s [%s]", pair.getLeft(), pair.getRight() ? "OK" : "ERROR"));
+                });
+                console.println("");
+                console.close();
+                return;
+            }
+
+            console.println(String.format("File '%s' -> [OK]%n", archiveFile.getAbsolutePath()));
+
+            BiographyMetadata metadata = archiveMetadataService.getMetadata(archiveFile);
+
+            console.println(String.format("Filename: %s", archiveFile));
+            console.println(String.format("DateTimeOriginal: %s", metadata.getDateTimeOriginal()));
+            console.println(String.format("Description: %s", metadata.getDescription()));
+            console.println(String.format("Albums: %s", metadata.getAlbums()));
+
+            console.close();
+
+        }).start();
+
+        return "redirect:/console";
+    }
+
+    @RequestMapping("/tools/rebuild-index")
+    public String rebuildIndex(Model model) {
+
+        Console console = consoles.create("Rebuild Solr index");
+
+        new Thread(() -> {
+            List<File> mediaFiles = BiographyFileUtils.getMediaFiles(archiveFolder);
+
+            console.println(mediaFiles.size() + " to index.");
+            // TODO incremental output to console?
+            this.archiveIndexingService.rebuildIndex();
+            console.println("Finished.");
+            console.close();
+        }).start();
+
+        return "redirect:/console";
+    }
 
 }

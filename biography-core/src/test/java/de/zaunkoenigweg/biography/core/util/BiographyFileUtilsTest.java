@@ -10,12 +10,15 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import de.zaunkoenigweg.biography.metadata.ExifData;
+import de.zaunkoenigweg.biography.metadata.exif.Exif;
+import de.zaunkoenigweg.biography.metadata.exif.Exiftool;
 
 public class BiographyFileUtilsTest {
     
@@ -167,8 +170,10 @@ public class BiographyFileUtilsTest {
         assertEquals("7648bf4572edc4e71ed7992db4071e08b1a57597", BiographyFileUtils.sha1(sourceFile));
         Files.copy(sourceFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
         assertEquals("7648bf4572edc4e71ed7992db4071e08b1a57597", BiographyFileUtils.sha1(targetFile));
-        ExifData.setDescription(targetFile, "blablabla");
-        ExifData.setUserComment(targetFile, "blablabla");
+        Map<Exif, String> values = new HashMap<>();
+        values.put(Exif.IMAGE_DESCRIPTION, "blablabla");
+        values.put(Exif.USER_COMMENT, "blablabla");
+        Exiftool.write(targetFile, values );
         assertEquals("7648bf4572edc4e71ed7992db4071e08b1a57597", BiographyFileUtils.sha1(targetFile));
     }
 

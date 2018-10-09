@@ -13,16 +13,21 @@ import java.nio.file.StandardCopyOption;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.zaunkoenigweg.biography.metadata.exif.ExifData;
+import de.zaunkoenigweg.biography.metadata.exif.ExifDataService;
+
 public class MetadataServiceTest {
 
     private static final String METADATA_JSON = "{\"dateTimeOriginal\":\"2005-02-05T15:27:33.123\",\"description\":\"Cathedral Square in Christchurch\",\"albums\":[{\"title\":\"NZ 2005\"},{\"title\":\"NZ 2007\"}]}";
     private static final BiographyMetadata METADATA = BiographyMetadata.from(METADATA_JSON);
+    private ExifDataService exifDataService;
     private MetadataService sut;
     private File someFolder;
     
     @Before
     public void setUp() throws IOException {
-        this.sut = new MetadataService();
+        exifDataService = new ExifDataService();
+        this.sut = new MetadataService(exifDataService);
         someFolder = Files.createTempDirectory("someFolder").toFile();
         someFolder.deleteOnExit();
     }
@@ -62,7 +67,7 @@ public class MetadataServiceTest {
         assertNotNull(metadata);
         assertEquals(METADATA_JSON, metadata.toJson());
         
-        ExifData exifData = ExifData.of(jpgFile);
+        ExifData exifData = exifDataService.getExifData(jpgFile);
         assertEquals(metadata.getDescription(), exifData.getDescription().get());
         assertEquals(metadata.getDateTimeOriginal(), exifData.getDateTimeOriginal());
         

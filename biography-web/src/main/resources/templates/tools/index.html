@@ -9,6 +9,8 @@
     		<div th:replace="fragments/page :: header"></div>
     		<div th:replace="fragments/page :: menu"></div>
     		<div class="main-content">
+	    		<p><a th:href="@{/tools/fill-exif-cache}">fill EXIF cache</a></p>
+	    		<p><a th:href="@{/tools/clear-exif-cache}">clear EXIF cache</a></p>
 	    		<p><a th:href="@{/tools/inspect-archive}">inspect archive</a></p>
 	    		<p><a th:href="@{/tools/rebuild-index}">rebuild Solr index</a></p>
 	    		<p><a th:href="@{/tools/generate-all-thumbnails}">generate all thumbnails</a></p>

@@ -14,8 +14,8 @@ import de.zaunkoenigweg.biography.core.MediaFileType;
 import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
 import de.zaunkoenigweg.biography.metadata.Album;
 import de.zaunkoenigweg.biography.metadata.BiographyMetadata;
-import de.zaunkoenigweg.biography.metadata.ExifData;
 import de.zaunkoenigweg.biography.metadata.MetadataService;
+import de.zaunkoenigweg.biography.metadata.exif.ExifDataService;
 
 /**
  * This service offers methods to read/write the metadata of archived media files.
@@ -53,7 +53,7 @@ public class ArchiveMetadataService {
     	if(!mediaFileType.isPresent()) {
     		throw new IllegalStateException(String.format("The file type '%s' is not known.", file.getAbsolutePath()));
     	}
-		if(ExifData.supports(mediaFileType.get())) {
+		if(ExifDataService.supports(mediaFileType.get())) {
 			return metadataService.readMetadataFromExif(file);
     	} else {
     		return metadataService.readMetadataFromJsonFile(getMetadataJsonFile(file));
@@ -72,7 +72,7 @@ public class ArchiveMetadataService {
     	if(!mediaFileType.isPresent()) {
     		throw new IllegalStateException(String.format("The file type '%s' is not known.", file.getAbsolutePath()));
     	}
-		if(ExifData.supports(mediaFileType.get())) {
+		if(ExifDataService.supports(mediaFileType.get())) {
 			metadataService.writeMetadataIntoExif(file, metadata);
     	} else {
     		metadataService.writeMetadataToJsonFile(getMetadataJsonFile(file), metadata);
@@ -86,7 +86,7 @@ public class ArchiveMetadataService {
     	if(!mediaFileType.isPresent()) {
     		throw new IllegalStateException(String.format("The file type '%s' is not known.", file.getAbsolutePath()));
     	}
-		if(ExifData.supports(mediaFileType.get())) {
+		if(ExifDataService.supports(mediaFileType.get())) {
 			metadataService.writeMetadataIntoExif(file, metadata);
     	} else {
     		metadataService.writeMetadataToJsonFile(getMetadataJsonFile(file), metadata);
@@ -104,7 +104,7 @@ public class ArchiveMetadataService {
     	if(!mediaFileType.isPresent()) {
     		throw new IllegalStateException(String.format("The file type '%s' is not known.", file.getAbsolutePath()));
     	}
-		if(ExifData.supports(mediaFileType.get())) {
+		if(ExifDataService.supports(mediaFileType.get())) {
 			metadataService.writeMetadataIntoExif(file, metadata);
     	} else {
     		metadataService.writeMetadataToJsonFile(getMetadataJsonFile(file), metadata);
@@ -121,13 +121,13 @@ public class ArchiveMetadataService {
     		throw new IllegalStateException(String.format("The file type '%s' is not known.", file.getAbsolutePath()));
     	}
     	BiographyMetadata metadata = null;
-		if(ExifData.supports(mediaFileType.get())) {
+		if(ExifDataService.supports(mediaFileType.get())) {
 			metadata = metadataService.readMetadataFromExif(file);
     	} else {
     		metadata = metadataService.readMetadataFromJsonFile(getMetadataJsonFile(file));
     	}
     	BiographyMetadata newMetadata = new BiographyMetadata(metadata.getDateTimeOriginal(), BiographyFileUtils.getSha1FromArchiveFilename(file), metadata.getDescription(), metadata.getAlbums());
-		if(ExifData.supports(mediaFileType.get())) {
+		if(ExifDataService.supports(mediaFileType.get())) {
 			metadataService.writeMetadataIntoExif(file, newMetadata);
     	} else {
     		metadataService.writeMetadataToJsonFile(getMetadataJsonFile(file), newMetadata);

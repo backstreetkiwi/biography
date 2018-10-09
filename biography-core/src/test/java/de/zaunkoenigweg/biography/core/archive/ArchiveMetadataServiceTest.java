@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import de.zaunkoenigweg.biography.core.test.TestUtil;
 import de.zaunkoenigweg.biography.metadata.MetadataService;
+import de.zaunkoenigweg.biography.metadata.exif.ExifDataService;
 
 public class ArchiveMetadataServiceTest {
 
@@ -21,8 +22,8 @@ public class ArchiveMetadataServiceTest {
   public void setUp() throws Exception {
     archiveFolder = Files.createTempDirectory("archiveFolder").toFile();
     archiveFolder.deleteOnExit();
-    metadataService = new MetadataService();
-    sut = new ArchiveMetadataService(metadataService, new ArchiveValidationService(metadataService, archiveFolder));
+    metadataService = new MetadataService(new ExifDataService());
+    sut = new ArchiveMetadataService(metadataService, new ArchiveValidationService(metadataService, new ExifDataService(), archiveFolder));
   }
 
   /*

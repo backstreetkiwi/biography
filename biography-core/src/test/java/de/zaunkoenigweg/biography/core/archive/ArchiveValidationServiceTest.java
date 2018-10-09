@@ -12,6 +12,7 @@ import org.junit.Test;
 
 import de.zaunkoenigweg.biography.core.test.TestUtil;
 import de.zaunkoenigweg.biography.metadata.MetadataService;
+import de.zaunkoenigweg.biography.metadata.exif.ExifDataService;
 
 public class ArchiveValidationServiceTest {
 	
@@ -22,7 +23,7 @@ public class ArchiveValidationServiceTest {
 	public void setUp() throws Exception {
 	    archiveFolder = Files.createTempDirectory("archiveFolder").toFile();
 	    archiveFolder.deleteOnExit();
-		sut = new ArchiveValidationService(new MetadataService(), archiveFolder);
+		sut = new ArchiveValidationService(new MetadataService(new ExifDataService()), new ExifDataService(), archiveFolder);
 	}
 
 	@Test(expected=NullPointerException.class)

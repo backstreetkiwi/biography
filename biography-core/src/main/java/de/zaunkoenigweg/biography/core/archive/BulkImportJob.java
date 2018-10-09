@@ -12,7 +12,7 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import de.zaunkoenigweg.biography.core.MediaFileType;
-import de.zaunkoenigweg.biography.metadata.ExifData;
+import de.zaunkoenigweg.biography.metadata.exif.ExifData;
 
 /**
  * Holds the data of a bulk import job

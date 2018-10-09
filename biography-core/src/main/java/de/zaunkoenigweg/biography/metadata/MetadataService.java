@@ -11,12 +11,18 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Component;
 
+import de.zaunkoenigweg.biography.metadata.exif.ExifData;
+import de.zaunkoenigweg.biography.metadata.exif.ExifDataService;
+
 @Component
 public class MetadataService {
 
     private final static Log LOG = LogFactory.getLog(MetadataService.class);
+    
+    private ExifDataService exifDataService;
 
-    public MetadataService() {
+    public MetadataService(ExifDataService exifDataService) {
+        this.exifDataService = exifDataService;
 		LOG.info("MetadataService started.");
 	}
 
@@ -31,10 +37,11 @@ public class MetadataService {
      * @param metadata BiographyMetadata
      */
     public void writeMetadataIntoExif(File file, BiographyMetadata metadata) {
-        // TODO Perhaps use some kind of builder pattern to avoid changing the whole file three times
-        ExifData.setUserComment(file, metadata.toJson());
-        ExifData.setDescription(file, metadata.getDescription());
-        ExifData.setDateTimeOriginal(file, metadata.getDateTimeOriginal());
+        ExifData exifData = exifDataService.getExifData(file);
+        exifData.setDateTimeOriginal(metadata.getDateTimeOriginal());
+        exifData.setDescription(metadata.getDescription());
+        exifData.setUserComment(metadata.toJson());
+        exifDataService.setExifData(file, exifData);
     }
 
     /**
@@ -49,7 +56,7 @@ public class MetadataService {
      * @return Biography metadata
      */
     public BiographyMetadata readMetadataFromExif(File file) {
-        ExifData exifData = ExifData.of(file);
+        ExifData exifData = exifDataService.getExifData(file);
         if(exifData==null) {
             return null;
         }
@@ -70,7 +77,7 @@ public class MetadataService {
      * @return Is the EXIF data consistent to the Biography metadata?
      */
     public boolean isExifDataConsistentToMetadata(File file, BiographyMetadata metadata) {
-        ExifData exifData = ExifData.of(file);
+        ExifData exifData = exifDataService.getExifData(file);
         if(!exifData.getDateTimeOriginal().equals(metadata.getDateTimeOriginal())) {
             return false;
         }

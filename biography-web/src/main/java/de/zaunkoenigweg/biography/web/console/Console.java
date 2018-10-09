@@ -1,5 +1,6 @@
 package de.zaunkoenigweg.biography.web.console;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 
 public class Console {
@@ -31,6 +32,7 @@ public class Console {
 	}
 
 	public void close() {
+	    buffer.append("Duration: " + Duration.between(startTime, LocalDateTime.now()) + "\n");
 		this.closed = true;
 	}
 
