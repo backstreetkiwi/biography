@@ -42,7 +42,7 @@ public class ExifDataService {
         values.put(Exif.IMAGE_DESCRIPTION, newExifData.getDescription().orElse(""));
         values.put(Exif.CAMERA_MODEL, newExifData.getCameraModel().orElse(""));
         values.put(Exif.USER_COMMENT, newExifData.getUserComment().orElse(""));
-        Exiftool.write(file, values);
+        Exiftool.write(file, values, false);
 
         cache.put(file, newExifData);
         
@@ -52,6 +52,7 @@ public class ExifDataService {
     public void fillCacheFromArchive(String path) {
         Map<File, Map<Exif, String>> exifData = Exiftool.readPaths(path, ExifData.EXIF_FIELDS);
         exifData.entrySet().stream().forEach(entry -> {
+            LOG.info(String.format("Reading EXIF Data for %s into cache...", entry.getKey().getAbsolutePath()));
             cache.put(entry.getKey(), new ExifData(entry.getValue()));
         });
     }

@@ -144,16 +144,19 @@ public class Exiftool {
     /**
      * Writes EXIF metadata to the given mediafile.
      * 
-     * @param file
-     *            mediafile
-     * @param values
-     *            map of values to write.
+     * @param file mediafile
+     * @param values map of values to write.
+     * @param backupOriginalFile Should the original file be kept as <filename>_original?
      */
-    public static void write(File file, Map<Exif, String> values) {
+    public static void write(File file, Map<Exif, String> values, boolean backupOriginalFile) {
 
         String params = values.entrySet().stream()
                         .map(entry -> String.format("-%s=\"%s\"", entry.getKey().getExiftoolParam(), StringUtils.replace(entry.getValue(), "\"", "\\\"")))
                         .collect(Collectors.joining(" "));
+        
+        if(!backupOriginalFile) {
+            params = "-overwrite_original " + params;
+        }
 
         Pair<Integer, List<String>> result = callExiftool(params, file.getAbsolutePath());
 

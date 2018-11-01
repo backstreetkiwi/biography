@@ -173,7 +173,7 @@ public class BiographyFileUtilsTest {
         Map<Exif, String> values = new HashMap<>();
         values.put(Exif.IMAGE_DESCRIPTION, "blablabla");
         values.put(Exif.USER_COMMENT, "blablabla");
-        Exiftool.write(targetFile, values );
+        Exiftool.write(targetFile, values, false);
         assertEquals("7648bf4572edc4e71ed7992db4071e08b1a57597", BiographyFileUtils.sha1(targetFile));
     }
 

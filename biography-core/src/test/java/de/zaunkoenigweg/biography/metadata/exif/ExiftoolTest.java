@@ -135,6 +135,44 @@ public class ExiftoolTest {
     }
 
     @Test
+    public void testWriteFileWithKeepingOriginal() throws IOException {
+        File fileSource = new File(getClass().getResource("/exifdatatest/NikonD60.jpg").getFile());
+        File file = new File(someFolder, "ImageWithDecription.jpg");
+        File originalFile = new File(someFolder, "ImageWithDecription.jpg_original");
+        Files.copy(fileSource.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        String description = String.format("description set at %s", LocalDateTime.now());
+
+        Map<Exif, String> exifData = Exiftool.read(file, fieldSet(Exif.IMAGE_DESCRIPTION));
+        assertNotNull(exifData);
+        assertNotEquals(description, exifData.get(Exif.IMAGE_DESCRIPTION));
+
+        Map<Exif, String> values = new HashMap<>();
+        values.put(Exif.IMAGE_DESCRIPTION, description);
+        Exiftool.write(file, values, true);
+
+        assertTrue(originalFile.exists());
+    }
+
+    @Test
+    public void testWriteFileWithoutKeepingOriginal() throws IOException {
+        File fileSource = new File(getClass().getResource("/exifdatatest/NikonD60.jpg").getFile());
+        File file = new File(someFolder, "ImageWithDecription.jpg");
+        File originalFile = new File(someFolder, "ImageWithDecription.jpg_original");
+        Files.copy(fileSource.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        String description = String.format("description set at %s", LocalDateTime.now());
+
+        Map<Exif, String> exifData = Exiftool.read(file, fieldSet(Exif.IMAGE_DESCRIPTION));
+        assertNotNull(exifData);
+        assertNotEquals(description, exifData.get(Exif.IMAGE_DESCRIPTION));
+
+        Map<Exif, String> values = new HashMap<>();
+        values.put(Exif.IMAGE_DESCRIPTION, description);
+        Exiftool.write(file, values, false);
+
+        assertFalse(originalFile.exists());
+    }
+
+    @Test
     public void testWriteJpegDescription() throws IOException {
         File fileSource = new File(getClass().getResource("/exifdatatest/NikonD60.jpg").getFile());
         File file = new File(someFolder, "ImageWithDescription.jpg");
@@ -147,7 +185,7 @@ public class ExiftoolTest {
 
         Map<Exif, String> values = new HashMap<>();
         values.put(Exif.IMAGE_DESCRIPTION, description);
-        Exiftool.write(file, values);
+        Exiftool.write(file, values, false);
 
         exifData = Exiftool.read(file, fieldSet(Exif.IMAGE_DESCRIPTION));
         assertNotNull(exifData);
@@ -167,7 +205,7 @@ public class ExiftoolTest {
 
         Map<Exif, String> values = new HashMap<>();
         values.put(Exif.IMAGE_DESCRIPTION, description);
-        Exiftool.write(file, values);
+        Exiftool.write(file, values, false);
 
         exifData = Exiftool.read(file, fieldSet(Exif.IMAGE_DESCRIPTION));
         assertNotNull(exifData);
@@ -187,7 +225,7 @@ public class ExiftoolTest {
 
         Map<Exif, String> values = new HashMap<>();
         values.put(Exif.IMAGE_DESCRIPTION, description);
-        Exiftool.write(file, values);
+        Exiftool.write(file, values, false);
 
         exifData = Exiftool.read(file, fieldSet(Exif.IMAGE_DESCRIPTION));
         assertNotNull(exifData);
@@ -207,7 +245,7 @@ public class ExiftoolTest {
 
         Map<Exif, String> values = new HashMap<>();
         values.put(Exif.IMAGE_DESCRIPTION, description);
-        Exiftool.write(file, values);
+        Exiftool.write(file, values, false);
 
         exifData = Exiftool.read(file, fieldSet(Exif.IMAGE_DESCRIPTION));
         assertNotNull(exifData);
@@ -229,7 +267,7 @@ public class ExiftoolTest {
 
         Map<Exif, String> values = new HashMap<>();
         values.put(Exif.USER_COMMENT, userComment);
-        Exiftool.write(file, values);
+        Exiftool.write(file, values, false);
 
         exifData = Exiftool.read(file, fieldSet(Exif.USER_COMMENT));
         assertNotNull(exifData);
