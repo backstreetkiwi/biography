@@ -22,17 +22,18 @@ public class ExifDataService {
 	}
     
     public ExifData getExifData(File file) {
+        ExifData exifData;
         if(cache.containsKey(file)) {
             return cache.get(file);
         }
         Map<Exif, String> rawExifData;
         try {
             rawExifData = Exiftool.read(file, ExifData.EXIF_FIELDS);
+            exifData = new ExifData(rawExifData);
+            cache.put(file, exifData);
         } catch (IllegalStateException | IllegalArgumentException e) {
             return null;
         }
-        ExifData exifData = new ExifData(rawExifData);
-        cache.put(file, exifData);
         return exifData;
     }
     

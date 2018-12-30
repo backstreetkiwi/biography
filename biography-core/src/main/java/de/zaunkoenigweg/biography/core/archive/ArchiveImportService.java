@@ -40,9 +40,10 @@ public class ArchiveImportService {
     private File archiveFolder;
     private String thumborUrl;
 
-    public ArchiveImportService(MetadataService metadataService, ArchiveIndexingService archiveIndexingService, File archiveFolder, String thumborUrl) {
+    public ArchiveImportService(MetadataService metadataService, ArchiveIndexingService archiveIndexingService, ExifDataService exifDataService, File archiveFolder, String thumborUrl) {
         this.metadataService = metadataService;
         this.archiveIndexingService = archiveIndexingService;
+        this.exifDataService = exifDataService;
         this.archiveFolder = archiveFolder;
         this.thumborUrl = thumborUrl;
         LOG.info("ArchiveImportService started.");
