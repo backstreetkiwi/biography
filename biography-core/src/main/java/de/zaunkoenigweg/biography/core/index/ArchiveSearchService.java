@@ -13,8 +13,6 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.annotation.PreDestroy;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.logging.Log;
@@ -27,10 +25,11 @@ import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.FacetField.Count;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ArchiveSearchService {
+public class ArchiveSearchService implements DisposableBean {
 
     private final static Log LOG = LogFactory.getLog(ArchiveSearchService.class);
 
@@ -52,8 +51,8 @@ public class ArchiveSearchService {
 		LOG.info(String.format("solrIndexUrl=%s", this.solrIndexUrl));
 	}
 
-    @PreDestroy
-    public void close() {
+    @Override
+    public void destroy() throws Exception {
         LOG.info("Index stopped.");
     }
 

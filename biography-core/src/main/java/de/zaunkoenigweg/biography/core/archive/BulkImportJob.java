@@ -12,7 +12,7 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import de.zaunkoenigweg.biography.core.MediaFileType;
-import de.zaunkoenigweg.biography.metadata.exif.ExifData;
+import de.zaunkoenigweg.biography.metadata.exif.ExifDataWrapper;
 
 /**
  * Holds the data of a bulk import job
@@ -24,7 +24,7 @@ public class BulkImportJob {
     private boolean running;
     private SortedSet<File> files = new TreeSet<>();
     private Map<File, MediaFileType> mediaFileType = new HashMap<>();
-    private Map<File, ExifData> exifData = new HashMap<>();
+    private Map<File, ExifDataWrapper> exifData = new HashMap<>();
     private Map<File, LocalDateTime> dateTimeOriginal = new HashMap<>();
     private Set<File> readyToImport = new HashSet<>();
     private Map<File, ImportResult> importResult = new HashMap<>();
@@ -45,11 +45,11 @@ public class BulkImportJob {
         this.mediaFileType.put(file, mediaFileType);
     }
     
-    public ExifData getExifData(File file) {
+    public ExifDataWrapper getExifData(File file) {
         return exifData.get(file);
     }
     
-    public void setExifData(File file, ExifData exifData) {
+    public void setExifData(File file, ExifDataWrapper exifData) {
         this.exifData.put(file, exifData);
     }
 

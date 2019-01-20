@@ -11,7 +11,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Component;
 
-import de.zaunkoenigweg.biography.metadata.exif.ExifData;
+import de.zaunkoenigweg.biography.metadata.exif.ExifDataWrapper;
 import de.zaunkoenigweg.biography.metadata.exif.ExifDataService;
 
 @Component
@@ -37,7 +37,7 @@ public class MetadataService {
      * @param metadata BiographyMetadata
      */
     public void writeMetadataIntoExif(File file, BiographyMetadata metadata) {
-        ExifData exifData = exifDataService.getExifData(file);
+        ExifDataWrapper exifData = exifDataService.getExifData(file);
         exifData.setDateTimeOriginal(metadata.getDateTimeOriginal());
         exifData.setDescription(metadata.getDescription());
         exifData.setUserComment(metadata.toJson());
@@ -56,7 +56,7 @@ public class MetadataService {
      * @return Biography metadata
      */
     public BiographyMetadata readMetadataFromExif(File file) {
-        ExifData exifData = exifDataService.getExifData(file);
+        ExifDataWrapper exifData = exifDataService.getExifData(file);
         if(exifData==null) {
             return null;
         }
@@ -77,7 +77,7 @@ public class MetadataService {
      * @return Is the EXIF data consistent to the Biography metadata?
      */
     public boolean isExifDataConsistentToMetadata(File file, BiographyMetadata metadata) {
-        ExifData exifData = exifDataService.getExifData(file);
+        ExifDataWrapper exifData = exifDataService.getExifData(file);
         if(!exifData.getDateTimeOriginal().equals(metadata.getDateTimeOriginal())) {
             return false;
         }

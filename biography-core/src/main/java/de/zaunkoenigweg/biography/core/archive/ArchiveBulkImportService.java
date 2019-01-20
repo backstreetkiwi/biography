@@ -10,7 +10,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Component;
 
 import de.zaunkoenigweg.biography.core.MediaFileType;
-import de.zaunkoenigweg.biography.metadata.exif.ExifData;
+import de.zaunkoenigweg.biography.metadata.exif.ExifDataWrapper;
 import de.zaunkoenigweg.biography.metadata.exif.ExifDataService;
 
 /**
@@ -106,7 +106,7 @@ public class ArchiveBulkImportService {
                 .forEach(mediaFile -> {
                     importJob.add(mediaFile);
                     importJob.setMediaFileType(mediaFile, MediaFileType.of(mediaFile).orElse(null));
-                    ExifData exifData = exifDataService.getExifData(mediaFile);
+                    ExifDataWrapper exifData = exifDataService.getExifData(mediaFile);
                     if(exifData!=null) {
                         importJob.setExifData(mediaFile, exifData);
                         LocalDateTime dateTimeOriginal = exifData.getDateTimeOriginal();

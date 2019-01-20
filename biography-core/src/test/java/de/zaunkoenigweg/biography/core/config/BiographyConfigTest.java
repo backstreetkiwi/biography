@@ -31,14 +31,14 @@ public class BiographyConfigTest {
     @Test(expected=BeanInitializationException.class)
     public void testConfigNoPropertiesSet() {
         sut = new BiographyConfig();
-        sut.init();
+        sut.afterPropertiesSet();
     }
 
     @Test(expected=BeanInitializationException.class)
     public void testNoArchiveFolderSet() {
         sut = new BiographyConfig();
         sut.setImportFolderProperty(existingImportFolder.getAbsolutePath());
-        sut.init();
+        sut.afterPropertiesSet();
     }
     
     @Test(expected=BeanInitializationException.class)
@@ -46,14 +46,14 @@ public class BiographyConfigTest {
         sut = new BiographyConfig();
         sut.setImportFolderProperty(existingImportFolder.getAbsolutePath());
         sut.setArchiveFolderProperty(nonExistingArchiveFolder.getAbsolutePath());
-        sut.init();
+        sut.afterPropertiesSet();
     }
     
     @Test(expected=BeanInitializationException.class)
     public void testNoImportFolderSet() {
         sut = new BiographyConfig();
         sut.setArchiveFolderProperty(existingArchiveFolder.getAbsolutePath());
-        sut.init();
+        sut.afterPropertiesSet();
     }
     
     @Test(expected=BeanInitializationException.class)
@@ -61,7 +61,7 @@ public class BiographyConfigTest {
         sut = new BiographyConfig();
         sut.setImportFolderProperty(nonExistingImportFolder.getAbsolutePath());
         sut.setArchiveFolderProperty(existingArchiveFolder.getAbsolutePath());
-        sut.init();
+        sut.afterPropertiesSet();
     }
     
     @Test(expected=BeanInitializationException.class)
@@ -69,7 +69,7 @@ public class BiographyConfigTest {
         sut = new BiographyConfig();
         sut.setImportFolderProperty(existingImportFolder.getAbsolutePath());
         sut.setArchiveFolderProperty(existingImportFolder.getAbsolutePath());
-        sut.init();
+        sut.afterPropertiesSet();
     }
     
     @Test
@@ -77,7 +77,7 @@ public class BiographyConfigTest {
         sut = new BiographyConfig();
         sut.setImportFolderProperty(existingImportFolder.getAbsolutePath());
         sut.setArchiveFolderProperty(existingArchiveFolder.getAbsolutePath());
-        sut.init();
+        sut.afterPropertiesSet();
         assertNotNull(sut);
     }
     

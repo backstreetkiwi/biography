@@ -26,8 +26,8 @@ import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
 import de.zaunkoenigweg.biography.metadata.Album;
 import de.zaunkoenigweg.biography.metadata.BiographyMetadata;
 import de.zaunkoenigweg.biography.metadata.MetadataService;
-import de.zaunkoenigweg.biography.metadata.exif.ExifData;
 import de.zaunkoenigweg.biography.metadata.exif.ExifDataService;
+import de.zaunkoenigweg.biography.metadata.exif.ExifDataWrapper;
 
 @Component
 public class ArchiveImportService {
@@ -70,7 +70,7 @@ public class ArchiveImportService {
 
         if(ExifDataService.supports(mediaFileType.get())) {
 
-            ExifData exifData = exifDataService.getExifData(file);
+            ExifDataWrapper exifData = exifDataService.getExifData(file);
 
             if (exifData == null) {
                 return ImportResult.NO_EXIF_DATA_PRESENT;

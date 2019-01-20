@@ -30,13 +30,13 @@ public class ExifDataServiceTest {
 
     @Test
     public void testGetExifDataNull() throws IOException {
-        ExifData exifData = exifDataService.getExifData(null);
+        ExifDataWrapper exifData = exifDataService.getExifData(null);
         assertNull(exifData);
     }
 
     @Test
     public void testGetExifDataEmptyFile() throws IOException {
-        ExifData exifData = exifDataService.getExifData(someEmptyFile);
+        ExifDataWrapper exifData = exifDataService.getExifData(someEmptyFile);
         assertNull(exifData);
     }
 
@@ -45,16 +45,13 @@ public class ExifDataServiceTest {
         File fileSource = new File(getClass().getResource("/exifdatatest/NikonD60.jpg").getFile());
         File file = new File(tempFolder, "NikonD60.jpg");
         Files.copy(fileSource.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        ExifData exifData = exifDataService.getExifData(file);
+        ExifDataWrapper exifData = exifDataService.getExifData(file);
         assertNotNull(exifData);
         assertNotNull(exifData.getDateTimeOriginal());
         assertEquals(LocalDateTime.of(2005, 2, 22, 13, 51, 32, 80_000_000), exifData.getDateTimeOriginal());
         assertNotNull(exifData.getDateTimeOriginal());
         assertTrue(exifData.getDescription().isPresent());
         assertEquals("Christchurch; auf dem Cathedral Square", exifData.getDescription().get());
-        assertNotNull(exifData.getCameraModel());
-        assertTrue(exifData.getCameraModel().isPresent());
-        assertEquals("NIKON D70", exifData.getCameraModel().get());
         assertNotNull(exifData.getUserComment());
         assertFalse(exifData.getUserComment().isPresent());
     }
@@ -65,10 +62,10 @@ public class ExifDataServiceTest {
         File fileSource = new File(getClass().getResource("/exifdatatest/NikonD60.jpg").getFile());
         File file = new File(tempFolder, "NikonD60.jpg");
         Files.copy(fileSource.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        ExifData exifData = exifDataService.getExifData(file);
+        ExifDataWrapper exifData = exifDataService.getExifData(file);
         assertNotNull(exifData);
         Files.delete(file.toPath());
-        ExifData exifDataAfterRemoval = exifDataService.getExifData(file);
+        ExifDataWrapper exifDataAfterRemoval = exifDataService.getExifData(file);
         assertSame(exifDataAfterRemoval, exifData);
     }
 
@@ -77,12 +74,11 @@ public class ExifDataServiceTest {
         File fileSource = new File(getClass().getResource("/exifdatatest/NikonD60.jpg").getFile());
         File file = new File(tempFolder, "NikonD60.jpg");
         Files.copy(fileSource.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        ExifData exifData = exifDataService.getExifData(file);
+        ExifDataWrapper exifData = exifDataService.getExifData(file);
         assertNotNull(exifData);
-        exifData.setCameraModel("New fancy camera");
         exifData.setDescription("some new description");
         exifDataService.setExifData(file, exifData);
-        ExifData newExifData = exifDataService.getExifData(file);
+        ExifDataWrapper newExifData = exifDataService.getExifData(file);
         assertEquals(newExifData, exifData);
     }
     
