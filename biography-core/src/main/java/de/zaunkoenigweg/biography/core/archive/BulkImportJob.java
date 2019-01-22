@@ -3,10 +3,8 @@ package de.zaunkoenigweg.biography.core.archive;
 import java.io.File;
 import java.time.LocalDateTime;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -26,8 +24,9 @@ public class BulkImportJob {
     private Map<File, MediaFileType> mediaFileType = new HashMap<>();
     private Map<File, ExifDataWrapper> exifData = new HashMap<>();
     private Map<File, LocalDateTime> dateTimeOriginal = new HashMap<>();
-    private Set<File> readyToImport = new HashSet<>();
     private Map<File, ImportResult> importResult = new HashMap<>();
+    private Map<File, String> albums = new HashMap<>();
+    private Map<File, String> descriptions = new HashMap<>();
     
     public List<File> getImportFiles() {
         return this.files.stream().collect(Collectors.toList());
@@ -57,8 +56,28 @@ public class BulkImportJob {
         return dateTimeOriginal.get(file);
     }
     
+    public boolean hasDateTimeOriginal(File file) {
+        return dateTimeOriginal.containsKey(file);
+    }
+    
     public void setDateTimeOriginal(File file, LocalDateTime dateTimeOriginal) {
         this.dateTimeOriginal.put(file, dateTimeOriginal);
+    }
+    
+    public String getAlbum(File file) {
+        return albums.get(file);
+    }
+    
+    public void setAlbum(File file, String album) {
+        this.albums.put(file, album);
+    }
+    
+    public String getDescription(File file) {
+        return descriptions.get(file);
+    }
+    
+    public void setDescription(File file, String description) {
+        this.descriptions.put(file, description);
     }
     
     public ImportResult getImportResult(File file) {
@@ -69,18 +88,6 @@ public class BulkImportJob {
         this.importResult.put(file, importResult);
     }
     
-    public boolean isReadyToImport(File file) {
-        return this.readyToImport.contains(file);
-    }
-    
-    public void setReadyToImport(File file, boolean readyToImport) {
-        if(readyToImport) {
-            this.readyToImport.add(file);
-        } else {
-            this.readyToImport.remove(file);
-        }
-    }
-
     public boolean isRunning() {
         return running;
     }

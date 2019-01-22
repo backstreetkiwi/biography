@@ -28,46 +28,51 @@
 			<div th:if="${importJob.running}">
 				<span>IMPORT JOB IS RUNNING ...</span>
 			</div>
-			<form method="POST" th:action="@{/import/start}">
-				<div th:unless="${importJob.running}">
-					    Albumname: <input type="text" name="album" class="albumname"/>
-				</div>
-				<div th:unless="${importJob.running}">
-						<input type="submit" value="Start import job" class="submit-startjob"/>
-				</div>
-			</form>
 			<div th:unless="${importJob.running}">
 				<form method="POST" th:action="@{/import/clear}">
-					<input type="submit" value="Clear import job" class="submit-clearjob"/>
+					<input type="submit" value="Reset import job (remove imported, clear data)" class="submit-clearjob"/>
+				</form>
+			</div>
+			<div th:unless="${importJob.running}">
+				<form method="POST" th:action="@{/import/start}">
+					<input type="submit" value="Start import job)" class="submit-startjob"/>
 				</form>
 			</div>
 		</div>
-		<div class="import-table">
-			<table>
-				<tr>
-					<th>File</th>
-					<th>Type</th>
-					<th>EXIF?</th>
-					<th>Datetime original</th>
-					<th>Ready to import?</th>
-					<th>Import Result</th>
-					<th>Set date</th>
-				</tr>
-				<tr th:each="file,iter : ${importJob.importFiles}">
-					<td th:text="${file.name}"></td>
-					<td th:text="${importJob.getMediaFileType(file)}"></td>
-					<td th:text="${importJob.getExifData(file)}? 'YES' : 'NO'"></td>
-					<td th:text="${importJob.getDateTimeOriginal(file)}"></td>
-					<td th:text="${importJob.isReadyToImport(file)}? 'YES' : 'NO'"></td>
-					<td th:text="${importJob.getImportResult(file)}"></td>
-					<td>
-						<form method="POST" th:action="@{/import/file/__${file.name}__/setdatetimeoriginal}">
-							<input type="datetime-local" name="dateTimeOriginal"/> <input type="submit" value="SET" />
-						</form>
-					</td>
-				</tr>
-			</table>
-		</div>
+		<form method="POST" th:action="@{/import/save}">
+			<div class="import-job">
+				<div th:unless="${importJob.running}">
+						<input type="submit" value="Save import job" class="submit-savejob"/>
+				</div>
+				<div th:unless="${importJob.running}">
+						<input type="reset" value="Reset changed data" class="submit-savejob"/>
+				</div>
+			</div>
+			<div class="import-table">
+				<table>
+					<tr>
+						<th>File</th>
+						<th>Type</th>
+						<th>EXIF?</th>
+						<th>Datetime original</th>
+						<th></th>
+						<th>Import Result</th>
+						<th>Albumname</th>
+						<th>Description</th>
+					</tr>
+					<tr th:each="file,iter : ${importJob.importFiles}">
+						<td th:text="${file.name}"></td>
+						<td th:text="${importJob.getMediaFileType(file)}"></td>
+						<td th:text="${importJob.getExifData(file)}? 'YES' : 'NO'"></td>
+						<td><input type="text" th:name="${file.name + '-datetime-original'}" th:value="${importJob.getDateTimeOriginal(file)}"></td>
+						<td><input type="checkbox" th:name="${file.name + '-overwrite-datetime-original'}" /></td>
+						<td th:text="${importJob.getImportResult(file)}"></td>
+						<td><input type="text" th:name="${file.name + '-album'}" th:value="${importJob.getAlbum(file)}" class="albumname"/></td>
+						<td><input type="text" th:name="${file.name + '-description'}" th:value="${importJob.getDescription(file)}" class="description"/></td>
+					</tr>
+				</table>
+			</div>
+		</form>
 	</div>
 
 </body>

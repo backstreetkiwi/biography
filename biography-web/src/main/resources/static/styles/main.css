@@ -267,10 +267,6 @@ div.import-job div {
 	font-size: 20px;
 }
 
-div.import-job form div input.albumname {
-	width: 300px;
-}
-
 div.import-job form div input.submit-startjob {
 	font-size: 20px;
 }
