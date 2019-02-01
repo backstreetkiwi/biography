@@ -4,3 +4,4 @@ target/
 .project
 .sts4-cache/
 *.versionsBackup
+node_modules/
