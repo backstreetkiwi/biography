@@ -26,8 +26,8 @@ import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
 import de.zaunkoenigweg.biography.metadata.Album;
 import de.zaunkoenigweg.biography.metadata.BiographyMetadata;
 import de.zaunkoenigweg.biography.metadata.MetadataService;
-import de.zaunkoenigweg.biography.metadata.exif.ExifData;
 import de.zaunkoenigweg.biography.metadata.exif.ExifDataService;
+import de.zaunkoenigweg.biography.metadata.exif.ExifDataWrapper;
 
 @Component
 public class ArchiveImportService {
@@ -54,7 +54,7 @@ public class ArchiveImportService {
      * Imports given media file.
      * @param album
      */
-    public ImportResult importFile(File file, boolean readLegacyDescription, LocalDateTime dateTimeOriginalFallback, String album) {
+    public ImportResult importFile(File file, LocalDateTime dateTimeOriginalFallback, String album, String description) {
 
         if (!file.exists() || file.isDirectory()) {
             return ImportResult.FILE_NOT_FOUND;
@@ -70,7 +70,7 @@ public class ArchiveImportService {
 
         if(ExifDataService.supports(mediaFileType.get())) {
 
-            ExifData exifData = exifDataService.getExifData(file);
+            ExifDataWrapper exifData = exifDataService.getExifData(file);
 
             if (exifData == null) {
                 return ImportResult.NO_EXIF_DATA_PRESENT;
@@ -109,20 +109,16 @@ public class ArchiveImportService {
             LOG.error("File cannot be stored in archive.", e);
         }
 
-        setBiographyMetadata(archiveFile, dateTimeOriginal, sha1, readLegacyDescription, album);
+        setBiographyMetadata(archiveFile, dateTimeOriginal, sha1, album, description);
         
         archiveIndexingService.reIndex(archiveFile);
 
         return ImportResult.SUCCESS;
     }
 
-    private void setBiographyMetadata(File file, LocalDateTime dateTimeOriginal, String sha1, boolean readLegacyDescription,
-            String album) {
+    private void setBiographyMetadata(File file, LocalDateTime dateTimeOriginal, String sha1,
+            String album, String description) {
         MediaFileType mediaFileType = MediaFileType.of(file).get();
-        String description = null;
-        if (readLegacyDescription && ExifDataService.supports(mediaFileType)) {
-            description = exifDataService.getExifData(file).getDescription().orElse(null);
-        }
 
         Set<Album> albums = new HashSet<>();
         if (StringUtils.isNotBlank(album)) {

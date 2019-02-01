@@ -3,7 +3,11 @@ package de.zaunkoenigweg.biography.web.fileimport;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -12,7 +16,6 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
@@ -73,38 +76,46 @@ public class ImportController {
     }
     
     /**
-     * Sets dateTimeOriginal on file.
+     * Saves import form.
      * 
-     * @param filename Name of file in import folder
-     * @param dateTimeOriginalParam new timestamp
      * @return
      */
-    @PostMapping("/import/file/{fileName}/setdatetimeoriginal")
-
-    public String setDateTimeOriginal(@PathVariable("fileName")String filename, @RequestParam(name="dateTimeOriginal", required=true) String dateTimeOriginalParam) {
-
-        LocalDateTime dateTimeOriginal = null;
-        try {
-            dateTimeOriginal = LocalDateTime.parse(dateTimeOriginalParam);
-        } catch (Exception e1) {
-            return "redirect:/import";
-        }
-
-        File fileInImportFolder = new File(importFolder, filename);
-        this.archiveBulkImportService.getImportJob().setDateTimeOriginal(fileInImportFolder, dateTimeOriginal);
-        this.archiveBulkImportService.getImportJob().setReadyToImport(fileInImportFolder, true);
+    @PostMapping("/import/save")
+    public String saveImport(HttpServletRequest request) {
+        this.archiveBulkImportService.getImportJob().getImportFiles().stream().forEach(file -> {
+            String importFileName = file.getName();
+            String album = request.getParameter(importFileName + "-album");
+            if(album!=null) {
+                this.archiveBulkImportService.getImportJob().setAlbum(file, album);
+            }
+            String description = request.getParameter(importFileName + "-description");
+            if(description!=null) {
+                this.archiveBulkImportService.getImportJob().setDescription(file, description);
+            }
+            String overwriteDateTimeOriginal = request.getParameter(importFileName + "-overwrite-datetime-original");
+            if(overwriteDateTimeOriginal!=null) {
+                LocalDateTime dateTimeOriginal = null;
+                try {
+                    dateTimeOriginal = LocalDateTime.parse(request.getParameter(importFileName + "-datetime-original")).truncatedTo(ChronoUnit.MILLIS);
+                    this.archiveBulkImportService.getImportJob().setDateTimeOriginal(file, dateTimeOriginal);
+                } catch (DateTimeParseException e) {
+                    // that's okay...
+                }
+            }
+        });
+        
         return "redirect:/import";
     }
+    
     
     /**
      * Starts import.
      * 
-     * @param albumName Name of album to write to metadata during import.
      * @return
      */
     @PostMapping("/import/start")
-    public String startImport(@RequestParam("album") String albumName) {
-        this.archiveBulkImportService.startImport(albumName);
+    public String startImport(HttpServletRequest request) {
+        this.archiveBulkImportService.startImport();
         return "redirect:/import";
     }
 

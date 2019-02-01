@@ -10,8 +10,8 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Component;
 
 import de.zaunkoenigweg.biography.core.MediaFileType;
-import de.zaunkoenigweg.biography.metadata.exif.ExifData;
 import de.zaunkoenigweg.biography.metadata.exif.ExifDataService;
+import de.zaunkoenigweg.biography.metadata.exif.ExifDataWrapper;
 
 /**
  * This Service manages bulk imports into the Biography archive.
@@ -58,22 +58,19 @@ public class ArchiveBulkImportService {
     /**
      * Starts the current import job.
      * 
-     * @param album name of the album that all the imports are assigned to.
-     * 
      * @return Could the job be started? If not, it is already running.
      */
-    public boolean startImport(String album) {
+    public boolean startImport() {
         if(importJob.isRunning()) {
             return false;
         }
         importJob.setRunning(true);
         new Thread(() -> {
             importJob.getImportFiles().stream()
-                .filter(importJob::isReadyToImport)
+                .filter(importJob::hasDateTimeOriginal)
                 .forEach(mediaFile -> {
-                    ImportResult importResult = archiveImportService.importFile(mediaFile, true, importJob.getDateTimeOriginal(mediaFile), album);
+                    ImportResult importResult = archiveImportService.importFile(mediaFile, importJob.getDateTimeOriginal(mediaFile), importJob.getAlbum(mediaFile), importJob.getDescription(mediaFile));
                     importJob.setImportResult(mediaFile, importResult);
-                    importJob.setReadyToImport(mediaFile, importResult!=ImportResult.SUCCESS);
                 });
             importJob.setRunning(false);
         }).start();
@@ -106,14 +103,14 @@ public class ArchiveBulkImportService {
                 .forEach(mediaFile -> {
                     importJob.add(mediaFile);
                     importJob.setMediaFileType(mediaFile, MediaFileType.of(mediaFile).orElse(null));
-                    ExifData exifData = exifDataService.getExifData(mediaFile);
+                    ExifDataWrapper exifData = exifDataService.getExifData(mediaFile);
                     if(exifData!=null) {
                         importJob.setExifData(mediaFile, exifData);
                         LocalDateTime dateTimeOriginal = exifData.getDateTimeOriginal();
                         if(dateTimeOriginal!=null) {
                             importJob.setDateTimeOriginal(mediaFile, dateTimeOriginal);
                         }
-                        importJob.setReadyToImport(mediaFile, dateTimeOriginal!=null);
+                        importJob.setDescription(mediaFile, exifData.getDescription().orElse(""));
                     }
         });
     }

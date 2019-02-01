@@ -2,13 +2,12 @@ package de.zaunkoenigweg.biography.core.config;
 
 import java.io.File;
 
-import javax.annotation.PostConstruct;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.BeanInitializationException;
+import org.springframework.beans.factory.InitializingBean;
 
-public class BiographyConfig {
+public class BiographyConfig implements InitializingBean {
 
     private final static Log LOG = LogFactory.getLog(BiographyConfig.class);
 
@@ -24,8 +23,8 @@ public class BiographyConfig {
      * 
      * @throws BeanInitializationException if Biography configuration cannot be read. 
      */
-    @PostConstruct
-    public void init() {
+    @Override
+    public void afterPropertiesSet() {
 
         if(importFolderProperty==null) {
             String msg = "Import folder property is not set.";
@@ -86,6 +85,5 @@ public class BiographyConfig {
 	public void setSolrIndexUrl(String solrIndexUrl) {
 		this.solrIndexUrl = solrIndexUrl;
 	}
-	
-	
+
 }

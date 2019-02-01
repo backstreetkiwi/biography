@@ -30,7 +30,8 @@ import de.zaunkoenigweg.biography.web.BackLink;
 public class FileController {
 
 	private final static Log LOG = LogFactory.getLog(FileController.class);
-
+	
+    private final static byte[] PLACEHOLDER = {-1, -40, -1, -32, 0, 16, 74, 70, 73, 70, 0, 1, 1, 1, 0, 72, 0, 72, 0, 0, -1, -37, 0, 67, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -62, 0, 11, 8, 0, 1, 0, 1, 1, 1, 17, 0, -1, -60, 0, 20, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, -1, -38, 0, 8, 1, 1, 0, 0, 0, 1, 95, -1, -60, 0, 20, 16, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -38, 0, 8, 1, 1, 0, 1, 5, 2, 127, -1, -60, 0, 20, 16, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -38, 0, 8, 1, 1, 0, 6, 63, 2, 127, -1, -60, 0, 20, 16, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -38, 0, 8, 1, 1, 0, 1, 63, 33, 127, -1, -38, 0, 8, 1, 1, 0, 0, 0, 16, 127, -1, -60, 0, 20, 16, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -38, 0, 8, 1, 1, 0, 1, 63, 16, 127, -1, -39 };
 	private File archiveFolder;
     private File thumbsFolder200;
     private File thumbsFolder300;
@@ -131,14 +132,20 @@ public class FileController {
 	@RequestMapping(value = "/file/{file}/200", method = RequestMethod.GET, produces = MediaType.IMAGE_JPEG_VALUE)
 	public byte[] thumbnail200(@PathVariable("file")String filename) throws IOException {
 		File archiveFile = BiographyFileUtils.getArchiveFileFromShortFilename(thumbsFolder200, filename);
-		return FileUtils.readFileToByteArray(archiveFile);
+        if(archiveFile.exists()) {
+            return FileUtils.readFileToByteArray(archiveFile);
+        }
+        return PLACEHOLDER;
 	}
 	
 	@ResponseBody
 	@RequestMapping(value = "/file/{file}/300", method = RequestMethod.GET, produces = MediaType.IMAGE_JPEG_VALUE)
 	public byte[] thumbnail300(@PathVariable("file")String filename) throws IOException {
 		File archiveFile = BiographyFileUtils.getArchiveFileFromShortFilename(thumbsFolder300, filename);
-		return FileUtils.readFileToByteArray(archiveFile);
+		if(archiveFile.exists()) {
+		    return FileUtils.readFileToByteArray(archiveFile);
+		}
+		return PLACEHOLDER;
 	}
 	
 	private BackLink getBackLink(HttpSession session) {
