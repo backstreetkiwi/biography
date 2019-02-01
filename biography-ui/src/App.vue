@@ -1,18 +1,30 @@
 <template>
   <div id="app">
-    <img src="./assets/logo.png">
-    <HelloWorld/>
+    <DateSelector @dayChanged="updateDay"/>
+    <Gallery :day="day" />
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld'
+import Gallery from './components/Gallery'
+import DateSelector from './components/DateSelector'
 
 export default {
   name: 'App',
   components: {
-    HelloWorld
-  }
+    DateSelector,
+    Gallery
+  },
+  data: function() {
+    return {
+      day: ""
+    };
+  },  
+  methods: {
+    updateDay(day) {
+      this.day = day;
+    }
+  }  
 }
 </script>
 
