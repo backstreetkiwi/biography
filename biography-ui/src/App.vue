@@ -22,7 +22,7 @@ export default {
   },  
   methods: {
     updateDay(day) {
-      this.day = day;
+      this.day = "/"+ day.slice(0,4) + "/"+ day.slice(5,7) + "/"+ day.slice(8,10) + "/";
     }
   }  
 }
