@@ -56,10 +56,12 @@ export default {
       this.selectedYear = newYear;
       this.updateMonths();
       this.days = [];
+      this.$emit("dayChanged", null);
     },
     monthSelected: function(newYearMonth) {
       this.selectedMonth = newYearMonth.slice(-2);
       this.updateDays();
+      this.$emit("dayChanged", null);
     },
     daySelected: function(newDate) {
       this.selectedDate = newDate;
