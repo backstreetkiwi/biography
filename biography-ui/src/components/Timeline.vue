@@ -38,7 +38,6 @@ export default {
           this.galleryMediaFiles = [];
       });
     }
-
   }  
 }
 </script>

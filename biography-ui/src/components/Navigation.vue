@@ -23,6 +23,11 @@ export default {
           id: 1,
           text: 'Import',
           page:'/Import'
+        },
+        {
+          id: 2,
+          text: 'Batches',
+          page:'/Batches'
         }
       ]
     }
