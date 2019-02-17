@@ -31,12 +31,12 @@ public class Application {
 
     @Bean
     public File archiveFolder(@Value("${archive.path}") String archivePath) {
-    		File archiveFolder = new File(archivePath);
-    		if(!archiveFolder.exists()) {
-    			String msg = String.format("The archive folder %s does not exist", archivePath);
-    			throw new RuntimeException(msg);
-    		}
-    		return archiveFolder;
+            File archiveFolder = new File(archivePath);
+            if(!archiveFolder.exists()) {
+                String msg = String.format("The archive folder %s does not exist", archivePath);
+                throw new RuntimeException(msg);
+            }
+            return archiveFolder;
     }
 
     @Bean

@@ -13,6 +13,7 @@ public class BiographyConfig implements InitializingBean {
 
     private File importFolder;
     private File archiveFolder;
+    private File biographyBaseFolder;
 
     private String importFolderProperty;
     private String archiveFolderProperty;
@@ -58,6 +59,14 @@ public class BiographyConfig implements InitializingBean {
             LOG.error(msg);
             throw new BeanInitializationException(msg);
         }
+        
+        if(!importFolder.getParentFile().equals(archiveFolder.getParentFile())) {
+            String msg = String.format("Import folder '%s' must hava the same parent folder as archive folder '%s'.", archiveFolderProperty, importFolderProperty);
+            LOG.error(msg);
+            throw new BeanInitializationException(msg);
+        }
+        
+        this.biographyBaseFolder = this.archiveFolder.getParentFile();
 
         LOG.info(String.format("Biography configuration: import-folder='%s', archive-folder='%s'", this.importFolder, this.archiveFolder));
     }
@@ -77,8 +86,12 @@ public class BiographyConfig implements InitializingBean {
 	public File getArchiveFolder() {
 		return archiveFolder;
 	}
+	
+	public File getBiographyBaseFolder() {
+        return biographyBaseFolder;
+    }
 
-	public String getSolrIndexUrl() {
+    public String getSolrIndexUrl() {
 		return solrIndexUrl;
 	}
 

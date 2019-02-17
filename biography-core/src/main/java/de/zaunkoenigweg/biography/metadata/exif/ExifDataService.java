@@ -2,15 +2,15 @@ package de.zaunkoenigweg.biography.metadata.exif;
 
 import java.io.File;
 import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Component;
 
 import de.zaunkoenigweg.biography.core.MediaFileType;
+import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
 import de.zaunkoenigweg.lexi4j.exiftool.ExifData;
 import de.zaunkoenigweg.lexi4j.exiftool.Exiftool;
 
@@ -19,25 +19,26 @@ public class ExifDataService {
 
     private final static Log LOG = LogFactory.getLog(ExifDataService.class);
 
-    private Map<File, ExifDataWrapper> cache = new HashMap<>();
+    private Exiftool exiftool;
     
-    public ExifDataService() {
+    private File archiveFolder;
+
+    public ExifDataService(File archiveFolder) {
+        this.exiftool = new Exiftool();
+        this.archiveFolder = archiveFolder;
         LOG.info("ExifDataService started.");
+        LOG.info(String.format("archiveFolder=%s", this.archiveFolder));
 	}
     
     public ExifDataWrapper getExifData(File file) {
         ExifDataWrapper exifData;
-        if(cache.containsKey(file)) {
-            return cache.get(file);
-        }
         Optional<ExifData> rawExifData;
         try {
-            rawExifData = Exiftool.read(file);
+            rawExifData = this.exiftool.read(file);
             if(!rawExifData.isPresent()) {
                 return null;
             }
             exifData = new ExifDataWrapper(rawExifData.get());
-            cache.put(file, exifData);
         } catch (IllegalStateException | IllegalArgumentException e) {
             return null;
         }
@@ -45,31 +46,22 @@ public class ExifDataService {
     }
     
     public ExifDataWrapper setExifData(File file, ExifDataWrapper newExifData) {
-        Exiftool.update(file)
+        this.exiftool.update(file)
             .withDateTimeOriginal(newExifData.getDateTimeOriginal().truncatedTo(ChronoUnit.SECONDS))
+            .withSubsecTimeOriginal(newExifData.getDateTimeOriginal().getNano() / 1_000_000)
             .withImageDescription(newExifData.getDescription().orElse(""))
             .withUserComment(newExifData.getUserComment().orElse(""))
             .perform();
         
-        cache.put(file, newExifData);
-        
         return newExifData;
     }
 
-    public void fillCacheFromArchive(String path) {
-        Map<File, ExifData> exifData = Exiftool.readPaths(path);
-        exifData.entrySet().stream().forEach(entry -> {
-            LOG.info(String.format("Reading EXIF Data for %s into cache...", entry.getKey().getAbsolutePath()));
-            cache.put(entry.getKey(), new ExifDataWrapper(entry.getValue()));
+    public void fillCacheFromArchive(Consumer<String> console) {
+        BiographyFileUtils.getMediaFolders(this.archiveFolder).stream().forEach(mediaFolder -> {
+            this.exiftool.fillCache(mediaFolder + "/*.jpg");
+            console.accept(String.format("Cached EXIF data from %s", mediaFolder));
         });
-    }
-    
-    public void clearCache() {
-        cache.clear();
-    }
-    
-    public int getCacheSize() {
-        return cache.size();
+        
     }
     
     /**

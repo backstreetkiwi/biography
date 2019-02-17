@@ -74,7 +74,7 @@ public class ToolsController {
         Console console = consoles.create("fill EXIF cache");
 
         new Thread(() -> {
-            this.exifDataService.fillCacheFromArchive(this.archiveFolder + "/*/*/*.jpg");
+            this.exifDataService.fillCacheFromArchive(console::println);
             console.close();
         }).start();
 
@@ -88,7 +88,8 @@ public class ToolsController {
         Console console = consoles.create("clear EXIF cache");
 
         new Thread(() -> {
-            this.exifDataService.clearCache();
+            //this.exifDataService.clearCache();
+            console.println("Clearing of the cache not supported...");
             console.close();
         }).start();
 

@@ -16,6 +16,7 @@ public class BiographyConfigTest {
     private File existingImportFolder;
     private File nonExistingImportFolder;
     private File existingArchiveFolder;
+    private File existingFolderInsideArchiveFolder;
     private File nonExistingArchiveFolder;
 
     @Before
@@ -25,6 +26,8 @@ public class BiographyConfigTest {
         nonExistingImportFolder = new File("./thisfolderdoesnotexistA");
         existingArchiveFolder = Files.createTempDirectory("biographyArchiveFolder").toFile();
         existingArchiveFolder.deleteOnExit();
+        existingFolderInsideArchiveFolder = new File(existingArchiveFolder, "subfolder");
+        existingFolderInsideArchiveFolder.mkdirs();
         nonExistingArchiveFolder = new File("./thisfolderdoesnotexistB");
     }
 
@@ -69,6 +72,14 @@ public class BiographyConfigTest {
         sut = new BiographyConfig();
         sut.setImportFolderProperty(existingImportFolder.getAbsolutePath());
         sut.setArchiveFolderProperty(existingImportFolder.getAbsolutePath());
+        sut.afterPropertiesSet();
+    }
+    
+    @Test(expected=BeanInitializationException.class)
+    public void testImportFolderAndArchiveFolderHaveNoCommonParent() {
+        sut = new BiographyConfig();
+        sut.setImportFolderProperty(existingFolderInsideArchiveFolder.getAbsolutePath());
+        sut.setArchiveFolderProperty(existingArchiveFolder.getAbsolutePath());
         sut.afterPropertiesSet();
     }
     

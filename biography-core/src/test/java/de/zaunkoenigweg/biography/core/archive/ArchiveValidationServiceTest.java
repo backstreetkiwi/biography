@@ -23,7 +23,7 @@ public class ArchiveValidationServiceTest {
 	public void setUp() throws Exception {
 	    archiveFolder = Files.createTempDirectory("archiveFolder").toFile();
 	    archiveFolder.deleteOnExit();
-		sut = new ArchiveValidationService(new MetadataService(new ExifDataService()), new ExifDataService(), archiveFolder);
+		sut = new ArchiveValidationService(new MetadataService(new ExifDataService(this.archiveFolder)), new ExifDataService(this.archiveFolder), archiveFolder);
 	}
 
 	@Test(expected=NullPointerException.class)

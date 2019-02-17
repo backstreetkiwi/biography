@@ -1,91 +1,46 @@
 package de.zaunkoenigweg.biography.core.archive;
 
-import java.io.File;
-import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
-import de.zaunkoenigweg.biography.core.MediaFileType;
-import de.zaunkoenigweg.biography.metadata.exif.ExifDataWrapper;
-
 /**
- * Holds the data of a bulk import job
+ * Holds the data of a bulk import job.
+ * 
+ * ! The {@link ImportFile}s stored in this object are handed to the client and may be altered! That's fine as of now!
  * 
  * @author mail@nikolaus-winter.de
  */
 public class BulkImportJob {
     
     private boolean running;
-    private SortedSet<File> files = new TreeSet<>();
-    private Map<File, MediaFileType> mediaFileType = new HashMap<>();
-    private Map<File, ExifDataWrapper> exifData = new HashMap<>();
-    private Map<File, LocalDateTime> dateTimeOriginal = new HashMap<>();
-    private Map<File, ImportResult> importResult = new HashMap<>();
-    private Map<File, String> albums = new HashMap<>();
-    private Map<File, String> descriptions = new HashMap<>();
+    private Map<UUID,ImportFile> importFiles = new HashMap<>();
     
-    public List<File> getImportFiles() {
-        return this.files.stream().collect(Collectors.toList());
+    public List<ImportFile> getImportFiles() {
+        return this.importFiles.values().stream()
+                        .sorted(Comparator.comparing(ImportFile::getOriginalFileName))
+                        .collect(Collectors.toList());
     }
     
-    public void add(File file) {
-        files.add(file);
+    public void put(ImportFile importFile) {
+        synchronized (importFiles) {
+            importFiles.put(importFile.getUuid(), importFile);
+        }
     }
     
-    public MediaFileType getMediaFileType(File file) {
-        return mediaFileType.get(file);
+    public Optional<ImportFile> get(UUID uuid) {
+        return Optional.ofNullable(importFiles.get(uuid));
     }
     
-    public void setMediaFileType(File file, MediaFileType mediaFileType) {
-        this.mediaFileType.put(file, mediaFileType);
-    }
-    
-    public ExifDataWrapper getExifData(File file) {
-        return exifData.get(file);
-    }
-    
-    public void setExifData(File file, ExifDataWrapper exifData) {
-        this.exifData.put(file, exifData);
-    }
-
-    public LocalDateTime getDateTimeOriginal(File file) {
-        return dateTimeOriginal.get(file);
-    }
-    
-    public boolean hasDateTimeOriginal(File file) {
-        return dateTimeOriginal.containsKey(file);
-    }
-    
-    public void setDateTimeOriginal(File file, LocalDateTime dateTimeOriginal) {
-        this.dateTimeOriginal.put(file, dateTimeOriginal);
-    }
-    
-    public String getAlbum(File file) {
-        return albums.get(file);
-    }
-    
-    public void setAlbum(File file, String album) {
-        this.albums.put(file, album);
-    }
-    
-    public String getDescription(File file) {
-        return descriptions.get(file);
-    }
-    
-    public void setDescription(File file, String description) {
-        this.descriptions.put(file, description);
-    }
-    
-    public ImportResult getImportResult(File file) {
-        return importResult.get(file);
-    }
-    
-    public void setImportResult(File file, ImportResult importResult) {
-        this.importResult.put(file, importResult);
+    public void remove(Collection<UUID> uuid) {
+        synchronized (importFiles) {
+            uuid.forEach(importFiles::remove);
+        }
     }
     
     public boolean isRunning() {
@@ -95,6 +50,4 @@ public class BulkImportJob {
     public void setRunning(boolean running) {
         this.running = running;
     }
-    
-    
 }

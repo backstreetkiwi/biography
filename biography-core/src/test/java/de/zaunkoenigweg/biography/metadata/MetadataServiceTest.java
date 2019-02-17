@@ -26,10 +26,10 @@ public class MetadataServiceTest {
     
     @Before
     public void setUp() throws IOException {
-        exifDataService = new ExifDataService();
-        this.sut = new MetadataService(exifDataService);
         someFolder = Files.createTempDirectory("someFolder").toFile();
         someFolder.deleteOnExit();
+        exifDataService = new ExifDataService(this.someFolder);
+        this.sut = new MetadataService(exifDataService);
     }
 
     @Test

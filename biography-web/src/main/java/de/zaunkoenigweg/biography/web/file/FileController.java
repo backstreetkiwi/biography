@@ -8,7 +8,9 @@ import javax.servlet.http.HttpSession;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,14 +35,16 @@ public class FileController {
 	
     private final static byte[] PLACEHOLDER = {-1, -40, -1, -32, 0, 16, 74, 70, 73, 70, 0, 1, 1, 1, 0, 72, 0, 72, 0, 0, -1, -37, 0, 67, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -62, 0, 11, 8, 0, 1, 0, 1, 1, 1, 17, 0, -1, -60, 0, 20, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, -1, -38, 0, 8, 1, 1, 0, 0, 0, 1, 95, -1, -60, 0, 20, 16, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -38, 0, 8, 1, 1, 0, 1, 5, 2, 127, -1, -60, 0, 20, 16, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -38, 0, 8, 1, 1, 0, 6, 63, 2, 127, -1, -60, 0, 20, 16, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -38, 0, 8, 1, 1, 0, 1, 63, 33, 127, -1, -38, 0, 8, 1, 1, 0, 0, 0, 16, 127, -1, -60, 0, 20, 16, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -38, 0, 8, 1, 1, 0, 1, 63, 16, 127, -1, -39 };
 	private File archiveFolder;
+	private File importFolder;
     private File thumbsFolder200;
     private File thumbsFolder300;
 
     private ArchiveMetadataService archiveMetadataService;
 	private ArchiveIndexingService archiveIndexingService;
 
-	public FileController(File archiveFolder, ArchiveMetadataService archiveMetadataService, ArchiveIndexingService archiveIndexingService) {
+	public FileController(File archiveFolder, File importFolder, ArchiveMetadataService archiveMetadataService, ArchiveIndexingService archiveIndexingService) {
 		this.archiveFolder = archiveFolder;
+		this.importFolder = importFolder;
 		this.archiveMetadataService = archiveMetadataService;
 		this.archiveIndexingService = archiveIndexingService;
         this.thumbsFolder200 = new File(this.archiveFolder, "thumbnails/200");
@@ -138,16 +142,26 @@ public class FileController {
         return PLACEHOLDER;
 	}
 	
-	@ResponseBody
-	@RequestMapping(value = "/file/{file}/300", method = RequestMethod.GET, produces = MediaType.IMAGE_JPEG_VALUE)
-	public byte[] thumbnail300(@PathVariable("file")String filename) throws IOException {
-		File archiveFile = BiographyFileUtils.getArchiveFileFromShortFilename(thumbsFolder300, filename);
-		if(archiveFile.exists()) {
-		    return FileUtils.readFileToByteArray(archiveFile);
-		}
-		return PLACEHOLDER;
-	}
-	
+    @ResponseBody
+    @RequestMapping(value = "/file/{file}/300", method = RequestMethod.GET, produces = MediaType.IMAGE_JPEG_VALUE)
+    public byte[] thumbnail300(@PathVariable("file")String filename) throws IOException {
+        File archiveFile = BiographyFileUtils.getArchiveFileFromShortFilename(thumbsFolder300, filename);
+        if(archiveFile.exists()) {
+            return FileUtils.readFileToByteArray(archiveFile);
+        }
+        return PLACEHOLDER;
+    }
+    
+    @ResponseBody
+    @RequestMapping(value = "/file/import/{file}/thumbnail", method = RequestMethod.GET, produces = MediaType.IMAGE_JPEG_VALUE)
+    public ResponseEntity<byte[]> importThumbnail(@PathVariable("file")String filename) throws IOException {
+        File thumbnailFile = new File(new File(this.importFolder, "thumbnails"), filename + ".jpg");
+        if(thumbnailFile.exists()) {
+            return new ResponseEntity<byte[]>(FileUtils.readFileToByteArray(thumbnailFile), HttpStatus.OK);
+        }
+        return new ResponseEntity<byte[]>(HttpStatus.NOT_FOUND);
+    }
+    
 	private BackLink getBackLink(HttpSession session) {
 		Object backLink = session.getAttribute(BackLink.class.getName());
 		if(backLink instanceof BackLink) {

@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -34,20 +35,30 @@ public class ArchiveImportService {
 
     private final static Log LOG = LogFactory.getLog(ArchiveImportService.class);
 
+    private final static File THUMB_200 = new File(ArchiveImportService.class.getResource("/thumb200.jpg").getFile());
+    private final static File THUMB_300 = new File(ArchiveImportService.class.getResource("/thumb300.jpg").getFile());
+    
     private MetadataService metadataService;
     private ArchiveIndexingService archiveIndexingService;
     private ExifDataService exifDataService;
+    private File biographyBaseFolder;
     private File archiveFolder;
+    private File importFolder;
     private String thumborUrl;
 
-    public ArchiveImportService(MetadataService metadataService, ArchiveIndexingService archiveIndexingService, ExifDataService exifDataService, File archiveFolder, String thumborUrl) {
+    public ArchiveImportService(MetadataService metadataService, ArchiveIndexingService archiveIndexingService, ExifDataService exifDataService, File archiveFolder, File importFolder, String thumborUrl) {
         this.metadataService = metadataService;
         this.archiveIndexingService = archiveIndexingService;
         this.exifDataService = exifDataService;
         this.archiveFolder = archiveFolder;
+        this.importFolder = importFolder;
+        // FIXME: only works if archiveFolder and importFolder share the same parent
+        this.biographyBaseFolder = archiveFolder.getParentFile();
         this.thumborUrl = thumborUrl;
         LOG.info("ArchiveImportService started.");
+        LOG.info(String.format("biographyBaseFolder=%s", this.biographyBaseFolder));
         LOG.info(String.format("archiveFolder=%s", this.archiveFolder));
+        LOG.info(String.format("importFolder=%s", this.importFolder));
     }
 
     /**
@@ -109,7 +120,15 @@ public class ArchiveImportService {
             LOG.error("File cannot be stored in archive.", e);
         }
 
-        setBiographyMetadata(archiveFile, dateTimeOriginal, sha1, album, description);
+        try {
+            setBiographyMetadata(archiveFile, dateTimeOriginal, sha1, album, description);
+        } catch (RuntimeException e) {
+            LOG.error("Error while setting biography metadata on file " + archiveFile, e);
+            FileUtils.deleteQuietly(archiveFile);
+            return ImportResult.FILE_CANNOT_BE_STORED;
+        }
+        
+        this.generateThumbnails(archiveFile, true);
         
         archiveIndexingService.reIndex(archiveFile);
 
@@ -157,7 +176,7 @@ public class ArchiveImportService {
 				return true;
 			}
 			
-			String thumborUri = this.thumborUrl + "0x200/" + archiveFolder.toPath().relativize(file.toPath()).toString();
+			String thumborUri = this.thumborUrl + "0x200/" + biographyBaseFolder.toPath().relativize(file.toPath()).toString();
 			HttpGet request = new HttpGet(thumborUri);
 			HttpResponse response = client.execute(request);
 			if(response.getStatusLine().getStatusCode()==200) {
@@ -170,7 +189,7 @@ public class ArchiveImportService {
 				bos.close();
 			}
 
-			thumborUri = this.thumborUrl + "0x300/" + archiveFolder.toPath().relativize(file.toPath()).toString();
+			thumborUri = this.thumborUrl + "0x300/" + biographyBaseFolder.toPath().relativize(file.toPath()).toString();
 			request = new HttpGet(thumborUri);
 			response = client.execute(request);
 			if(response.getStatusLine().getStatusCode()==200) {
@@ -192,5 +211,57 @@ public class ArchiveImportService {
 			// TODO 
 			// close client ?
 		}
+    }
+
+    // TODO merge w/ method generateThumbnails
+    // TODO generalize thumbnail service
+    public void generateImportThumbnails(File file, UUID uuid) {
+        
+        File thumbnailsFolder = new File(this.importFolder, "thumbnails");
+
+        File thumbnailFile = new File(thumbnailsFolder, String.format("%s.jpg", uuid.toString()));
+        
+        Optional<MediaFileType> mediaFileType = MediaFileType.of(file);
+        
+        if(!mediaFileType.isPresent()) {
+            return;
+        }
+        
+        if(mediaFileType.get()!=MediaFileType.JPEG) {
+            try {
+                FileUtils.copyFile(THUMB_200, thumbnailFile);
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            return;
+        }
+        
+        HttpClient client;
+
+        try {
+            client = new DefaultHttpClient();
+
+
+            String thumborUri = this.thumborUrl + "0x200/" + biographyBaseFolder.toPath().relativize(file.toPath()).toString();
+            HttpGet request = new HttpGet(thumborUri);
+            HttpResponse response = client.execute(request);
+            if(response.getStatusLine().getStatusCode()==200) {
+                BufferedInputStream bis = new BufferedInputStream(response.getEntity().getContent());
+                thumbnailFile.getParentFile().mkdirs();
+                BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(thumbnailFile));
+                int inByte;
+                while((inByte = bis.read()) != -1) bos.write(inByte);
+                bis.close();
+                bos.close();
+            }
+
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } finally {
+            // TODO 
+            // close client ?
+        }
     }
 }

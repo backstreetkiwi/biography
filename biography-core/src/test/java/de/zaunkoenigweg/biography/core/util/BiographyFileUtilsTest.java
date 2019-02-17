@@ -167,7 +167,7 @@ public class BiographyFileUtilsTest {
         assertEquals("7648bf4572edc4e71ed7992db4071e08b1a57597", BiographyFileUtils.sha1(sourceFile));
         Files.copy(sourceFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
         assertEquals("7648bf4572edc4e71ed7992db4071e08b1a57597", BiographyFileUtils.sha1(targetFile));
-        Exiftool.update(targetFile)
+        new Exiftool().update(targetFile)
             .withImageDescription("blablabla")
             .withUserComment("blablabla")
             .perform();

@@ -1,8 +1,12 @@
 package de.zaunkoenigweg.biography.core.archive;
 
 import java.io.File;
+import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.Arrays;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
@@ -28,6 +32,7 @@ public class ArchiveBulkImportService {
     private final static Log LOG = LogFactory.getLog(ArchiveBulkImportService.class);
 
     private ArchiveImportService archiveImportService;
+    // TODO: use different instance of ExifDataService to keep control over cache!
     private ExifDataService exifDataService;
     private File importFolder;
 
@@ -50,7 +55,7 @@ public class ArchiveBulkImportService {
      */
     public BulkImportJob getImportJob() {
         if(importJob==null) {
-            createBulkImportJob();
+            this.importJob = new BulkImportJob();
         }
         return importJob;
     }
@@ -67,10 +72,11 @@ public class ArchiveBulkImportService {
         importJob.setRunning(true);
         new Thread(() -> {
             importJob.getImportFiles().stream()
-                .filter(importJob::hasDateTimeOriginal)
-                .forEach(mediaFile -> {
-                    ImportResult importResult = archiveImportService.importFile(mediaFile, importJob.getDateTimeOriginal(mediaFile), importJob.getAlbum(mediaFile), importJob.getDescription(mediaFile));
-                    importJob.setImportResult(mediaFile, importResult);
+                .filter(ImportFile::isReadyForImport)
+                .forEach(importFile -> {
+                    ImportResult importResult = archiveImportService.importFile(file(importFile), importFile.getDatetimeOriginal().get(), 
+                                    importFile.getAlbum().orElse(null), importFile.getDescription().orElse(null));
+                    importFile.setImportResult(importResult);
                 });
             importJob.setRunning(false);
         }).start();
@@ -78,40 +84,78 @@ public class ArchiveBulkImportService {
     }
     
     /**
-     * Clears the import folder.
+     * Cleans up the import folder.
      * 
-     * Clearing means that all files that are no longer used are being deleted from this object and from disk.
-     * After that the import job object is deleted.
+     * Cleaning up (!=clearing) means that all files that are no longer used are being deleted from this object and from disk.
      * 
      * A file is no longer used if has already been imported, either during the current bulk import job or previously.
      */
-    public void clearImportFolder() {
-        importJob.getImportFiles().stream()
-            .filter(mediaFile -> importJob.getImportResult(mediaFile)==ImportResult.SUCCESS || importJob.getImportResult(mediaFile)==ImportResult.FILE_ALREADY_ARCHIVED)
-            .forEach(FileUtils::deleteQuietly);
-        importJob=null;
+    public void cleanupImportFolder() {
+        Set<UUID> idsToBeDeleted = importJob.getImportFiles().stream()
+            .filter(importFile -> importFile.getImportResult()==ImportResult.SUCCESS || importFile.getImportResult()==ImportResult.FILE_ALREADY_ARCHIVED)
+            .map(ImportFile::getUuid)
+            .collect(Collectors.toSet());
+        
+        importJob.remove(idsToBeDeleted);
     }
+    
+    
+    /**
+     * Clears the import folder.
+     */
+    public void clearImportFolder() {
+        try {
+            FileUtils.cleanDirectory(importFolder);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        this.importJob = new BulkImportJob();
+    }
+    
     
     /**
      * Creates new {@link BulkImportJob} and initializes it with the current state/content of the import folder.
      */
-    private void createBulkImportJob() {
-        importJob = new BulkImportJob();
-        Arrays.stream(importFolder.listFiles())
-                .filter(MediaFileType::isMediaFile)
-                .sorted()
-                .forEach(mediaFile -> {
-                    importJob.add(mediaFile);
-                    importJob.setMediaFileType(mediaFile, MediaFileType.of(mediaFile).orElse(null));
-                    ExifDataWrapper exifData = exifDataService.getExifData(mediaFile);
-                    if(exifData!=null) {
-                        importJob.setExifData(mediaFile, exifData);
-                        LocalDateTime dateTimeOriginal = exifData.getDateTimeOriginal();
-                        if(dateTimeOriginal!=null) {
-                            importJob.setDateTimeOriginal(mediaFile, dateTimeOriginal);
-                        }
-                        importJob.setDescription(mediaFile, exifData.getDescription().orElse(""));
-                    }
-        });
+    // TODO null safety, error message
+    public boolean upload(String originalFilename, byte[] bytes) {
+        UUID uuid = UUID.nameUUIDFromBytes(bytes);
+        Optional<MediaFileType> mediaFileType = MediaFileType.of(originalFilename);
+        
+        if(!mediaFileType.isPresent()) {
+            LOG.info("Upload failed due to unknown MediaFileType: " + originalFilename);
+            return false;
+        }
+        
+        File file = file(uuid, mediaFileType.get());
+        
+        try {
+            FileUtils.writeByteArrayToFile(file, bytes, false);
+        } catch (IOException e) {
+            LOG.error("File could not be stored in import folder.", e);
+        }
+
+        this.archiveImportService.generateImportThumbnails(file, uuid);
+
+        ImportFile importFile = new ImportFile(uuid, originalFilename, mediaFileType.get());
+        
+        ExifDataWrapper exifData = exifDataService.getExifData(file);
+        if(exifData!=null) {
+            importFile.setDatetimeOriginal(exifData.getDateTimeOriginal());
+            importFile.setDescription(exifData.getDescription().orElse(null));
+        }
+
+        this.importJob.put(importFile);
+        
+        return true;
     }
+    
+    private File file(ImportFile importFile) {
+        return file(importFile.getUuid(), importFile.getMediaFileType());
+    }
+
+    private File file(UUID uuid, MediaFileType mediaFileType) {
+        return new File(this.importFolder, String.format("%s.%s", uuid, mediaFileType.getFileExtension()));
+    }
+    
 }

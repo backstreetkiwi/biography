@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import de.zaunkoenigweg.biography.core.MediaFileType;
+import de.zaunkoenigweg.biography.core.archive.ArchiveImportService;
 import de.zaunkoenigweg.biography.core.index.ArchiveIndexingService;
 import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
 import de.zaunkoenigweg.biography.web.console.Console;
@@ -29,9 +31,12 @@ public class BatchRestController {
 
     private ArchiveIndexingService archiveIndexingService;
 
-    public BatchRestController(Consoles consoles, ArchiveIndexingService archiveIndexingService, File archiveFolder) {
+    private ArchiveImportService archiveImportService;
+    
+    public BatchRestController(Consoles consoles, ArchiveIndexingService archiveIndexingService, ArchiveImportService archiveImportService, File archiveFolder) {
         this.consoles = consoles;
         this.archiveIndexingService = archiveIndexingService;
+        this.archiveImportService = archiveImportService;
         this.archiveFolder = archiveFolder;
         LOG.info("BatchRestController started.");
     }
@@ -72,6 +77,27 @@ public class BatchRestController {
             // TODO incremental output to console?
             this.archiveIndexingService.rebuildIndex();
             console.println("Finished.");
+            console.close();
+        }).start();
+        
+        return toRest(console); 
+    }
+    
+    @CrossOrigin
+    @RequestMapping("/rest/batch/start/generate-missing-thumbnails")
+    public Map<String, String> generateMissingThumbnails() {
+
+        Console console = consoles.create("generate thumbnails");
+
+        new Thread(() -> {
+            List<File> mediaFiles = BiographyFileUtils.getMediaFiles(archiveFolder);
+
+            // TODO Thumbnails for every media file type
+            mediaFiles.stream().filter(MediaFileType.JPEG::isTypeOf).forEach(file -> {
+                console.println(
+                                String.format("File '%s' -> [%s]", file.getName(), archiveImportService.generateThumbnails(file, false)));
+            });
+
             console.close();
         }).start();
         

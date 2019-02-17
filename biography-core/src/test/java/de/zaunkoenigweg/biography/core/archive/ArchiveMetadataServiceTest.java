@@ -22,8 +22,8 @@ public class ArchiveMetadataServiceTest {
   public void setUp() throws Exception {
     archiveFolder = Files.createTempDirectory("archiveFolder").toFile();
     archiveFolder.deleteOnExit();
-    metadataService = new MetadataService(new ExifDataService());
-    sut = new ArchiveMetadataService(metadataService, new ArchiveValidationService(metadataService, new ExifDataService(), archiveFolder));
+    metadataService = new MetadataService(new ExifDataService(this.archiveFolder));
+    sut = new ArchiveMetadataService(metadataService, new ArchiveValidationService(metadataService, new ExifDataService(this.archiveFolder), archiveFolder));
   }
 
   /*

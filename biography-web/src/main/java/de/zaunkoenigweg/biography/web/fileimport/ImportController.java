@@ -80,32 +80,32 @@ public class ImportController {
      * 
      * @return
      */
-    @PostMapping("/import/save")
-    public String saveImport(HttpServletRequest request) {
-        this.archiveBulkImportService.getImportJob().getImportFiles().stream().forEach(file -> {
-            String importFileName = file.getName();
-            String album = request.getParameter(importFileName + "-album");
-            if(album!=null) {
-                this.archiveBulkImportService.getImportJob().setAlbum(file, album);
-            }
-            String description = request.getParameter(importFileName + "-description");
-            if(description!=null) {
-                this.archiveBulkImportService.getImportJob().setDescription(file, description);
-            }
-            String overwriteDateTimeOriginal = request.getParameter(importFileName + "-overwrite-datetime-original");
-            if(overwriteDateTimeOriginal!=null) {
-                LocalDateTime dateTimeOriginal = null;
-                try {
-                    dateTimeOriginal = LocalDateTime.parse(request.getParameter(importFileName + "-datetime-original")).truncatedTo(ChronoUnit.MILLIS);
-                    this.archiveBulkImportService.getImportJob().setDateTimeOriginal(file, dateTimeOriginal);
-                } catch (DateTimeParseException e) {
-                    // that's okay...
-                }
-            }
-        });
-        
-        return "redirect:/import";
-    }
+//    @PostMapping("/import/save")
+//    public String saveImport(HttpServletRequest request) {
+//        this.archiveBulkImportService.getImportJob().getImportFiles().stream().forEach(file -> {
+//            String importFileName = file.getName();
+//            String album = request.getParameter(importFileName + "-album");
+//            if(album!=null) {
+//                this.archiveBulkImportService.getImportJob().setAlbum(file, album);
+//            }
+//            String description = request.getParameter(importFileName + "-description");
+//            if(description!=null) {
+//                this.archiveBulkImportService.getImportJob().setDescription(file, description);
+//            }
+//            String overwriteDateTimeOriginal = request.getParameter(importFileName + "-overwrite-datetime-original");
+//            if(overwriteDateTimeOriginal!=null) {
+//                LocalDateTime dateTimeOriginal = null;
+//                try {
+//                    dateTimeOriginal = LocalDateTime.parse(request.getParameter(importFileName + "-datetime-original")).truncatedTo(ChronoUnit.MILLIS);
+//                    this.archiveBulkImportService.getImportJob().setDateTimeOriginal(file, dateTimeOriginal);
+//                } catch (DateTimeParseException e) {
+//                    // that's okay...
+//                }
+//            }
+//        });
+//        
+//        return "redirect:/import";
+//    }
     
     
     /**

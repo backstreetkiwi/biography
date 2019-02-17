@@ -26,6 +26,10 @@ public enum MediaFileType {
     public static Optional<MediaFileType> of(final File file) {
         return all().filter(fileType -> fileType.isTypeOf(file)).findFirst();
     }
+
+    public static Optional<MediaFileType> of(final String fileName) {
+        return all().filter(fileType -> fileType.isTypeOf(fileName)).findFirst();
+    }
     
     public static boolean isMediaFile(final File file) {
         return all().anyMatch(fileType -> fileType.isTypeOf(file));
@@ -33,6 +37,10 @@ public enum MediaFileType {
     
     public boolean isTypeOf(File file) {
         return StringUtils.endsWithIgnoreCase(file.getAbsolutePath(), "." + fileExtension);
+    }
+
+    public boolean isTypeOf(String fileName) {
+        return StringUtils.endsWithIgnoreCase(fileName, "." + fileExtension);
     }
 
     public String getFileExtension() {

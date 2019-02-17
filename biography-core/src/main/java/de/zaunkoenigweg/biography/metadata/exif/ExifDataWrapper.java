@@ -2,6 +2,7 @@ package de.zaunkoenigweg.biography.metadata.exif;
 
 import java.io.File;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
 import de.zaunkoenigweg.lexi4j.exiftool.ExifData;
@@ -70,7 +71,8 @@ public class ExifDataWrapper {
         if(dateTimeOriginal==null) {
             throw new IllegalArgumentException("Date/Time Original must not be null");
         }
-        this.dateTimeOriginal = dateTimeOriginal;
+        
+        this.dateTimeOriginal = dateTimeOriginal.truncatedTo(ChronoUnit.MILLIS);
     }
 
     public void setDescription(String description) {

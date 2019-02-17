@@ -1,12 +1,17 @@
 <template>
-  <div>
-    <h1>Import</h1>
+  <div id="import">
+    <ImportFilesList></ImportFilesList>
   </div>
 </template>
 
 <script>
+import ImportFilesList from './ImportFilesList';
+
 export default {
-  name: 'Import'
+  name: 'Import',
+  components: {
+    ImportFilesList,
+  }
 }
 </script>
 <style>
