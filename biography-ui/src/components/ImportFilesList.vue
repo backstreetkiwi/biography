@@ -12,42 +12,59 @@
     <button :disabled="jobRunning" v-on:click="startImport()">START</button>
     <button :disabled="jobRunning" v-on:click="copyFirstAlbumToAll()">copy Album from #1</button>
     <button :disabled="jobRunning" v-on:click="copyFirstDescriptionToAll()">copy Description from #1</button>
-    <div class="filesList">
-      <table>
-        <tr v-for="(file, index) in files">
-          <td><img class="thumbnail" v-bind:src="file.thumbnailUrl"/></td>
-          <td>
-            <span>{{file.name}}</span>
-            <span>({{file.changed ? "changed" : "saved"}})</span>
-            <br/>
-            <input 
-              v-model="file.description"
-              class="description"
-              :disabled="jobRunning"
-              v-on:keyup.ctrl.up="copyDescriptionFromPredecessor(index)" 
-              v-on:input="markFileAsChanged(index)" 
-              v-on:change="saveChange(index)">
-            </input><br/>
-            <input 
-              v-model="file.album"
-              class="album" 
-              :disabled="jobRunning"
-              v-on:keyup.ctrl.up="copyAlbumFromPredecessor(index)" 
-              v-on:input="markFileAsChanged(index)" 
-              v-on:change="saveChange(index)">
-            </input> 
-            <br/>
-            <input 
-              v-model="file.datetimeOriginal"
-              class="datetimeOriginal"
-              disabled="disabled"
-            ></input>
-            <button v-on:click="setDatetimeOriginal(index)">Edit</button>
-            <br/>
-            {{file.importResult}}
-          </td>
-        </tr>
-      </table>
+    <div class="files">
+      <div class="file" v-for="(file, index) in files" v-bind:class="{ fileChanged: file.changed }">
+          <div class="thumbnail" v-bind:style="{ background: 'url(' + file.thumbnailUrl + ')', 'background-size': 'contain', 'background-repeat': 'no-repeat', 'background-position': 'center' }"></div>
+          <div class="importDetails">
+            <table>
+              <tr>
+                <td class="filename" colspan="2">{{file.name}}</td>
+              </tr>
+              <tr>
+                <td class="label">Description</td>
+                <td class="input">
+                  <input 
+                    v-model="file.description"
+                    class="description"
+                    :disabled="jobRunning"
+                    v-on:keyup.ctrl.up="copyDescriptionFromPredecessor(index)" 
+                    v-on:input="markFileAsChanged(index)" 
+                    v-on:change="saveChange(index)">
+                  </input>
+                </td>
+              </tr>
+              <tr>
+                <td class="label">Album</td>
+                <td class="input">
+                  <input 
+                    v-model="file.album"
+                    class="album" 
+                    :disabled="jobRunning"
+                    v-on:keyup.ctrl.up="copyAlbumFromPredecessor(index)" 
+                    v-on:input="markFileAsChanged(index)" 
+                    v-on:change="saveChange(index)">
+                  </input> 
+                </td>
+              </tr>
+              <tr>
+                <td class="label">Datetime original</td>
+                <td class="input">
+                  <input 
+                    v-model="file.datetimeOriginal"
+                    class="datetimeOriginal"
+                    disabled="disabled"></input>
+                  <button v-on:click="setDatetimeOriginal(index)">Edit</button>
+                </td>
+              </tr>
+              <tr>
+                <td class="label">Import Result</td>
+                <td class="input">
+                  {{file.importResult}}
+                </td>
+              </tr>
+            </table>
+          </div>
+      </div>
     </div>
   </div>
 </template>
@@ -202,34 +219,55 @@ export default {
 
 <style scoped>
 
-div.filesList {
-  background-color: #CCC;
-  height: 450px;
-  overflow:scroll;
+div.files {
+}
+
+div.file {
+  background-color: #DDD;
+  margin-top: 10px;
+  clear: both;
+  height: 220px;
+}
+
+div.fileChanged {
+  background-color: salmon;
+}
+
+div.thumbnail {
+  background-color:limegreen;
+  margin: 10px;
+  float: left;
+  width: 200px;
+  height: 200px;
+  vertical-align: baseline;
+}
+
+div.importDetails {
+  margin: 10px;
+  float: left;
+}
+
+
+td.label {
+  width: 200px;
+  text-align: left;
+}
+
+td.input {
+  text-align: left;
+}
+
+td.filename {
+  text-align: left;
+  font-weight: bold;
 }
 
 input.description {
   width: 500px;
 }
 
-input.datetimeOriginal {
-  
-}
-
 input.album {
-  width: 490px;
+  width: 500px;
 }
 
-img.thumbnail {
-  max-width: 250px;
-  max-height: 150px;
-}
-td {
-  text-align: left;
-  vertical-align: top;
-}
-
-input.changed {
-  background-color: coral;
-}
 </style>

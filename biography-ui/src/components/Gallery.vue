@@ -1,9 +1,10 @@
 <template>
     <div class="gallery">
-        <div class="media-file-thumb" v-for="mediaFile in mediaFiles">
-            <img v-bind:src="mediaFile.thumbnailUrl"/>
-            <br/>
-            {{ mediaFile.description }}
+        <div class="galleryitem" v-for="mediaFile in mediaFiles">
+        <div class="media-file-thumb"  v-bind:style="{ 'background': 'url(' + mediaFile.thumbnailUrl + ')', 'background-size': 'contain', 'background-repeat': 'no-repeat', 'background-position': 'center' }">
+            
+           <span>{{ mediaFile.description }}</span>
+        </div>
         </div>
     </div>
 </template>
@@ -23,19 +24,29 @@
 </script>
 
 <style scoped>
-div.media-file-thumb {
-    float: left;
-    background-color:darkslategrey;
-    width: 200px;
-    height: 200px;
-    overflow: hidden;
-    padding: 5px;
-    margin: 5px;
-    color: white;
+div.galleryitem {
+    background-color:black;
+    width: 210px;
+    height: 210px;
+    float:left;
+    margin: 3px;
 }
 
-img {
-    width: 150px;
-    height: 150px;
+div.media-file-thumb {
+    position: relative;
+    height: 200px;
+    width: 200px;
+    margin: 5px;
+    align-items: baseline;
 }
+
+span {
+    background-color:rgba(0, 0, 0, 0.6);
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    color:white;
+    width: 100%;
+}
+
 </style>

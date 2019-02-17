@@ -181,6 +181,7 @@ export default {
 	box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.2);
 	border-radius: 4px;
   background-color: aqua;
+  z-index: 1000;
 }
 
 .dropdown li {
