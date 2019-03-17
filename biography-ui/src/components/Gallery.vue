@@ -1,10 +1,9 @@
 <template>
     <div class="gallery">
-        <div class="galleryitem" v-for="mediaFile in mediaFiles">
-        <div class="media-file-thumb"  v-bind:style="{ 'background': 'url(' + mediaFile.thumbnailUrl + ') cover' }">
-            
-           <span>{{ mediaFile.description }}</span>
-        </div>
+        <div class="galleryitem" v-for="mediaFile in mediaFiles" v-bind:key="mediaFile.fileName">
+            <div class="media-file-thumb" v-bind:style="{ 'background-image': 'url(' + mediaFile.thumbnailUrl + ')', 'background-size': 'cover' }">
+                <span>{{ mediaFile.description }}</span>
+            </div>
         </div>
     </div>
 </template>
