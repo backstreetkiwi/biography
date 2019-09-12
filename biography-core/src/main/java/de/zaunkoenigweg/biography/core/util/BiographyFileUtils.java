@@ -35,7 +35,7 @@ import de.zaunkoenigweg.biography.core.MediaFileType;
  */
 public class BiographyFileUtils {
 
-    private final static Pattern ARCHIVE_FILENAME_FORMAT = Pattern.compile("(\\d{4})-(\\d{2})-(\\d{2})--(\\d{2})-(\\d{2})-(\\d{2})---(\\p{XDigit}{40}).(jpg|mov|mpg|avi)");
+    private final static Pattern ARCHIVE_FILENAME_FORMAT = Pattern.compile("(\\d{4})-(\\d{2})-(\\d{2})--(\\d{2})-(\\d{2})-(\\d{2})---(\\p{XDigit}{40}).(jpg|mov|mpg|avi|mp4)");
 
     /**
      * Predicate: Does the name of the given folder represent a valid year?
@@ -213,6 +213,7 @@ public class BiographyFileUtils {
 
         case QUICKTIME:
         case MPEG:
+        case MP4:
         case AVI:
             allBytes = FILE_BYTES_OF_COMPLETE_FILE.apply(file);
             break;

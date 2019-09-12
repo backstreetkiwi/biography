@@ -11,6 +11,7 @@ public enum MediaFileType {
     JPEG("jpg"),
     QUICKTIME("mov"),
     AVI("avi"),
+    MP4("mp4"),
     MPEG("mpg");
     
     private String fileExtension;
