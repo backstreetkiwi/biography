@@ -1,6 +1,6 @@
 # biography-ui
 
-> Lifelong media archive
+Vue JS frontend for Biography
 
 ## Build Setup
 
@@ -18,4 +18,15 @@ npm run build
 npm run build --report
 ```
 
+## Dockerize
+
+Change version number!
+
+```
+docker build -t de.zaunkoenigweg/biography-ui:1.4.0-SNAPSHOT .
+```
+
+
 For a detailed explanation on how things work, check out the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
+
+[dockerize-vue]: https://vuejs.org/v2/cookbook/dockerize-vuejs-app.html
