@@ -80,6 +80,7 @@ public class ImportRestController {
         return "OK";
     }
     
+    @CrossOrigin
     @PostMapping("/rest/import/start/")
     public String startImportJob() {
         this.archiveBulkImportService.startImport();
