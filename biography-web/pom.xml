@@ -73,6 +73,44 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+			<plugin>
+				<groupId>io.fabric8</groupId>
+				<artifactId>docker-maven-plugin</artifactId>
+				<version>0.31.0</version>
+				<executions>
+					<execution>
+						<id>build-docker-container</id>
+						<phase>package</phase>
+						<goals>
+							<goal>build</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>push-docker-container</id>
+						<phase>deploy</phase>
+						<goals>
+							<goal>push</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<verbose>true</verbose>
+					<images>
+						<image>
+							<name>de.zaunkoenigweg/${project.artifactId}:${project.version}</name>
+							<build>
+								<dockerFile>Dockerfile</dockerFile>
+								<assembly>
+									<descriptorRef>artifact</descriptorRef>
+									<name>target</name>
+								</assembly>
+							</build>
+						</image>
+					</images>
+					<verbose>true</verbose>
+					<showLogs>true</showLogs>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 
