@@ -3,7 +3,9 @@
         <div class="gallery-item" v-for="mediaFile in mediaFiles" v-bind:key="mediaFile.fileName">
             <div class="gallery-thumbnail">
                 <img v-bind:src="mediaFile.thumbnailUrl"/>
-                <div class="description-overlay"><div class="description">{{mediaFile.description}}</div></div>
+                <div class="description-overlay" v-bind:class="{'description-overlay-hidden' : !showDescription}">
+                    <div class="description">{{mediaFile.description}}</div>
+                </div>
             </div>
         </div>
     </div>
@@ -18,6 +20,10 @@
             mediaFiles: {
                 type: Array,
                 default: () => []
+            },
+            showDescription: {
+                type: Boolean,
+                default: () => false
             }
         }
     }
@@ -30,14 +36,14 @@ div.gallery-item {
     float:left;
     margin: 5px 5px 0px 0px;
     padding: 0px;
-    height: 202px;
+    height: 302px;
 }
 
 div.gallery-thumbnail {
     position: relative;
     margin: 1px;
     padding: 0px;
-    height: 200px;
+    height: 300px;
 }
 
 div.description-overlay {
@@ -51,6 +57,10 @@ div.description-overlay {
     z-index: 2;
     cursor: pointer;    
     padding: 0px;
+}
+
+div.description-overlay-hidden {
+    display: none;
 }
 
 div.description {
