@@ -84,6 +84,7 @@ public class MediaFileRestController {
 		Map<String, Object> restObject = new HashMap<>();
 		restObject.put("fileName", mediaFile.getFileName());
 		restObject.put("description", mediaFile.getDescription());
+		restObject.put("albums", mediaFile.getAlbums());
 		return restObject;
 	}
 	
