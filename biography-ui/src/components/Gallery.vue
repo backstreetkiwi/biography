@@ -6,6 +6,9 @@
                 <div class="description-overlay" v-bind:class="{'description-overlay-hidden' : !showDescription}">
                     <div class="description">{{mediaFile.description}}</div>
                 </div>
+                <div class="albums-overlay" v-bind:class="{'albums-overlay-hidden' : !showDescription}">
+                    <div class="albums" v-for="album in mediaFile.albums" v-bind:key="album">{{album}}</div>
+                </div>
             </div>
         </div>
     </div>
@@ -68,6 +71,33 @@ div.description {
     font-size: 15px;
     padding: 5px;
     text-align: center;
+}
+
+div.albums-overlay {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    width: auto;
+    height: auto;
+    overflow: hidden;
+    z-index: 2;
+    cursor: pointer;    
+    padding: 0px;
+}
+
+div.albums-overlay-hidden {
+    display: none;
+}
+
+div.albums {
+    float: right;
+    color: rgb(240,240,240);
+    font-size: 15px;
+    padding: 5px 10px;
+    margin: 5px;
+    text-align: center;
+    background-color: rgb(43, 84, 197);
+    border-radius: 5px;
 }
 
 </style>
