@@ -1,8 +1,9 @@
 <template>
     <div class="gallery">
-        <div class="galleryitem" v-for="mediaFile in mediaFiles" v-bind:key="mediaFile.fileName">
-            <div class="media-file-thumb" v-bind:style="{ 'background-image': 'url(' + mediaFile.thumbnailUrl + ')', 'background-size': 'cover' }">
-                <span>{{ mediaFile.description }}</span>
+        <div class="gallery-item" v-for="mediaFile in mediaFiles" v-bind:key="mediaFile.fileName">
+            <div class="gallery-thumbnail">
+                <img v-bind:src="mediaFile.thumbnailUrl"/>
+                <div class="description-overlay"><div class="description">{{mediaFile.description}}</div></div>
             </div>
         </div>
     </div>
@@ -23,29 +24,40 @@
 </script>
 
 <style scoped>
-div.galleryitem {
-    background-color:black;
-    width: 210px;
-    height: 210px;
-    float:left;
-    margin: 3px;
-}
-
-div.media-file-thumb {
+div.gallery-item {
     position: relative;
-    height: 200px;
-    width: 200px;
-    margin: 5px;
-    align-items: baseline;
+    background-color: black;
+    float:left;
+    margin: 5px 5px 0px 0px;
+    padding: 0px;
+    height: 202px;
 }
 
-span {
-    background-color:rgba(0, 0, 0, 0.6);
+div.gallery-thumbnail {
+    position: relative;
+    margin: 1px;
+    padding: 0px;
+    height: 200px;
+}
+
+div.description-overlay {
     position: absolute;
-    bottom: 0;
-    left: 0;
-    color:white;
+    bottom: 0px;
+    left: 0px;
     width: 100%;
+    height: auto;
+    overflow: hidden;
+    background-color: rgba(0,0,0,0.5);
+    z-index: 2;
+    cursor: pointer;    
+    padding: 0px;
+}
+
+div.description {
+    color: white;
+    font-size: 15px;
+    padding: 5px;
+    text-align: center;
 }
 
 </style>
