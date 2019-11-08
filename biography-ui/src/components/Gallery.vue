@@ -82,10 +82,13 @@ div.large-image img {
     position: absolute;
     top: 5%;
     bottom: 5%;
-    max-height: 90%;
     left: 5%;
     right: 5%;
     max-width: 90%;
+    max-height: 90%;
+    width: auto;
+    height: auto;
+    margin: auto;
     border-color: white;
     border-width: 5px;
     border-radius: 10px;
