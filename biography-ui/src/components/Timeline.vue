@@ -1,6 +1,6 @@
 <template>
   <div id="timeline">
-    <DateSelector @dayChanged="fillGalleryFromTimelline"/>
+    <DateSelector @monthChanged="fillGalleryFromTimelline"/>
     <GalleryToggleDescription :descriptionOn="galleryShowDescription" @toggled="descriptionToggled"/>
     <Gallery :mediaFiles="galleryMediaFiles" :showDescription="galleryShowDescription" />
   </div>
@@ -27,19 +27,42 @@ export default {
     };
   },  
   methods: {
-    fillGalleryFromTimelline: function(day) {
-      if(day==null) {
-        this.galleryMediaFiles = [];
+    fillGalleryFromTimelline: function(yearMonth) {
+      this.galleryMediaFiles = [];
+      if(yearMonth==null) {
         return;
       }
-      var restUrl = this.baseUrl + "rest/mediafiles/" + day.slice(0,4) + "/"+ day.slice(5,7) + "/"+ day.slice(8,10) + "/";    
+      var restUrl = this.baseUrl + "rest/mediafiles/" + yearMonth.slice(0,4) + "/"+ yearMonth.slice(5,7) + "/";    
+      axios({ method: "GET", "url": restUrl }).then(result => {
+          var dates = [];
+          for (var key in result.data) {
+            dates.push(result.data[key].date);
+          }
+          dates.sort();
+          dates.reverse();
+          
+          for (var idx in dates) {
+            this.galleryMediaFiles.push({ 'title': dates[idx].slice(8,10) + "." + dates[idx].slice(5,7) + "." + dates[idx].slice(0,4), 'mediaFiles': []});
+          }
+
+          for (var idx in dates) {
+            this.loadMediaFiles(idx, dates[idx]);
+          }
+      });
+    },
+    loadMediaFiles: function(idx, date) {
+      if(date==null) {
+        return;
+      }
+      var restUrl = this.baseUrl + "rest/mediafiles/" + date.slice(0,4) + "/" + date.slice(5,7) + "/" + date.slice(8,10) + "/";    
       axios({ method: "GET", "url": restUrl }).then(result => {
           for (var key in result.data.mediaFiles) {
               result.data.mediaFiles[key].thumbnailUrl = this.baseUrl + "file/" + result.data.mediaFiles[key].fileName + "/300";
           }
-          this.galleryMediaFiles = result.data.mediaFiles;
+          result.data.mediaFiles.sort(function(a,b) { return a.fileName < b.fileName });
+          this.galleryMediaFiles[idx]['mediaFiles'] = result.data.mediaFiles;
       }, error => {
-          this.galleryMediaFiles = [];
+        alert('Error')
       });
     },
     descriptionToggled: function(descriptionOn) {

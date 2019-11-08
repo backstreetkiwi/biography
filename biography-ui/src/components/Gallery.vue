@@ -1,13 +1,16 @@
 <template>
     <div class="gallery">
-        <div class="gallery-item" v-for="mediaFile in mediaFiles" v-bind:key="mediaFile.fileName">
-            <div class="gallery-thumbnail">
-                <img v-bind:src="mediaFile.thumbnailUrl"/>
-                <div class="description-overlay" v-bind:class="{'description-overlay-hidden' : !showDescription}">
-                    <div class="description">{{mediaFile.description}}</div>
-                </div>
-                <div class="albums-overlay" v-bind:class="{'albums-overlay-hidden' : !showDescription}">
-                    <div class="albums" v-for="album in mediaFile.albums" v-bind:key="album">{{album}}</div>
+        <div class="chapter" v-for="chapter in mediaFiles" v-bind:key="chapter.title">
+            <div class="chapter-title">{{chapter.title}}</div>
+            <div class="gallery-item" v-for="mediaFile in chapter.mediaFiles" v-bind:key="mediaFile.fileName">
+                <div class="gallery-thumbnail">
+                    <img v-bind:src="mediaFile.thumbnailUrl"/>
+                    <div class="description-overlay" v-bind:class="{'description-overlay-hidden' : !showDescription}">
+                        <div class="description">{{mediaFile.description}}</div>
+                    </div>
+                    <div class="albums-overlay" v-bind:class="{'albums-overlay-hidden' : !showDescription}">
+                        <div class="albums" v-for="album in mediaFile.albums" v-bind:key="album">{{album}}</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -33,6 +36,26 @@
 </script>
 
 <style scoped>
+div.chapter {
+}
+
+div.chapter-title {
+    position: relative;
+    clear: both;
+    font-size: 20px;
+    text-align: left;
+    padding: 25px 0px 10px 5px;
+}
+
+div.gallery-first-item {
+    position: relative;
+    background-color: black;
+    clear: both;
+    margin: 5px 5px 0px 0px;
+    padding: 0px;
+    height: 302px;
+}
+
 div.gallery-item {
     position: relative;
     background-color: black;
@@ -98,6 +121,12 @@ div.albums {
     text-align: center;
     background-color: rgb(43, 84, 197);
     border-radius: 5px;
+}
+
+div.footer {
+    background-color: blueviolet;
+    position: relative;
+    float: unset;
 }
 
 </style>

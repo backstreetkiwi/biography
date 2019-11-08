@@ -18,14 +18,6 @@
           </li>
         </ul>
       </li>  
-      <li class="item item-day" v-bind:class="{'open' : dropDowns.day.open}" v-on:click="toggleDayDropDown()">
-        <a class="link" href="#">{{dayMenuCaption}}</a>
-        <ul class="dropdown">
-          <li v-for="day in days" v-on:click="daySelected(day.date)">
-            <a class="link" href="#">{{day.caption}}</a>  
-          </li>
-        </ul>
-      </li>  
     </ul>
   </div>
 </div>
@@ -40,17 +32,13 @@ export default {
     return {
       selectedYear: null,
       selectedMonth: null,
-      selectedDate: null,
       yearMenuCaption: "year",
       monthMenuCaption: "month",
-      dayMenuCaption: "day",
       years: [],
       months: [],
-      days: [],
       dropDowns: {
         year: { open: false },
         month: { open: false },
-        day: { open: false },
       },
       monthNames: {
         "01" : "January",
@@ -89,45 +77,24 @@ export default {
             this.months = [];
         });
     },
-    updateDays: function() {                                    
-        axios({ method: "GET", "url": "http://localhost:8080/rest/mediafiles/" + this.selectedYear + "/" + this.selectedMonth + "/" }).then(result => {
-            for (var key in result.data) {
-                result.data[key].caption = result.data[key].date.slice(-2);
-            }
-            this.days = result.data;
-        }, error => {
-            this.days = [];
-        });
-    },
     yearSelected: function(newYear) {
       this.selectedYear = newYear;
       this.updateMonths();
       this.days = [];
       this.yearMenuCaption = newYear;
       this.monthMenuCaption = "month";
-      this.dayMenuCaption = "day";
-      this.$emit("dayChanged", null);
+      this.$emit("monthChanged", null);
     },
     monthSelected: function(newYearMonth) {
       this.selectedMonth = newYearMonth.slice(-2);
-      this.updateDays();
       this.monthMenuCaption = this.monthName(newYearMonth);
-      this.dayMenuCaption = "day";
-      this.$emit("dayChanged", null);
-    },
-    daySelected: function(newDate) {
-      this.selectedDate = newDate;
-      this.dayMenuCaption = newDate.slice(-2);
-      this.$emit("dayChanged", this.selectedDate);
+      this.$emit("monthChanged", this.selectedYear + "-" + this.selectedMonth);
     },
     toggleYearDropDown: function() {
       this.dropDowns.year.open = !this.dropDowns.year.open;
     },
     toggleMonthDropDown: function() {
       this.dropDowns.month.open = !this.dropDowns.month.open;
-    },
-    toggleDayDropDown: function() {
-      this.dropDowns.day.open = !this.dropDowns.day.open;
     },
     monthName: function(yearMonth) {
       var month = yearMonth.slice(-2);
