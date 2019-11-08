@@ -80,19 +80,20 @@ div.large-image {
 
 div.large-image img {
     position: absolute;
-    top: 5%;
-    bottom: 5%;
-    left: 5%;
-    right: 5%;
-    max-width: 90%;
-    max-height: 90%;
+    top: 3%;
+    bottom: 3%;
+    left: 3%;
+    right: 3%;
+    max-width: 94%;
+    max-height: 94%;
     width: auto;
     height: auto;
     margin: auto;
     border-color: white;
-    border-width: 5px;
-    border-radius: 10px;
+    border-width: 4px;
+    border-radius: 8px;
     border-style: solid;
+    image-orientation: from-image;
 }
 
 div.large-image-hidden {
