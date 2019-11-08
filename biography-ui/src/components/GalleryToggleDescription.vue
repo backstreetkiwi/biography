@@ -1,7 +1,7 @@
 <template>
-  <div>
-    <a href="#" v-if="!descriptionOn" v-on:click="descriptionSwitchedOn()">D ON</a>
-    <a href="#" v-if="descriptionOn" v-on:click="descriptionSwitchedOff()">D OFF</a>
+  <div class="gallery-toggle-description">
+    <a href="#" v-if="!descriptionOn" v-on:click="descriptionSwitchedOn()">DESCRIPTION OFF</a>
+    <a href="#" v-if="descriptionOn" v-on:click="descriptionSwitchedOff()">DESCRIPTION ON</a>
   </div>
 </template>
 
@@ -26,4 +26,8 @@ export default {
 </script>
 
 <style scoped>
+div.gallery-toggle-description {
+    float: left;
+    width: 200px;
+}
 </style>

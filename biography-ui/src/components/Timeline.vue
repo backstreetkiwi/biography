@@ -1,8 +1,7 @@
 <template>
   <div id="timeline">
     <DateSelector @monthChanged="fillGalleryFromTimelline"/>
-    <GalleryToggleDescription :descriptionOn="galleryShowDescription" @toggled="descriptionToggled"/>
-    <Gallery :mediaFiles="galleryMediaFiles" :showDescription="galleryShowDescription" />
+    <Gallery :mediaFiles="galleryMediaFiles" />
   </div>
 </template>
 
@@ -10,20 +9,17 @@
 import axios from "axios";
 import Gallery from './Gallery'
 import DateSelector from './DateSelector'
-import GalleryToggleDescription from './GalleryToggleDescription'
 
 export default {
   name: 'Timeline',
   components: {
     DateSelector,
-    GalleryToggleDescription,
     Gallery
   },
   data: function() {
     return {
       baseUrl: "http://localhost:8080/",
-      galleryMediaFiles: [],
-      galleryShowDescription: true
+      galleryMediaFiles: []
     };
   },  
   methods: {
@@ -64,9 +60,6 @@ export default {
       }, error => {
         alert('Error')
       });
-    },
-    descriptionToggled: function(descriptionOn) {
-      this.galleryShowDescription = descriptionOn;
     }
   }  
 }

@@ -1,14 +1,18 @@
 <template>
-    <div class="gallery">
+    <div id="gallery">
+        <div class="gallery-toolbar">
+            <GalleryToggleDescription :descriptionOn="galleryShowDescription" @toggled="descriptionToggled"/>
+            <GalleryToggleAlbums :albumsOn="galleryShowAlbums" @toggled="albumsToggled"/>
+        </div>
         <div class="chapter" v-for="chapter in mediaFiles" v-bind:key="chapter.title">
             <div class="chapter-title">{{chapter.title}}</div>
             <div class="gallery-item" v-for="mediaFile in chapter.mediaFiles" v-bind:key="mediaFile.fileName">
                 <div class="gallery-thumbnail">
                     <img v-bind:src="mediaFile.thumbnailUrl"/>
-                    <div class="description-overlay" v-bind:class="{'description-overlay-hidden' : !showDescription}">
+                    <div class="description-overlay" v-bind:class="{'description-overlay-hidden' : !galleryShowDescription}">
                         <div class="description">{{mediaFile.description}}</div>
                     </div>
-                    <div class="albums-overlay" v-bind:class="{'albums-overlay-hidden' : !showDescription}">
+                    <div class="albums-overlay" v-bind:class="{'albums-overlay-hidden' : !galleryShowAlbums}">
                         <div class="albums" v-for="album in mediaFile.albums" v-bind:key="album">{{album}}</div>
                     </div>
                 </div>
@@ -19,24 +23,41 @@
 
 <script>
     import axios from "axios";
+    import GalleryToggleDescription from './GalleryToggleDescription'
+    import GalleryToggleAlbums from './GalleryToggleAlbums'
 
     export default {
         name: 'Gallery',
+        components: {
+            GalleryToggleDescription,
+            GalleryToggleAlbums
+        },
+        data: function() {
+            return {
+                galleryShowDescription: true,
+                galleryShowAlbums: false,
+            };
+        },  
         props: {
             mediaFiles: {
                 type: Array,
                 default: () => []
+            }
+        },
+        methods: {
+            descriptionToggled: function(descriptionOn) {
+                this.galleryShowDescription = descriptionOn;
             },
-            showDescription: {
-                type: Boolean,
-                default: () => false
+            albumsToggled: function(albumsOn) {
+                this.galleryShowAlbums = albumsOn;
             }
         }
     }
 </script>
 
 <style scoped>
-div.chapter {
+div.gallery-toolbar {
+    padding: 10px 0px 10px 5px;
 }
 
 div.chapter-title {
@@ -47,15 +68,6 @@ div.chapter-title {
     padding: 25px 0px 10px 5px;
 }
 
-div.gallery-first-item {
-    position: relative;
-    background-color: black;
-    clear: both;
-    margin: 5px 5px 0px 0px;
-    padding: 0px;
-    height: 302px;
-}
-
 div.gallery-item {
     position: relative;
     background-color: black;
@@ -63,6 +75,7 @@ div.gallery-item {
     margin: 5px 5px 0px 0px;
     padding: 0px;
     height: 302px;
+    border-radius: 5px;
 }
 
 div.gallery-thumbnail {
