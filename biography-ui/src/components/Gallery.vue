@@ -1,12 +1,15 @@
 <template>
     <div id="gallery">
+        <div class="large-image" v-bind:class="{'large-image-hidden' : !showImage}" v-on:click="closeImagePopup()">
+            <img v-bind:src="this.imageSrc" />
+        </div>
         <div class="gallery-toolbar">
             <GalleryToggleDescription :descriptionOn="galleryShowDescription" @toggled="descriptionToggled"/>
             <GalleryToggleAlbums :albumsOn="galleryShowAlbums" @toggled="albumsToggled"/>
         </div>
         <div class="chapter" v-for="chapter in mediaFiles" v-bind:key="chapter.title">
             <div class="chapter-title">{{chapter.title}}</div>
-            <div class="gallery-item" v-for="mediaFile in chapter.mediaFiles" v-bind:key="mediaFile.fileName">
+            <div class="gallery-item" v-for="mediaFile in chapter.mediaFiles" v-bind:key="mediaFile.fileName" v-on:click="showImagePopup(mediaFile.fileUrl)">
                 <div class="gallery-thumbnail">
                     <img v-bind:src="mediaFile.thumbnailUrl"/>
                     <div class="description-overlay" v-bind:class="{'description-overlay-hidden' : !galleryShowDescription}">
@@ -36,6 +39,7 @@
             return {
                 galleryShowDescription: true,
                 galleryShowAlbums: false,
+                showImage: false
             };
         },  
         props: {
@@ -50,12 +54,48 @@
             },
             albumsToggled: function(albumsOn) {
                 this.galleryShowAlbums = albumsOn;
+            },
+            showImagePopup: function(fileName) {
+                this.imageSrc = fileName;
+                this.showImage = true;
+            },
+            closeImagePopup: function() {
+                this.showImage = false;
+                this.imageSrc = "";
             }
         }
     }
 </script>
 
 <style scoped>
+div.large-image {
+    position: fixed;
+    top: 0px;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.8);
+    z-index: 10;
+    text-align: center;
+}
+
+div.large-image img {
+    position: absolute;
+    top: 5%;
+    bottom: 5%;
+    max-height: 90%;
+    left: 5%;
+    right: 5%;
+    max-width: 90%;
+    border-color: white;
+    border-width: 5px;
+    border-radius: 10px;
+    border-style: solid;
+}
+
+div.large-image-hidden {
+    display: none;
+}
+
 div.gallery-toolbar {
     padding: 10px 0px 10px 5px;
 }
