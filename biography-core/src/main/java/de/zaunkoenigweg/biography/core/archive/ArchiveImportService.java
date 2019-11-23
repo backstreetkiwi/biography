@@ -16,7 +16,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.springframework.stereotype.Component;
@@ -30,6 +29,7 @@ import de.zaunkoenigweg.biography.metadata.MetadataService;
 import de.zaunkoenigweg.biography.metadata.exif.ExifDataService;
 import de.zaunkoenigweg.biography.metadata.exif.ExifDataWrapper;
 
+@SuppressWarnings("deprecation")
 @Component
 public class ArchiveImportService {
 
@@ -52,8 +52,6 @@ public class ArchiveImportService {
         this.exifDataService = exifDataService;
         this.archiveFolder = archiveFolder;
         this.importFolder = importFolder;
-        // FIXME: only works if archiveFolder and importFolder share the same parent
-        this.biographyBaseFolder = archiveFolder.getParentFile();
         this.thumborUrl = thumborUrl;
         LOG.info("ArchiveImportService started.");
         LOG.info(String.format("biographyBaseFolder=%s", this.biographyBaseFolder));
@@ -160,76 +158,38 @@ public class ArchiveImportService {
     	
     	File thumbnailsFolder = new File(this.archiveFolder, "thumbnails");
     	
-    	File thumbsFolder200 = new File(thumbnailsFolder, "200");
-    	File thumbsFolder300 = new File(thumbnailsFolder, "300");
-    	HttpClient client;
+    	File thumbsFolder200 = new File(thumbnailsFolder, ThumbnailSize.t200.folderName);
+    	File thumbsFolder300 = new File(thumbnailsFolder, ThumbnailSize.t300.folderName);
 
-    	try {
-			client = new DefaultHttpClient();
+		File file200 = BiographyFileUtils.getArchiveFileFromShortFilename(thumbsFolder200, file.getName());
+		File file300 = BiographyFileUtils.getArchiveFileFromShortFilename(thumbsFolder300, file.getName());
 
-			// TODO method for one resizing w/param (200, 300, ...)
-
-			File file200 = BiographyFileUtils.getArchiveFileFromShortFilename(thumbsFolder200, file.getName());
-			File file300 = BiographyFileUtils.getArchiveFileFromShortFilename(thumbsFolder300, file.getName());
-
-			if(!force && (file200.exists() && file300.exists())) {
-				return true;
-			}
-			
-			String thumborUri = this.thumborUrl + "0x200/" + biographyBaseFolder.toPath().relativize(file.toPath()).toString();
-			HttpGet request = new HttpGet(thumborUri);
-			HttpResponse response = client.execute(request);
-			if(response.getStatusLine().getStatusCode()==200) {
-				BufferedInputStream bis = new BufferedInputStream(response.getEntity().getContent());
-				file200.getParentFile().mkdirs();
-				BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file200));
-				int inByte;
-				while((inByte = bis.read()) != -1) bos.write(inByte);
-				bis.close();
-				bos.close();
-			}
-
-			thumborUri = this.thumborUrl + "0x300/" + biographyBaseFolder.toPath().relativize(file.toPath()).toString();
-			request = new HttpGet(thumborUri);
-			response = client.execute(request);
-			if(response.getStatusLine().getStatusCode()==200) {
-				BufferedInputStream bis = new BufferedInputStream(response.getEntity().getContent());
-				file300.getParentFile().mkdirs();
-				BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file300));
-				int inByte;
-				while((inByte = bis.read()) != -1) bos.write(inByte);
-				bis.close();
-				bos.close();
-				return true;
-			}
-			return false;
-    	} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return false;
-		} finally {
-			// TODO 
-			// close client ?
+		if(!force && file200.exists() && file300.exists()) {
+			return true;
 		}
+    	
+        generateThumbnail(file, this.archiveFolder, "archive/", ThumbnailSize.t200, file200);
+        generateThumbnail(file, this.archiveFolder, "archive/", ThumbnailSize.t300, file300);
+    	
+    	return true;
     }
 
-    // TODO merge w/ method generateThumbnails
-    // TODO generalize thumbnail service
     public void generateImportThumbnails(File file, UUID uuid) {
-        
         File thumbnailsFolder = new File(this.importFolder, "thumbnails");
-
         File thumbnailFile = new File(thumbnailsFolder, String.format("%s.jpg", uuid.toString()));
+        generateThumbnail(file, this.importFolder, "import/", ThumbnailSize.t200, thumbnailFile);
+    }
+
+    private void generateThumbnail(File sourceFile, File sourceBaseFolder, String thumborBaseFolder, ThumbnailSize size, File targetFile) {
         
-        Optional<MediaFileType> mediaFileType = MediaFileType.of(file);
-        
+        Optional<MediaFileType> mediaFileType = MediaFileType.of(sourceFile);
         if(!mediaFileType.isPresent()) {
             return;
         }
         
         if(mediaFileType.get()!=MediaFileType.JPEG) {
             try {
-                FileUtils.copyFile(THUMB_200, thumbnailFile);
+                FileUtils.copyFile(THUMB_200, targetFile);
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -237,19 +197,15 @@ public class ArchiveImportService {
             return;
         }
         
-        HttpClient client;
+		try (DefaultHttpClient client = new DefaultHttpClient()) {
 
-        try {
-            client = new DefaultHttpClient();
-
-
-            String thumborUri = this.thumborUrl + "0x200/" + biographyBaseFolder.toPath().relativize(file.toPath()).toString();
+            String thumborUri = this.thumborUrl + size.thumborUrlFragment + thumborBaseFolder + sourceBaseFolder.toPath().relativize(sourceFile.toPath()).toString();
             HttpGet request = new HttpGet(thumborUri);
             HttpResponse response = client.execute(request);
             if(response.getStatusLine().getStatusCode()==200) {
                 BufferedInputStream bis = new BufferedInputStream(response.getEntity().getContent());
-                thumbnailFile.getParentFile().mkdirs();
-                BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(thumbnailFile));
+                targetFile.getParentFile().mkdirs();
+                BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(targetFile));
                 int inByte;
                 while((inByte = bis.read()) != -1) bos.write(inByte);
                 bis.close();
@@ -259,9 +215,21 @@ public class ArchiveImportService {
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-        } finally {
-            // TODO 
-            // close client ?
         }
     }
+    
+    static enum ThumbnailSize {
+    	
+    	t200("200", "0x200/"), 
+    	t300("300", "0x300/");
+    	
+    	private String folderName;
+    	private String thumborUrlFragment;
+    	
+		private ThumbnailSize(String folderName, String thumborUrlFragment) {
+			this.folderName = folderName;
+			this.thumborUrlFragment = thumborUrlFragment;
+		}
+    }
+
 }
