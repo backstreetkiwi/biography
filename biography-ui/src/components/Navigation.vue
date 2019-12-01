@@ -21,11 +21,16 @@ export default {
         },
         {
           id: 1,
+          text: 'Search',
+          page:'/Search'
+        },
+        {
+          id: 2,
           text: 'Import',
           page:'/Import'
         },
         {
-          id: 2,
+          id: 3,
           text: 'Batches',
           page:'/Batches'
         }

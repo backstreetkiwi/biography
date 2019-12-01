@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 
 import Timeline from '@/components/Timeline'
+import Search from '@/components/Search'
 import Batches from '@/components/Batches'
 import Import from '@/components/Import'
 
@@ -18,6 +19,11 @@ export default new Router({
       path: '/import',
       name: 'Import',
       component: Import
+    },
+    {
+      path: '/search',
+      name: 'Search',
+      component: Search
     },
     {
       path: '/batches',
