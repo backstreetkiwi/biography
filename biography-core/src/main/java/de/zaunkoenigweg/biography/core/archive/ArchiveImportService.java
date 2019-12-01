@@ -41,7 +41,6 @@ public class ArchiveImportService {
     private MetadataService metadataService;
     private ArchiveIndexingService archiveIndexingService;
     private ExifDataService exifDataService;
-    private File biographyBaseFolder;
     private File archiveFolder;
     private File importFolder;
     private String thumborUrl;
@@ -54,7 +53,6 @@ public class ArchiveImportService {
         this.importFolder = importFolder;
         this.thumborUrl = thumborUrl;
         LOG.info("ArchiveImportService started.");
-        LOG.info(String.format("biographyBaseFolder=%s", this.biographyBaseFolder));
         LOG.info(String.format("archiveFolder=%s", this.archiveFolder));
         LOG.info(String.format("importFolder=%s", this.importFolder));
     }

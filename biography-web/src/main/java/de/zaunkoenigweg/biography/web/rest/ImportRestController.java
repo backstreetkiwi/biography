@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import de.zaunkoenigweg.biography.core.archive.ArchiveBulkImportService;
-import de.zaunkoenigweg.biography.core.archive.ArchiveImportService;
 import de.zaunkoenigweg.biography.core.archive.BulkImportJob;
 import de.zaunkoenigweg.biography.core.archive.ImportFile;
 
@@ -34,11 +33,9 @@ public class ImportRestController {
 
     private File importFolder;
     private ArchiveBulkImportService archiveBulkImportService;
-    private ArchiveImportService archiveImportService;
 
-    public ImportRestController(ArchiveBulkImportService archiveBulkImportService, ArchiveImportService archiveImportService, File importFolder) {
+    public ImportRestController(ArchiveBulkImportService archiveBulkImportService, File importFolder) {
         this.archiveBulkImportService = archiveBulkImportService;
-        this.archiveImportService = archiveImportService;
         this.importFolder = importFolder;
         LOG.info("ImportRestController started.");
         LOG.info(String.format("importFolder=%s", this.importFolder));
