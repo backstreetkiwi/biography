@@ -1,4 +1,4 @@
-package de.zaunkoenigweg.biography.core.archive;
+package de.zaunkoenigweg.biography.core.archiveimport;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,18 +26,18 @@ import de.zaunkoenigweg.biography.metadata.exif.ExifData;
  * @author mail@nikolaus-winter.de
  */
 @Component
-public class ArchiveBulkImportService {
+public class BulkImportService {
 
-    private final static Log LOG = LogFactory.getLog(ArchiveBulkImportService.class);
+    private final static Log LOG = LogFactory.getLog(BulkImportService.class);
 
-    private ArchiveImportService archiveImportService;
+    private ImportService archiveImportService;
     // TODO: use different instance of ExifDataService to keep control over cache!
     private ExifDataService exifDataService;
     private File importFolder;
 
     private BulkImportJob importJob;
 
-    public ArchiveBulkImportService(ArchiveImportService archiveImportService, ExifDataService exifDataService, File importFolder) {
+    public BulkImportService(ImportService archiveImportService, ExifDataService exifDataService, File importFolder) {
         this.archiveImportService = archiveImportService;
         this.exifDataService = exifDataService;
         this.importFolder = importFolder;

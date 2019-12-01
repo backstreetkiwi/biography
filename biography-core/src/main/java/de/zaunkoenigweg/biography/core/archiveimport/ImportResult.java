@@ -1,4 +1,4 @@
-package de.zaunkoenigweg.biography.core.archive;
+package de.zaunkoenigweg.biography.core.archiveimport;
 
 /**
  * All outcomes of the import of a single file.

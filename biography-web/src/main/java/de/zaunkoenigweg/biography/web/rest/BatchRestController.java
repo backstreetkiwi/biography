@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.zaunkoenigweg.biography.core.MediaFileType;
-import de.zaunkoenigweg.biography.core.archive.ArchiveImportService;
+import de.zaunkoenigweg.biography.core.archiveimport.ImportService;
 import de.zaunkoenigweg.biography.core.index.IndexingService;
 import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
 import de.zaunkoenigweg.biography.web.console.Console;
@@ -31,9 +31,9 @@ public class BatchRestController {
 
     private IndexingService indexingService;
 
-    private ArchiveImportService archiveImportService;
+    private ImportService archiveImportService;
     
-    public BatchRestController(Consoles consoles, IndexingService indexingService, ArchiveImportService archiveImportService, File archiveFolder) {
+    public BatchRestController(Consoles consoles, IndexingService indexingService, ImportService archiveImportService, File archiveFolder) {
         this.consoles = consoles;
         this.indexingService = indexingService;
         this.archiveImportService = archiveImportService;

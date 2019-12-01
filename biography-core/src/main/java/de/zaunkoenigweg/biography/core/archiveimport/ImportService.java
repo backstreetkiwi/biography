@@ -1,4 +1,4 @@
-package de.zaunkoenigweg.biography.core.archive;
+package de.zaunkoenigweg.biography.core.archiveimport;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -31,12 +31,12 @@ import de.zaunkoenigweg.biography.metadata.exif.ExifData;
 
 @SuppressWarnings("deprecation")
 @Component
-public class ArchiveImportService {
+public class ImportService {
 
-    private final static Log LOG = LogFactory.getLog(ArchiveImportService.class);
+    private final static Log LOG = LogFactory.getLog(ImportService.class);
 
-    private final static File THUMB_200 = new File(ArchiveImportService.class.getResource("/thumb200.jpg").getFile());
-    private final static File THUMB_300 = new File(ArchiveImportService.class.getResource("/thumb300.jpg").getFile());
+    private final static File THUMB_200 = new File(ImportService.class.getResource("/thumb200.jpg").getFile());
+    private final static File THUMB_300 = new File(ImportService.class.getResource("/thumb300.jpg").getFile());
     
     private MetadataService metadataService;
     private IndexingService indexingService;
@@ -45,7 +45,7 @@ public class ArchiveImportService {
     private File importFolder;
     private String thumborUrl;
 
-    public ArchiveImportService(MetadataService metadataService, IndexingService indexingService, ExifDataService exifDataService, File archiveFolder, File importFolder, String thumborUrl) {
+    public ImportService(MetadataService metadataService, IndexingService indexingService, ExifDataService exifDataService, File archiveFolder, File importFolder, String thumborUrl) {
         this.metadataService = metadataService;
         this.indexingService = indexingService;
         this.exifDataService = exifDataService;

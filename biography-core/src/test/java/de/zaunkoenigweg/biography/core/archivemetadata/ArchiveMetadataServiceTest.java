@@ -1,4 +1,4 @@
-package de.zaunkoenigweg.biography.core.archive;
+package de.zaunkoenigweg.biography.core.archivemetadata;
 
 import static org.junit.Assert.assertTrue;
 

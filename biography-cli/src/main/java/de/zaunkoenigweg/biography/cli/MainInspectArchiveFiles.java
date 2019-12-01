@@ -14,7 +14,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.support.AbstractApplicationContext;
 
-import de.zaunkoenigweg.biography.core.archive.ArchiveValidationService;
+import de.zaunkoenigweg.biography.core.archivemetadata.ArchiveValidationService;
 import de.zaunkoenigweg.biography.core.config.BiographyConfig;
 
 public class MainInspectArchiveFiles {

@@ -16,8 +16,8 @@ import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrInputDocument;
 import org.springframework.stereotype.Component;
 
-import de.zaunkoenigweg.biography.core.archive.ArchiveMetadataService;
-import de.zaunkoenigweg.biography.core.archive.ArchiveValidationService;
+import de.zaunkoenigweg.biography.core.archivemetadata.ArchiveMetadataService;
+import de.zaunkoenigweg.biography.core.archivemetadata.ArchiveValidationService;
 import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
 import de.zaunkoenigweg.biography.metadata.Album;
 import de.zaunkoenigweg.biography.metadata.BiographyMetadata;

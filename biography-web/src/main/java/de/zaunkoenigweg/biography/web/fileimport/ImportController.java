@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
-import de.zaunkoenigweg.biography.core.archive.ArchiveBulkImportService;
+import de.zaunkoenigweg.biography.core.archiveimport.BulkImportService;
 
 @Controller
 public class ImportController {
@@ -28,9 +28,9 @@ public class ImportController {
     private final static Log LOG = LogFactory.getLog(ImportController.class);
 
     private File importFolder;
-    private ArchiveBulkImportService archiveBulkImportService;
+    private BulkImportService archiveBulkImportService;
 
-    public ImportController(ArchiveBulkImportService archiveBulkImportService, File importFolder) {
+    public ImportController(BulkImportService archiveBulkImportService, File importFolder) {
         this.archiveBulkImportService = archiveBulkImportService;
         this.importFolder = importFolder;
         LOG.info("ImportController started.");

@@ -1,4 +1,4 @@
-package de.zaunkoenigweg.biography.core.archive;
+package de.zaunkoenigweg.biography.core.archiveimport;
 
 import java.util.Collection;
 import java.util.Comparator;

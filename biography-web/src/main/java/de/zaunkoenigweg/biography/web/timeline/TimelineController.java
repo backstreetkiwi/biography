@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import de.zaunkoenigweg.biography.core.archive.ArchiveMetadataService;
+import de.zaunkoenigweg.biography.core.archivemetadata.ArchiveMetadataService;
 import de.zaunkoenigweg.biography.core.index.IndexingService;
 import de.zaunkoenigweg.biography.core.index.SearchService;
 import de.zaunkoenigweg.biography.core.index.MediaFile;

@@ -18,9 +18,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import de.zaunkoenigweg.biography.core.MediaFileType;
-import de.zaunkoenigweg.biography.core.archive.ArchiveImportService;
-import de.zaunkoenigweg.biography.core.archive.ArchiveMetadataService;
-import de.zaunkoenigweg.biography.core.archive.ArchiveValidationService;
+import de.zaunkoenigweg.biography.core.archiveimport.ImportService;
+import de.zaunkoenigweg.biography.core.archivemetadata.ArchiveMetadataService;
+import de.zaunkoenigweg.biography.core.archivemetadata.ArchiveValidationService;
 import de.zaunkoenigweg.biography.core.index.IndexingService;
 import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
 import de.zaunkoenigweg.biography.metadata.Album;
@@ -38,7 +38,7 @@ public class ToolsController {
 
     private IndexingService indexingService;
 
-    private ArchiveImportService archiveImportService;
+    private ImportService archiveImportService;
 
     private ArchiveValidationService archiveValidationService;
 
@@ -50,7 +50,7 @@ public class ToolsController {
 
     public ToolsController(File archiveFolder, ArchiveValidationService archiveValidationService,
                     ArchiveMetadataService archiveMetadataService,
-                    IndexingService indexingService, ArchiveImportService archiveImportService, ExifDataService exifDataService, Consoles consoles) {
+                    IndexingService indexingService, ImportService archiveImportService, ExifDataService exifDataService, Consoles consoles) {
         this.archiveFolder = archiveFolder;
         this.archiveValidationService = archiveValidationService;
         this.archiveMetadataService = archiveMetadataService;
