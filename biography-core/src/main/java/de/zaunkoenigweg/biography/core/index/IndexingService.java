@@ -22,22 +22,25 @@ import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
 import de.zaunkoenigweg.biography.metadata.Album;
 import de.zaunkoenigweg.biography.metadata.BiographyMetadata;
 
+/**
+ * Indexing. 
+ */
 @Component
-public class ArchiveIndexingService {
+public class IndexingService {
 
-	private final static Log LOG = LogFactory.getLog(ArchiveIndexingService.class);
+	private final static Log LOG = LogFactory.getLog(IndexingService.class);
 
     private String solrIndexUrl;
     private File archiveFolder;
 	private ArchiveMetadataService archiveMetadataService;
 	private ArchiveValidationService archiveValidationService;
 
-	public ArchiveIndexingService(String solrIndexUrl, File archiveFolder, ArchiveMetadataService archiveMetadataService, ArchiveValidationService archiveValidationService) {
+	public IndexingService(String solrIndexUrl, File archiveFolder, ArchiveMetadataService archiveMetadataService, ArchiveValidationService archiveValidationService) {
 		this.solrIndexUrl = solrIndexUrl;
 		this.archiveFolder = archiveFolder;
 		this.archiveMetadataService = archiveMetadataService;
 		this.archiveValidationService = archiveValidationService;
-		LOG.info("ArchiveIndexingService started.");
+		LOG.info("IndexingService started.");
 		LOG.info(String.format("archiveFolder=%s", this.archiveFolder));
 		LOG.info(String.format("solrIndexUrl=%s", this.solrIndexUrl));
 	}

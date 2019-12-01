@@ -15,35 +15,35 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import de.zaunkoenigweg.biography.core.index.ArchiveSearchService;
+import de.zaunkoenigweg.biography.core.index.SearchService;
 import de.zaunkoenigweg.biography.core.index.MediaFile;
 
 @RestController
 public class MediaFileRestController {
 
-	private ArchiveSearchService archiveSearchService;
+	private SearchService searchService;
 
-	public MediaFileRestController(ArchiveSearchService archiveSearchService) {
-		this.archiveSearchService = archiveSearchService;
+	public MediaFileRestController(SearchService searchService) {
+		this.searchService = searchService;
 	}
 
 	@CrossOrigin
 	@RequestMapping("/rest/mediafiles/")
 	public List<Map<String, Object>> get() {
-        return archiveSearchService.getYearCounts().map(this::yearCountToRestObject).collect(Collectors.toList());
+        return searchService.getYearCounts().map(this::yearCountToRestObject).collect(Collectors.toList());
 	}
 	
 	@CrossOrigin
 	@RequestMapping("/rest/mediafiles/{year}/")
 	public List<Map<String, Object>> get(@PathVariable("year") Year year) {
-        return archiveSearchService.getMonthCounts(year).map(this::monthCountToRestObject).collect(Collectors.toList());
+        return searchService.getMonthCounts(year).map(this::monthCountToRestObject).collect(Collectors.toList());
 	}
 	
 	@CrossOrigin
 	@RequestMapping("/rest/mediafiles/{year}/{month}")
 	public List<Map<String, Object>> get(@PathVariable("year") Year year, @PathVariable("month") int month) {
         YearMonth yearMonth = YearMonth.of(year.getValue(), Month.of(month));
-        return archiveSearchService.getDayCounts(yearMonth).map(this::dayCountToRestObject).collect(Collectors.toList());
+        return searchService.getDayCounts(yearMonth).map(this::dayCountToRestObject).collect(Collectors.toList());
 	}
 	
 	@CrossOrigin
@@ -53,7 +53,7 @@ public class MediaFileRestController {
 		LocalDate localDate = LocalDate.of(year.getValue(), month, day);
 		
 		Map<String, Object> restObject = new HashMap<>();
-		List<Map<String, Object>> mediaFiles = archiveSearchService.findByDate(localDate).map(this::mediaFileToRestObject).collect(Collectors.toList());
+		List<Map<String, Object>> mediaFiles = searchService.findByDate(localDate).map(this::mediaFileToRestObject).collect(Collectors.toList());
 		restObject.put("mediaFiles", mediaFiles);
 		restObject.put("count", mediaFiles.size());
 		return restObject;

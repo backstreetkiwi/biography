@@ -9,7 +9,7 @@ public class MainRebuildIndex {
     
     private final static Log LOG = LogFactory.getLog(MainRebuildIndex.class);
 
-    private static de.zaunkoenigweg.biography.core.index.ArchiveIndexingService archiveIndexingService;
+    private static de.zaunkoenigweg.biography.core.index.IndexingService archiveIndexingService;
 
     public static void main(String[] args) {
 //        AbstractApplicationContext springContext = new AnnotationConfigApplicationContext(SpringContext.class);

@@ -13,8 +13,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import de.zaunkoenigweg.biography.core.index.ArchiveSearchService;
-import de.zaunkoenigweg.biography.core.index.ArchiveSearchService.QueryMode;
+import de.zaunkoenigweg.biography.core.index.SearchService;
+import de.zaunkoenigweg.biography.core.index.SearchService.QueryMode;
 import de.zaunkoenigweg.biography.web.BackLink;
 import de.zaunkoenigweg.biography.core.index.MediaFile;
 
@@ -23,10 +23,10 @@ public class SearchController {
 
     private final static Log LOG = LogFactory.getLog(SearchController.class);
 
-    private ArchiveSearchService archiveSearchService;
+    private SearchService searchService;
 
-    public SearchController(ArchiveSearchService archiveSearchService) {
-        this.archiveSearchService = archiveSearchService;
+    public SearchController(SearchService searchService) {
+        this.searchService = searchService;
         LOG.info("SearchController started.");
     }
 
@@ -43,7 +43,7 @@ public class SearchController {
     @RequestMapping("/search/query/")
     public String timeline(HttpSession session, HttpServletRequest request, Model model, @RequestParam("q") String queryString, @RequestParam("mode") QueryMode queryMode) {
 
-        List<MediaFile> mediaFiles = archiveSearchService.findByDescription(queryString, queryMode).collect(Collectors.toList());;
+        List<MediaFile> mediaFiles = searchService.findByDescription(queryString, queryMode).collect(Collectors.toList());;
         
         BackLink backLink = new BackLink("BACK TO SEARCH", request.getRequestURI() + "?" + request.getQueryString());
 		session.setAttribute(BackLink.class.getName(), backLink);

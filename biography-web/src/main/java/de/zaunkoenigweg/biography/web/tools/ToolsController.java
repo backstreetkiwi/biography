@@ -21,7 +21,7 @@ import de.zaunkoenigweg.biography.core.MediaFileType;
 import de.zaunkoenigweg.biography.core.archive.ArchiveImportService;
 import de.zaunkoenigweg.biography.core.archive.ArchiveMetadataService;
 import de.zaunkoenigweg.biography.core.archive.ArchiveValidationService;
-import de.zaunkoenigweg.biography.core.index.ArchiveIndexingService;
+import de.zaunkoenigweg.biography.core.index.IndexingService;
 import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
 import de.zaunkoenigweg.biography.metadata.Album;
 import de.zaunkoenigweg.biography.metadata.BiographyMetadata;
@@ -36,7 +36,7 @@ public class ToolsController {
 
     private File archiveFolder;
 
-    private ArchiveIndexingService archiveIndexingService;
+    private IndexingService indexingService;
 
     private ArchiveImportService archiveImportService;
 
@@ -50,11 +50,11 @@ public class ToolsController {
 
     public ToolsController(File archiveFolder, ArchiveValidationService archiveValidationService,
                     ArchiveMetadataService archiveMetadataService,
-                    ArchiveIndexingService archiveIndexingService, ArchiveImportService archiveImportService, ExifDataService exifDataService, Consoles consoles) {
+                    IndexingService indexingService, ArchiveImportService archiveImportService, ExifDataService exifDataService, Consoles consoles) {
         this.archiveFolder = archiveFolder;
         this.archiveValidationService = archiveValidationService;
         this.archiveMetadataService = archiveMetadataService;
-        this.archiveIndexingService = archiveIndexingService;
+        this.indexingService = indexingService;
         this.archiveImportService = archiveImportService;
         this.exifDataService = exifDataService;
         this.consoles = consoles;
@@ -231,7 +231,7 @@ public class ToolsController {
 
                 archiveMetadataService.addAlbum(archiveFile, album);
 
-                // archiveIndexingService.reIndex(archiveFile);
+                // indexingService.reIndex(archiveFile);
 
             });
             console.close();
@@ -286,7 +286,7 @@ public class ToolsController {
 
             console.println(mediaFiles.size() + " to index.");
             // TODO incremental output to console?
-            this.archiveIndexingService.rebuildIndex();
+            this.indexingService.rebuildIndex();
             console.println("Finished.");
             console.close();
         }).start();

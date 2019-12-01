@@ -10,7 +10,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.support.AbstractApplicationContext;
 
-import de.zaunkoenigweg.biography.core.index.ArchiveSearchService;
+import de.zaunkoenigweg.biography.core.index.SearchService;
 
 public class MainFindInDescription {
 

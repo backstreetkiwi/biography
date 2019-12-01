@@ -28,10 +28,13 @@ import org.apache.solr.common.SolrDocument;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.stereotype.Component;
 
+/**
+ * Search.
+ */
 @Component
-public class ArchiveSearchService implements DisposableBean {
+public class SearchService implements DisposableBean {
 
-    private final static Log LOG = LogFactory.getLog(ArchiveSearchService.class);
+    private final static Log LOG = LogFactory.getLog(SearchService.class);
 
     private String solrIndexUrl;
     
@@ -45,9 +48,9 @@ public class ArchiveSearchService implements DisposableBean {
 //    private static final Function<QueryResponse, LocalDate> EXTRACT_DATE_OF_FIRST_DOCUMENT = response -> LocalDateTime.parse(
 //            response.getResults().get(0).get(Index.FIELD_DATE_TIME_ORIGINAL).toString()).toLocalDate();
     
-	public ArchiveSearchService(String solrIndexUrl) {
+	public SearchService(String solrIndexUrl) {
 		this.solrIndexUrl = solrIndexUrl;
-		LOG.info("ArchiveSearchService started.");
+		LOG.info("SearchService started.");
 		LOG.info(String.format("solrIndexUrl=%s", this.solrIndexUrl));
 	}
 

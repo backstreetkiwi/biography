@@ -2,6 +2,9 @@ package de.zaunkoenigweg.biography.core.index;
 
 import java.time.LocalDate;
 
+/**
+ * (Aggregated) Biography album information from index.
+ */
 public class Album {
 
     private String name;
@@ -9,8 +12,7 @@ public class Album {
     private LocalDate begin;
     private LocalDate end;
     
-    public Album(String name, long size, LocalDate begin, LocalDate end) {
-        super();
+    Album(String name, long size, LocalDate begin, LocalDate end) {
         this.name = name;
         this.size = size;
         this.begin = begin;

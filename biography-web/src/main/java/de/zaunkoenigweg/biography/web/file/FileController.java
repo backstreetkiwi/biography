@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import de.zaunkoenigweg.biography.core.archive.ArchiveMetadataService;
-import de.zaunkoenigweg.biography.core.index.ArchiveIndexingService;
+import de.zaunkoenigweg.biography.core.index.IndexingService;
 import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
 import de.zaunkoenigweg.biography.metadata.Album;
 import de.zaunkoenigweg.biography.metadata.BiographyMetadata;
@@ -42,13 +42,13 @@ public class FileController {
     private File thumbsFolder300;
 
     private ArchiveMetadataService archiveMetadataService;
-	private ArchiveIndexingService archiveIndexingService;
+	private IndexingService indexingService;
 
-	public FileController(File archiveFolder, File importFolder, ArchiveMetadataService archiveMetadataService, ArchiveIndexingService archiveIndexingService) {
+	public FileController(File archiveFolder, File importFolder, ArchiveMetadataService archiveMetadataService, IndexingService indexingService) {
 		this.archiveFolder = archiveFolder;
 		this.importFolder = importFolder;
 		this.archiveMetadataService = archiveMetadataService;
-		this.archiveIndexingService = archiveIndexingService;
+		this.indexingService = indexingService;
         this.thumbsFolder200 = new File(this.archiveFolder, "thumbnails/200");
         this.thumbsFolder300 = new File(this.archiveFolder, "thumbnails/300");
 		LOG.info("FileController started.");
@@ -98,7 +98,7 @@ public class FileController {
         
         archiveMetadataService.setDescription(archiveFile, newDescription);
 
-        archiveIndexingService.reIndex(archiveFile);
+        indexingService.reIndex(archiveFile);
         
         return "redirect:/file/" + filename;
     }
@@ -110,7 +110,7 @@ public class FileController {
         
         archiveMetadataService.addAlbum(archiveFile, new Album(album));
 
-        archiveIndexingService.reIndex(archiveFile);
+        indexingService.reIndex(archiveFile);
         
         return "redirect:/file/" + filename;
     }
@@ -122,7 +122,7 @@ public class FileController {
         
         archiveMetadataService.removeAlbum(archiveFile, new Album(album));
 
-        archiveIndexingService.reIndex(archiveFile);
+        indexingService.reIndex(archiveFile);
         
         return "redirect:/file/" + filename;
     }

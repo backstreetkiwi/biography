@@ -22,8 +22,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import de.zaunkoenigweg.biography.core.archive.ArchiveMetadataService;
-import de.zaunkoenigweg.biography.core.index.ArchiveIndexingService;
-import de.zaunkoenigweg.biography.core.index.ArchiveSearchService;
+import de.zaunkoenigweg.biography.core.index.IndexingService;
+import de.zaunkoenigweg.biography.core.index.SearchService;
 import de.zaunkoenigweg.biography.core.index.MediaFile;
 import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
 import de.zaunkoenigweg.biography.web.BackLink;
@@ -35,17 +35,17 @@ public class TimelineController {
 
 	private File archiveFolder;
 	
-	private ArchiveSearchService archiveSearchService;
+	private SearchService searchService;
     
 	private ArchiveMetadataService archiveMetadataService;
 
-	private ArchiveIndexingService archiveIndexingService;
+	private IndexingService indexingService;
 	
-    public TimelineController(File archiveFolder, ArchiveSearchService archiveSearchService, ArchiveMetadataService archiveMetadataService, ArchiveIndexingService archiveIndexingService) {
+    public TimelineController(File archiveFolder, SearchService searchService, ArchiveMetadataService archiveMetadataService, IndexingService indexingService) {
 		this.archiveFolder = archiveFolder;
-        this.archiveSearchService = archiveSearchService;
+        this.searchService = searchService;
 		this.archiveMetadataService = archiveMetadataService;
-		this.archiveIndexingService = archiveIndexingService;
+		this.indexingService = indexingService;
         LOG.info("TimelineController started.");
     }
 
@@ -57,7 +57,7 @@ public class TimelineController {
     @RequestMapping("/timeline")
     public String timeline(Model model) {
 
-        List<Pair<Year, Long>> years = archiveSearchService.getYearCounts().collect(Collectors.toList());
+        List<Pair<Year, Long>> years = searchService.getYearCounts().collect(Collectors.toList());
 
         model.addAttribute("years", years);
         model.addAttribute("selectedMenuItem", "TIMELINE");
@@ -69,9 +69,9 @@ public class TimelineController {
     @RequestMapping("/timeline/{year}")
     public String timeline(Model model, @PathVariable("year") Year year) {
 
-        List<Pair<Year, Long>> years = archiveSearchService.getYearCounts().collect(Collectors.toList());
+        List<Pair<Year, Long>> years = searchService.getYearCounts().collect(Collectors.toList());
 
-        List<Pair<YearMonth, Long>> months = archiveSearchService.getMonthCounts(year).collect(Collectors.toList());
+        List<Pair<YearMonth, Long>> months = searchService.getMonthCounts(year).collect(Collectors.toList());
 
         model.addAttribute("years", years);
         model.addAttribute("months", months);
@@ -87,9 +87,9 @@ public class TimelineController {
 
         YearMonth yearMonth = YearMonth.of(year.getValue(), Month.of(month));
 
-        List<Pair<Year, Long>> years = archiveSearchService.getYearCounts().collect(Collectors.toList());
-        List<Pair<YearMonth, Long>> months = archiveSearchService.getMonthCounts(year).collect(Collectors.toList());
-        List<Pair<LocalDate, Long>> days = archiveSearchService.getDayCounts(yearMonth).collect(Collectors.toList());
+        List<Pair<Year, Long>> years = searchService.getYearCounts().collect(Collectors.toList());
+        List<Pair<YearMonth, Long>> months = searchService.getMonthCounts(year).collect(Collectors.toList());
+        List<Pair<LocalDate, Long>> days = searchService.getDayCounts(yearMonth).collect(Collectors.toList());
 
         model.addAttribute("years", years);
         model.addAttribute("months", months);
@@ -108,12 +108,12 @@ public class TimelineController {
 
         LocalDate localDate = LocalDate.of(year.getValue(), month, day);
 
-        List<Pair<Year, Long>> years = archiveSearchService.getYearCounts().collect(Collectors.toList());
-        List<Pair<YearMonth, Long>> months = archiveSearchService.getMonthCounts(year).collect(Collectors.toList());
-        List<Pair<LocalDate, Long>> days = archiveSearchService.getDayCounts(YearMonth.from(localDate))
+        List<Pair<Year, Long>> years = searchService.getYearCounts().collect(Collectors.toList());
+        List<Pair<YearMonth, Long>> months = searchService.getMonthCounts(year).collect(Collectors.toList());
+        List<Pair<LocalDate, Long>> days = searchService.getDayCounts(YearMonth.from(localDate))
                 .collect(Collectors.toList());
 
-        List<MediaFile> mediaFiles = archiveSearchService.findByDate(localDate).collect(Collectors.toList());
+        List<MediaFile> mediaFiles = searchService.findByDate(localDate).collect(Collectors.toList());
 
         BackLink backLink = new BackLink("BACK TO TIMELINE", request.getRequestURI());
 		session.setAttribute(BackLink.class.getName(), backLink);
@@ -137,12 +137,12 @@ public class TimelineController {
 
         LocalDate localDate = LocalDate.of(year.getValue(), month, day);
 
-        List<Pair<Year, Long>> years = archiveSearchService.getYearCounts().collect(Collectors.toList());
-        List<Pair<YearMonth, Long>> months = archiveSearchService.getMonthCounts(year).collect(Collectors.toList());
-        List<Pair<LocalDate, Long>> days = archiveSearchService.getDayCounts(YearMonth.from(localDate))
+        List<Pair<Year, Long>> years = searchService.getYearCounts().collect(Collectors.toList());
+        List<Pair<YearMonth, Long>> months = searchService.getMonthCounts(year).collect(Collectors.toList());
+        List<Pair<LocalDate, Long>> days = searchService.getDayCounts(YearMonth.from(localDate))
                 .collect(Collectors.toList());
 
-        List<MediaFile> mediaFiles = archiveSearchService.findByDate(localDate).collect(Collectors.toList());
+        List<MediaFile> mediaFiles = searchService.findByDate(localDate).collect(Collectors.toList());
 
         BackLink backLink = new BackLink("BACK TO TIMELINE", request.getRequestURI());
 		session.setAttribute(BackLink.class.getName(), backLink);
@@ -169,7 +169,7 @@ public class TimelineController {
     		.forEach(parameter -> {
     	        File archiveFile = BiographyFileUtils.getArchiveFileFromShortFilename(archiveFolder, parameter.substring("description_".length()));
     	        archiveMetadataService.setDescription(archiveFile, request.getParameter(parameter));
-    	        archiveIndexingService.reIndex(archiveFile);
+    	        indexingService.reIndex(archiveFile);
     		});
 
         return String.format("redirect:/timeline/%d/%d/%d/", year.getValue(), month, day);

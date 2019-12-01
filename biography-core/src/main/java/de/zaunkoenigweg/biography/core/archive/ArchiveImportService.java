@@ -21,7 +21,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.springframework.stereotype.Component;
 
 import de.zaunkoenigweg.biography.core.MediaFileType;
-import de.zaunkoenigweg.biography.core.index.ArchiveIndexingService;
+import de.zaunkoenigweg.biography.core.index.IndexingService;
 import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
 import de.zaunkoenigweg.biography.metadata.Album;
 import de.zaunkoenigweg.biography.metadata.BiographyMetadata;
@@ -39,15 +39,15 @@ public class ArchiveImportService {
     private final static File THUMB_300 = new File(ArchiveImportService.class.getResource("/thumb300.jpg").getFile());
     
     private MetadataService metadataService;
-    private ArchiveIndexingService archiveIndexingService;
+    private IndexingService indexingService;
     private ExifDataService exifDataService;
     private File archiveFolder;
     private File importFolder;
     private String thumborUrl;
 
-    public ArchiveImportService(MetadataService metadataService, ArchiveIndexingService archiveIndexingService, ExifDataService exifDataService, File archiveFolder, File importFolder, String thumborUrl) {
+    public ArchiveImportService(MetadataService metadataService, IndexingService indexingService, ExifDataService exifDataService, File archiveFolder, File importFolder, String thumborUrl) {
         this.metadataService = metadataService;
-        this.archiveIndexingService = archiveIndexingService;
+        this.indexingService = indexingService;
         this.exifDataService = exifDataService;
         this.archiveFolder = archiveFolder;
         this.importFolder = importFolder;
@@ -126,7 +126,7 @@ public class ArchiveImportService {
         
         this.generateThumbnails(archiveFile, true);
         
-        archiveIndexingService.reIndex(archiveFile);
+        indexingService.reIndex(archiveFile);
 
         return ImportResult.SUCCESS;
     }

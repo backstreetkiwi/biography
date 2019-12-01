@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import de.zaunkoenigweg.biography.core.index.Album;
-import de.zaunkoenigweg.biography.core.index.ArchiveSearchService;
+import de.zaunkoenigweg.biography.core.index.SearchService;
 import de.zaunkoenigweg.biography.core.index.MediaFile;
 import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
 import de.zaunkoenigweg.biography.web.BackLink;
@@ -30,11 +30,11 @@ public class AlbumsController {
 
 	private File archiveFolder;
 
-	private ArchiveSearchService archiveSearchService;
+	private SearchService searchService;
 	
-	public AlbumsController(File archiveFolder, ArchiveSearchService archiveSearchService) {
+	public AlbumsController(File archiveFolder, SearchService searchService) {
 		this.archiveFolder = archiveFolder;
-        this.archiveSearchService = archiveSearchService;
+        this.searchService = searchService;
 		LOG.info("AlbumsController started.");
 		LOG.info(String.format("archiveFolder=%s", this.archiveFolder));
 	}
@@ -42,7 +42,7 @@ public class AlbumsController {
     @RequestMapping("/albums")
     public String albums(Model model) {
         
-        List<Album> albums = archiveSearchService.getAlbumCounts().collect(Collectors.toList());
+        List<Album> albums = searchService.getAlbumCounts().collect(Collectors.toList());
         
         model.addAttribute("albums", albums);
         model.addAttribute("selectedMenuItem", "ALBUMS");
@@ -53,9 +53,9 @@ public class AlbumsController {
     @RequestMapping("/album/{album}")
     public String album(HttpSession session, HttpServletRequest request, Model model, @PathVariable("album") String album) {
         
-        List<Album> albums = archiveSearchService.getAlbumCounts().collect(Collectors.toList());
+        List<Album> albums = searchService.getAlbumCounts().collect(Collectors.toList());
         
-        List<MediaFile> mediaFiles = archiveSearchService.findByAlbum(album).collect(Collectors.toList());
+        List<MediaFile> mediaFiles = searchService.findByAlbum(album).collect(Collectors.toList());
 
         BackLink backLink = new BackLink("BACK TO ALBUM", request.getRequestURI());
 		session.setAttribute(BackLink.class.getName(), backLink);
@@ -75,7 +75,7 @@ public class AlbumsController {
 			File directory = new File(new File(archiveFolder, "albums"), album);
 			FileUtils.forceMkdir(directory);
 	        FileUtils.cleanDirectory(directory);
-	        archiveSearchService.findByAlbum(album).forEach(mf -> {
+	        searchService.findByAlbum(album).forEach(mf -> {
 	        	File mediaFile = BiographyFileUtils.getArchiveFileFromShortFilename(archiveFolder, mf.getFileName());
 	        	try {
 					FileUtils.copyFileToDirectory(mediaFile, directory);
@@ -90,9 +90,9 @@ public class AlbumsController {
 		}
 
     	
-        List<Album> albums = archiveSearchService.getAlbumCounts().collect(Collectors.toList());
+        List<Album> albums = searchService.getAlbumCounts().collect(Collectors.toList());
         
-        List<MediaFile> mediaFiles = archiveSearchService.findByAlbum(album).collect(Collectors.toList());
+        List<MediaFile> mediaFiles = searchService.findByAlbum(album).collect(Collectors.toList());
 
         BackLink backLink = new BackLink("BACK TO ALBUM", request.getRequestURI());
 		session.setAttribute(BackLink.class.getName(), backLink);

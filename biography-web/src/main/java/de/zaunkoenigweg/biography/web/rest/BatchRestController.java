@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import de.zaunkoenigweg.biography.core.MediaFileType;
 import de.zaunkoenigweg.biography.core.archive.ArchiveImportService;
-import de.zaunkoenigweg.biography.core.index.ArchiveIndexingService;
+import de.zaunkoenigweg.biography.core.index.IndexingService;
 import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
 import de.zaunkoenigweg.biography.web.console.Console;
 import de.zaunkoenigweg.biography.web.console.Consoles;
@@ -29,13 +29,13 @@ public class BatchRestController {
 
     private File archiveFolder;
 
-    private ArchiveIndexingService archiveIndexingService;
+    private IndexingService indexingService;
 
     private ArchiveImportService archiveImportService;
     
-    public BatchRestController(Consoles consoles, ArchiveIndexingService archiveIndexingService, ArchiveImportService archiveImportService, File archiveFolder) {
+    public BatchRestController(Consoles consoles, IndexingService indexingService, ArchiveImportService archiveImportService, File archiveFolder) {
         this.consoles = consoles;
-        this.archiveIndexingService = archiveIndexingService;
+        this.indexingService = indexingService;
         this.archiveImportService = archiveImportService;
         this.archiveFolder = archiveFolder;
         LOG.info("BatchRestController started.");
@@ -75,7 +75,7 @@ public class BatchRestController {
 
             console.println(mediaFiles.size() + " to index.");
             // TODO incremental output to console?
-            this.archiveIndexingService.rebuildIndex();
+            this.indexingService.rebuildIndex();
             console.println("Finished.");
             console.close();
         }).start();
