@@ -8,14 +8,14 @@ import com.google.gson.JsonSyntaxException;
 /**
  * Album (as part of Biography metadata).
  * 
- * @author mail@nikolaus-winter.de
+ * ValueObject
  */
 public class Album {
 
     private String title;
     
     /**
-     * This constructor is just used to create a Metadata object through Gson.
+     * This constructor is just used to create a metadata object through Gson.
      */
     @SuppressWarnings("unused")
     private Album() {
@@ -37,8 +37,7 @@ public class Album {
      * @return album metadata as JSON string.
      */
     public String toJson() {
-        Gson gson = new Gson();
-        return gson.toJson(this);
+        return new Gson().toJson(this);
     }
     
     /**
@@ -47,9 +46,8 @@ public class Album {
      * @return Album
      */
     public static Album fromJson(String json) {
-        Gson gson = new Gson();
         try {
-            return gson.fromJson(json, Album.class);
+            return new Gson().fromJson(json, Album.class);
         } catch (JsonSyntaxException e) {
             throw new IllegalArgumentException("No valid Json String: " + json);
         }

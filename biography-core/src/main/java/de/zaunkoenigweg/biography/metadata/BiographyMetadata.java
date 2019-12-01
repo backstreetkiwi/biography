@@ -16,16 +16,14 @@ import com.google.gson.JsonSyntaxException;
 /**
  * Metadata for all Biography Media Files.
  * 
- * This Metadata can be exported to/imported from JSON and stored in separate files or EXIF Metadata.
- * 
- * @author mail@nikolaus-winter.de
+ * This metadata can be exported to/imported from JSON and stored in separate files or EXIF Metadata.
  */
 public class BiographyMetadata {
 
     private LocalDateTime dateTimeOriginal;
-    private String sha1;
     private String description;
     private Set<Album> albums = new HashSet<>();
+    private String sha1;
 
     private static final JsonSerializer<LocalDateTime> LOCAL_DATE_TIME_SERIALIZER = (localDateTime, type, context) -> {
         return new JsonPrimitive(DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(localDateTime));
@@ -52,7 +50,7 @@ public class BiographyMetadata {
         this.dateTimeOriginal = dateTimeOriginal;
         this.sha1 = sha1;
         this.description = description;
-        this.albums = albums;
+        this.albums = Collections.unmodifiableSet(albums);
     }
 
     /**
@@ -67,9 +65,8 @@ public class BiographyMetadata {
     /**
      * Creates a Biography metadata object from JSON string.
      * 
-     * @param json
-     *            JSON String
-     * @return BiographyMetadata
+     * @param json JSON String
+     * @return Biography metadata
      */
     public static BiographyMetadata from(String json) {
         try {
@@ -95,7 +92,7 @@ public class BiographyMetadata {
     }
 
     public Set<Album> getAlbums() {
-        return albums;
+        return Collections.unmodifiableSet(albums);
     }
 
     /**
@@ -143,7 +140,7 @@ public class BiographyMetadata {
      * given album list.
      * 
      * @param albumsToRemove
-     *            list of albums to subtract from the existing album list (set, actually)
+     *            list of albums to subtract from the existing album set
      * @return metadata object with new album set
      */
     public BiographyMetadata withReducedAlbums(Set<Album> albumsToRemove) {

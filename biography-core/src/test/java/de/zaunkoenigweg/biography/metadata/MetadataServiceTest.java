@@ -16,6 +16,7 @@ import org.junit.Test;
 import de.zaunkoenigweg.biography.metadata.exif.ExifData;
 import de.zaunkoenigweg.biography.metadata.exif.ExifDataService;
 
+// TODO tests for missing methods of service (see out-commented section at end of file)
 public class MetadataServiceTest {
 
     private static final String METADATA_JSON = "{\"dateTimeOriginal\":\"2005-02-05T15:27:33.123\",\"description\":\"Cathedral Square in Christchurch\",\"albums\":[{\"title\":\"NZ 2005\"},{\"title\":\"NZ 2007\"}]}";
@@ -56,9 +57,9 @@ public class MetadataServiceTest {
 
     @Test
     public void testWriteMetadataIntoExif() throws IOException {
-        File fileSource = new File(getClass().getResource("/metadatatest/NikonD60.jpg").getFile());
+        File sourceFile = new File(getClass().getResource("/metadatatest/NikonD60.jpg").getFile());
         File jpgFile = new File(someFolder, "NikonD60.jpg");
-        Files.copy(fileSource.toPath(), jpgFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(sourceFile.toPath(), jpgFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
         this.sut.writeMetadataIntoExif(jpgFile, METADATA);
 
@@ -74,28 +75,6 @@ public class MetadataServiceTest {
         jpgFile.delete();
     }
 
-//    @Test
-//    public void testReadWriteMetadataForJpg() throws IOException {
-//        File fileSource = new File(getClass().getResource("/exifdatatest/NikonD60.jpg").getFile());
-//        File jpgFile = new File(someFolder, "NikonD60.jpg");
-//        Files.copy(fileSource.toPath(), jpgFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-//
-//        this.sut.setMetadata(jpgFile, METADATA);
-//
-//        assertTrue(FileUtils.listFiles(someFolder, new String[] {"json"}, false).isEmpty());
-//
-//        BiographyMetadata metadata = this.sut.getMetadata(jpgFile);
-//        
-//        assertNotNull(metadata);
-//        assertEquals(METADATA_JSON, metadata.toJson());
-//        
-//        ExifData exifData = ExifData.of(jpgFile);
-//        assertEquals(metadata.getDescription(), exifData.getDescription().get());
-//        assertEquals(metadata.getDateTimeOriginal(), exifData.getDateTimeOriginal());
-//        
-//        jpgFile.delete();
-//    }
-//
 //    @Test
 //    public void testWriteMetadataForMovie() throws IOException {
 //        File fileSource = new File(getClass().getResource("/exifdatatest/2017-09-21--18-39-22---139acab5f70c6ecafa73634a9cb6885b1835ce5c.mov").getFile());

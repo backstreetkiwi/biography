@@ -14,6 +14,9 @@ import org.springframework.stereotype.Component;
 import de.zaunkoenigweg.biography.metadata.exif.ExifData;
 import de.zaunkoenigweg.biography.metadata.exif.ExifDataService;
 
+/**
+ * Access to Biography metadata 
+ */
 @Component
 public class MetadataService {
 
@@ -27,14 +30,14 @@ public class MetadataService {
 	}
 
 	/**
-     * Writes metadata into EXIF data of a file.
+     * Writes Biography metadata into EXIF data of a file.
      * 
      * The metadata is exported into a JSON string which is written in the USER_COMMENT field in the EXIF data.
      * 
      * The EXIF fields DESCRIPTION and DATETIME_ORIGINAL are written accordingly in order to have a consistent media file.
      * 
      * @param file File to write the Metatada into (as EXIF).
-     * @param metadata BiographyMetadata
+     * @param metadata Biography metadata
      */
     public void writeMetadataIntoExif(File file, BiographyMetadata metadata) {
         ExifData exifData = exifDataService.readExifData(file);
@@ -45,7 +48,7 @@ public class MetadataService {
     }
 
     /**
-     * Reads metadata from EXIF data of a file.
+     * Reads Biography metadata from EXIF data of a file.
      * 
      * The metadata is read as a JSON string from the USER_COMMENT field of the EXIF data.
      * 
@@ -53,7 +56,7 @@ public class MetadataService {
      * Use {@link #isExifDataConsistentToMetadata(File, BiographyMetadata)} to test consistency!
      * 
      * @param file media file with EXIF data
-     * @return Biography metadata
+     * @return Biography metadata, {@code null} if it cannot be read.
      */
     public BiographyMetadata readMetadataFromExif(File file) {
         ExifData exifData = exifDataService.readExifData(file);
@@ -87,6 +90,15 @@ public class MetadataService {
         return true;
     }
 
+    /**
+     * Writes Biography metadata to a JSON file.
+     * 
+     * @param jsonFile JSON file
+     * @param metadata Biography metadata
+     *
+     * TODO swap params?
+     * TODO do not swallow Exception?
+     */
     public void writeMetadataToJsonFile(File jsonFile, BiographyMetadata metadata) {
         try {
             FileUtils.write(jsonFile, metadata.toJson(), StandardCharsets.UTF_8);
@@ -96,6 +108,13 @@ public class MetadataService {
         }
     }
 
+    /**
+     * Reads Biography metadata from JSON file
+     * @param jsonFile JSON file
+     * @return Biography metadata, null if JSON cannot be read.
+     * 
+     * TODO do not swallow Exception?
+     */
     public BiographyMetadata readMetadataFromJsonFile(File jsonFile) {
         if(!jsonFile.exists() || !jsonFile.isFile()) {
             return null;

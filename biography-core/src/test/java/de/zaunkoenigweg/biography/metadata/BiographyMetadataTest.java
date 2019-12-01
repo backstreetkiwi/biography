@@ -39,8 +39,6 @@ public class BiographyMetadataTest {
 				DESCRIPTION,
 				ALBUM_1.getTitle(), 
 				ALBUM_2.getTitle());
-		
-		
 	}
 
 	/**
