@@ -13,7 +13,7 @@ import java.nio.file.StandardCopyOption;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.zaunkoenigweg.biography.metadata.exif.ExifDataWrapper;
+import de.zaunkoenigweg.biography.metadata.exif.ExifData;
 import de.zaunkoenigweg.biography.metadata.exif.ExifDataService;
 
 public class MetadataServiceTest {
@@ -67,7 +67,7 @@ public class MetadataServiceTest {
         assertNotNull(metadata);
         assertEquals(METADATA_JSON, metadata.toJson());
         
-        ExifDataWrapper exifData = exifDataService.getExifData(jpgFile);
+        ExifData exifData = exifDataService.readExifData(jpgFile);
         assertEquals(metadata.getDescription(), exifData.getDescription().get());
         assertEquals(metadata.getDateTimeOriginal(), exifData.getDateTimeOriginal());
         

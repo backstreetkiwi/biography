@@ -1,11 +1,6 @@
 package de.zaunkoenigweg.biography.metadata.exif;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,13 +28,13 @@ public class ExifDataServiceTest {
 
     @Test
     public void testGetExifDataNull() throws IOException {
-        ExifDataWrapper exifData = exifDataService.getExifData(null);
+        ExifData exifData = exifDataService.readExifData(null);
         assertNull(exifData);
     }
 
     @Test
     public void testGetExifDataEmptyFile() throws IOException {
-        ExifDataWrapper exifData = exifDataService.getExifData(someEmptyFile);
+        ExifData exifData = exifDataService.readExifData(someEmptyFile);
         assertNull(exifData);
     }
 
@@ -48,7 +43,7 @@ public class ExifDataServiceTest {
         File fileSource = new File(getClass().getResource("/exifdatatest/NikonD60.jpg").getFile());
         File file = new File(tempFolder, "NikonD60.jpg");
         Files.copy(fileSource.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        ExifDataWrapper exifData = exifDataService.getExifData(file);
+        ExifData exifData = exifDataService.readExifData(file);
         assertNotNull(exifData);
         assertNotNull(exifData.getDateTimeOriginal());
         assertEquals(LocalDateTime.of(2005, 2, 22, 13, 51, 32, 80_000_000), exifData.getDateTimeOriginal());
@@ -64,11 +59,11 @@ public class ExifDataServiceTest {
         File fileSource = new File(getClass().getResource("/exifdatatest/NikonD60.jpg").getFile());
         File file = new File(tempFolder, "NikonD60.jpg");
         Files.copy(fileSource.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        ExifDataWrapper exifData = exifDataService.getExifData(file);
+        ExifData exifData = exifDataService.readExifData(file);
         assertNotNull(exifData);
         exifData.setDescription("some new description");
-        exifDataService.setExifData(file, exifData);
-        ExifDataWrapper newExifData = exifDataService.getExifData(file);
+        exifDataService.writeExifData(file, exifData);
+        ExifData newExifData = exifDataService.readExifData(file);
         assertEquals(newExifData, exifData);
     }
     

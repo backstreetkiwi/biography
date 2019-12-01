@@ -3,17 +3,24 @@ package de.zaunkoenigweg.biography.metadata.exif;
 import java.io.File;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Objects;
 import java.util.Optional;
 
-import de.zaunkoenigweg.lexi4j.exiftool.ExifData;
 import de.zaunkoenigweg.lexi4j.exiftool.Exiftool;
 
 /**
- * EXIF-Data (wraps {@link ExifData}).
+ * EXIF-Data in Biography.
+ * 
+ * This Value Object wraps {@link de.zaunkoenigweg.lexi4j.exiftool.ExifData} from the lexi4j library.
+ * 
+ * To prevent a name clash, the wrapped class' name has to be fully qualified within this file.
+ * This is ugly, but only visible within the classes of this package.
+ * 
+ * TODO make this class immutable
  * 
  * @author Nikolaus Winter
  */
-public class ExifDataWrapper {
+public class ExifData {
 
     private LocalDateTime dateTimeOriginal;
     private Optional<String> description;
@@ -30,7 +37,7 @@ public class ExifDataWrapper {
      * 
      * @throws IllegalArgumentException ... if no raw EXIF data is set or the date/time original is missing.
      */
-    public ExifDataWrapper(ExifData exifData) {
+    ExifData(de.zaunkoenigweg.lexi4j.exiftool.ExifData exifData) {
         
         if (exifData == null) {
             throw new IllegalArgumentException("Parameter 'exifData' is missing.");
@@ -46,7 +53,7 @@ public class ExifDataWrapper {
         this.userComment = exifData.getUserComment();
     }
     
-    public ExifDataWrapper(LocalDateTime dateTimeOriginal) {
+    ExifData(LocalDateTime dateTimeOriginal) {
         if(dateTimeOriginal==null) {
             throw new IllegalArgumentException("Date/Time Original must not be null");
         }
@@ -67,11 +74,12 @@ public class ExifDataWrapper {
         return userComment;
     }
 
+    /**
+     * Sets the Date/Time Original timestamp.
+     * @param dateTimeOriginal Date/Time Original, must not be {@code null}
+     */
     public void setDateTimeOriginal(LocalDateTime dateTimeOriginal) {
-        if(dateTimeOriginal==null) {
-            throw new IllegalArgumentException("Date/Time Original must not be null");
-        }
-        
+    	Objects.requireNonNull(dateTimeOriginal, "Date/Time Original must not be null");
         this.dateTimeOriginal = dateTimeOriginal.truncatedTo(ChronoUnit.MILLIS);
     }
 
@@ -101,7 +109,7 @@ public class ExifDataWrapper {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        ExifDataWrapper other = (ExifDataWrapper) obj;
+        ExifData other = (ExifData) obj;
         if (dateTimeOriginal == null) {
             if (other.dateTimeOriginal != null)
                 return false;

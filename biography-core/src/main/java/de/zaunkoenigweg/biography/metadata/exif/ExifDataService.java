@@ -11,16 +11,27 @@ import org.springframework.stereotype.Component;
 
 import de.zaunkoenigweg.biography.core.MediaFileType;
 import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
-import de.zaunkoenigweg.lexi4j.exiftool.ExifData;
 import de.zaunkoenigweg.lexi4j.exiftool.Exiftool;
 
+/**
+ * Read/Write EXIF data.
+ * 
+ * This service wraps the {@link de.zaunkoenigweg.lexi4j.exiftool.Exiftool}.
+ */
 @Component
 public class ExifDataService {
 
     private final static Log LOG = LogFactory.getLog(ExifDataService.class);
 
+    /**
+     * Lexi4J Exiftool
+     */
     private Exiftool exiftool;
-    
+
+    /**
+     * Biography archive folder
+     * TODO do not store permanently, let it be handed over for the call!
+     */
     private File archiveFolder;
 
     public ExifDataService(File archiveFolder) {
@@ -30,32 +41,45 @@ public class ExifDataService {
         LOG.info(String.format("archiveFolder=%s", this.archiveFolder));
 	}
     
-    public ExifDataWrapper getExifData(File file) {
-        ExifDataWrapper exifData;
-        Optional<ExifData> rawExifData;
+    /**
+     * Read EXIF data from the given file
+     * @param media file
+     * @return EXIF Data, {@code null} if data cannot be read.
+     * TODO consider Optional
+     */
+    public ExifData readExifData(File file) {
+        ExifData exifData;
+        Optional<de.zaunkoenigweg.lexi4j.exiftool.ExifData> rawExifData;
         try {
             rawExifData = this.exiftool.read(file);
             if(!rawExifData.isPresent()) {
                 return null;
             }
-            exifData = new ExifDataWrapper(rawExifData.get());
+            exifData = new ExifData(rawExifData.get());
         } catch (IllegalStateException | IllegalArgumentException e) {
             return null;
         }
         return exifData;
     }
     
-    public ExifDataWrapper setExifData(File file, ExifDataWrapper newExifData) {
+    /**
+     * Write EXIF data to given file
+     * @param file media file
+     * @param newExifData EXIF data to write
+     */
+    public void writeExifData(File file, ExifData newExifData) {
         this.exiftool.update(file)
             .withDateTimeOriginal(newExifData.getDateTimeOriginal().truncatedTo(ChronoUnit.SECONDS))
             .withSubsecTimeOriginal(newExifData.getDateTimeOriginal().getNano() / 1_000_000)
             .withImageDescription(newExifData.getDescription().orElse(""))
             .withUserComment(newExifData.getUserComment().orElse(""))
             .perform();
-        
-        return newExifData;
     }
 
+    /**
+     * Fills the cache of the Exiftool
+     * @param console console output stream
+     */
     public void fillCacheFromArchive(Consumer<String> console) {
         BiographyFileUtils.getMediaFolders(this.archiveFolder).stream().forEach(mediaFolder -> {
             this.exiftool.fillCache(mediaFolder + "/*.jpg");

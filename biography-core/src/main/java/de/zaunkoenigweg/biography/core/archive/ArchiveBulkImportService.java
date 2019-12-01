@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 
 import de.zaunkoenigweg.biography.core.MediaFileType;
 import de.zaunkoenigweg.biography.metadata.exif.ExifDataService;
-import de.zaunkoenigweg.biography.metadata.exif.ExifDataWrapper;
+import de.zaunkoenigweg.biography.metadata.exif.ExifData;
 
 /**
  * This Service manages bulk imports into the Biography archive.
@@ -138,7 +138,7 @@ public class ArchiveBulkImportService {
 
         ImportFile importFile = new ImportFile(uuid, originalFilename, mediaFileType.get());
         
-        ExifDataWrapper exifData = exifDataService.getExifData(file);
+        ExifData exifData = exifDataService.readExifData(file);
         if(exifData!=null) {
             importFile.setDatetimeOriginal(exifData.getDateTimeOriginal());
             importFile.setDescription(exifData.getDescription().orElse(null));

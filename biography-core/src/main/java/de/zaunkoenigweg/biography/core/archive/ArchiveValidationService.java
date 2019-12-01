@@ -17,7 +17,7 @@ import de.zaunkoenigweg.biography.core.MediaFileType;
 import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
 import de.zaunkoenigweg.biography.metadata.BiographyMetadata;
 import de.zaunkoenigweg.biography.metadata.MetadataService;
-import de.zaunkoenigweg.biography.metadata.exif.ExifDataWrapper;
+import de.zaunkoenigweg.biography.metadata.exif.ExifData;
 import de.zaunkoenigweg.biography.metadata.exif.ExifDataService;
 
 /**
@@ -293,7 +293,7 @@ public class ArchiveValidationService {
         }
 
         BiographyMetadata metadata = metadataService.readMetadataFromExif(file);
-        ExifDataWrapper exifData = exifDataService.getExifData(file);
+        ExifData exifData = exifDataService.readExifData(file);
 
         if (!metadata.getDateTimeOriginal().equals(exifData.getDateTimeOriginal())) {
             return false;
