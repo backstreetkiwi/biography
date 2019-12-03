@@ -3,10 +3,17 @@
         <div class="large-image" v-bind:class="{'large-image-hidden' : !showImage}" v-on:click="closeImagePopup()">
             <img v-if="this.mediaFile!=null" v-bind:src="this.mediaFile.fileUrl" />
             <div v-if="this.mediaFile!=null" class="description-overlay-large-image" v-bind:class="{'description-overlay-hidden' : !galleryShowDescription}">
-                <div class="description" v-on:click="editDescription()">{{this.mediaFile!=null ? this.mediaFile.description: ''}}</div>
+                <div class="description">
+                    {{this.mediaFile!=null ? this.mediaFile.description: ''}}
+                    <a href="#" v-on:click="editDescription()">[edit]</a>
+                </div>
             </div>
             <div v-if="this.mediaFile!=null" class="albums-overlay-large-image" v-bind:class="{'albums-overlay-hidden' : !galleryShowAlbums}">
-                <div class="albums" v-for="album in this.mediaFile.albums" v-bind:key="album">{{album}}</div>
+                <div class="albums" v-for="album in this.mediaFile.albums" v-bind:key="album">
+                    {{album}}
+                    <a href="#" v-on:click="removeAlbum(album)">[X]</a>
+                </div>
+                <div class="albums" v-on:click="addAlbum()">+</div>
             </div>
         </div>
         <div class="gallery-toolbar">
@@ -77,6 +84,34 @@
                     var restUrl = this.baseUrl + "rest/file/" + currentMediaFile.fileName + "?description=" + encodeURIComponent(newDescription);    
                     axios({ method: "PUT", "url": restUrl }).then(result => {
                         currentMediaFile.description = newDescription;
+                    }, error => {
+                        alert('Error')
+                    });
+                }
+            },
+            addAlbum: function() {
+                var newAlbum = prompt("new album");
+                if(newAlbum) {
+                    var currentMediaFile = this.mediaFile;
+                    var restUrl = this.baseUrl + "rest/file/" + currentMediaFile.fileName + "/albums/" + encodeURIComponent(newAlbum) + "/";    
+                    axios({ method: "POST", "url": restUrl }).then(result => {
+                        currentMediaFile.albums.push(newAlbum);
+                    }, error => {
+                        alert('Error')
+                    });
+                }
+            },
+            removeAlbum: function(album) {
+                var deleteAlbum = confirm("Do you want to remove the album?");
+                if(deleteAlbum) {
+                    var currentMediaFile = this.mediaFile;
+                    var restUrl = this.baseUrl + "rest/file/" + currentMediaFile.fileName + "/albums/" + encodeURIComponent(album) + "/";    
+                    axios({ method: "DELETE", "url": restUrl }).then(result => {
+                        for(var i=currentMediaFile.albums.length; i--;) {
+                            if(currentMediaFile.albums[i]==album){
+                                currentMediaFile.albums.splice(i,1);
+                            }
+                        }
                     }, error => {
                         alert('Error')
                     });
@@ -167,6 +202,7 @@ div.description-overlay div.description {
     padding: 5px;
     text-align: center;
 }
+
 div.description-overlay-large-image {
     position: absolute;
     bottom: 0px;
@@ -186,6 +222,15 @@ div.description-overlay-large-image div.description {
     padding: 10px;
     text-align: center;
 }
+
+div.description-overlay-large-image div.description a {
+    color: lightsalmon;
+    font-size: 20px;
+    padding: 10px;
+    text-align: center;
+    text-decoration: none;
+}
+
 div.description-overlay-hidden {
     display: none;
 }
@@ -228,12 +273,20 @@ div.albums-overlay-large-image {
 div.albums-overlay-large-image div.albums {
     float: right;
     color: rgb(240,240,240);
-    font-size: 15px;
-    padding: 5px 10px;
-    margin: 5px;
+    font-size: 20px;
+    padding: 10px 20px;
+    margin: 10px;
     text-align: center;
     background-color: rgb(43, 84, 197);
     border-radius: 5px;
+}
+
+div.albums-overlay-large-image div.albums a {
+    color: lightsalmon;
+    font-size: 20px;
+    padding: 10px;
+    text-align: center;
+    text-decoration: none;
 }
 
 div.albums-overlay-hidden {
