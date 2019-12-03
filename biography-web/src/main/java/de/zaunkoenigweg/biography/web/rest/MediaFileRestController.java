@@ -1,5 +1,6 @@
 package de.zaunkoenigweg.biography.web.rest;
 
+import java.io.File;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.Year;
@@ -9,22 +10,36 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.servlet.http.HttpSession;
+
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import de.zaunkoenigweg.biography.core.index.SearchService;
+import de.zaunkoenigweg.biography.core.archivemetadata.ArchiveMetadataService;
+import de.zaunkoenigweg.biography.core.index.IndexingService;
 import de.zaunkoenigweg.biography.core.index.MediaFile;
+import de.zaunkoenigweg.biography.core.index.SearchService;
+import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
 
 @RestController
 public class MediaFileRestController {
 
 	private SearchService searchService;
+	private ArchiveMetadataService archiveMetadataService;
+	private IndexingService indexingService;
+	private File archiveFolder;
 
-	public MediaFileRestController(SearchService searchService) {
+	public MediaFileRestController(SearchService searchService, ArchiveMetadataService archiveMetadataService, IndexingService indexingService, File archiveFolder) {
 		this.searchService = searchService;
+		this.archiveMetadataService = archiveMetadataService;
+		this.indexingService = indexingService;
+		this.archiveFolder = archiveFolder;
 	}
 
 	@CrossOrigin
@@ -59,28 +74,41 @@ public class MediaFileRestController {
 		return restObject;
 	}
 	
-	Map<String, Object> yearCountToRestObject(Pair<Year, Long> yearCount) {
+	@CrossOrigin
+    @PutMapping("/rest/file/{file}")
+    public String putFileAttributes(HttpSession session, Model model, @PathVariable("file")String filename, @RequestParam("description") String newDescription) {
+
+        File archiveFile = BiographyFileUtils.getArchiveFileFromShortFilename(archiveFolder, filename);
+        
+        archiveMetadataService.setDescription(archiveFile, newDescription);
+
+        indexingService.reIndex(archiveFile);
+        
+        return "";
+    }
+    
+    private Map<String, Object> yearCountToRestObject(Pair<Year, Long> yearCount) {
 		Map<String, Object> restObject = new HashMap<>();
 		restObject.put("year", yearCount.getLeft());
 		restObject.put("count", yearCount.getRight());
 		return restObject;
 	}
 	
-	Map<String, Object> monthCountToRestObject(Pair<YearMonth, Long> monthCount) {
+	private Map<String, Object> monthCountToRestObject(Pair<YearMonth, Long> monthCount) {
 		Map<String, Object> restObject = new HashMap<>();
 		restObject.put("yearMonth", monthCount.getLeft());
 		restObject.put("count", monthCount.getRight());
 		return restObject;
 	}
 	
-	Map<String, Object> dayCountToRestObject(Pair<LocalDate, Long> dayCount) {
+	private Map<String, Object> dayCountToRestObject(Pair<LocalDate, Long> dayCount) {
 		Map<String, Object> restObject = new HashMap<>();
 		restObject.put("date", dayCount.getLeft());
 		restObject.put("count", dayCount.getRight());
 		return restObject;
 	}
 	
-	Map<String, Object> mediaFileToRestObject(MediaFile mediaFile) {
+	private Map<String, Object> mediaFileToRestObject(MediaFile mediaFile) {
 		Map<String, Object> restObject = new HashMap<>();
 		restObject.put("fileName", mediaFile.getFileName());
 		restObject.put("description", mediaFile.getDescription());
