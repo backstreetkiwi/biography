@@ -1,9 +1,12 @@
 <template>
     <div id="gallery">
         <div class="large-image" v-bind:class="{'large-image-hidden' : !showImage}" v-on:click="closeImagePopup()">
-            <img v-bind:src="this.mediaFile!=null ? this.mediaFile.fileUrl: ''" />
-            <div class="description-overlay-large-image" v-bind:class="{'description-overlay-hidden' : !galleryShowDescription}">
+            <img v-if="this.mediaFile!=null" v-bind:src="this.mediaFile.fileUrl" />
+            <div v-if="this.mediaFile!=null" class="description-overlay-large-image" v-bind:class="{'description-overlay-hidden' : !galleryShowDescription}">
                 <div class="description" v-on:click="editDescription()">{{this.mediaFile!=null ? this.mediaFile.description: ''}}</div>
+            </div>
+            <div v-if="this.mediaFile!=null" class="albums-overlay-large-image" v-bind:class="{'albums-overlay-hidden' : !galleryShowAlbums}">
+                <div class="albums" v-for="album in this.mediaFile.albums" v-bind:key="album">{{album}}</div>
             </div>
         </div>
         <div class="gallery-toolbar">
@@ -199,11 +202,7 @@ div.albums-overlay {
     padding: 0px;
 }
 
-div.albums-overlay-hidden {
-    display: none;
-}
-
-div.albums {
+div.albums-overlay div.albums {
     float: right;
     color: rgb(240,240,240);
     font-size: 15px;
@@ -212,6 +211,33 @@ div.albums {
     text-align: center;
     background-color: rgb(43, 84, 197);
     border-radius: 5px;
+}
+
+div.albums-overlay-large-image {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    width: auto;
+    height: auto;
+    overflow: hidden;
+    z-index: 2;
+    cursor: pointer;    
+    padding: 0px;
+}
+
+div.albums-overlay-large-image div.albums {
+    float: right;
+    color: rgb(240,240,240);
+    font-size: 15px;
+    padding: 5px 10px;
+    margin: 5px;
+    text-align: center;
+    background-color: rgb(43, 84, 197);
+    border-radius: 5px;
+}
+
+div.albums-overlay-hidden {
+    display: none;
 }
 
 div.footer {
