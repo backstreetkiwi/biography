@@ -12,10 +12,13 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpSession;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -26,6 +29,7 @@ import de.zaunkoenigweg.biography.core.index.IndexingService;
 import de.zaunkoenigweg.biography.core.index.MediaFile;
 import de.zaunkoenigweg.biography.core.index.SearchService;
 import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
+import de.zaunkoenigweg.biography.metadata.Album;
 
 @RestController
 public class MediaFileRestController {
@@ -81,6 +85,40 @@ public class MediaFileRestController {
         File archiveFile = BiographyFileUtils.getArchiveFileFromShortFilename(archiveFolder, filename);
         
         archiveMetadataService.setDescription(archiveFile, newDescription);
+
+        indexingService.reIndex(archiveFile);
+        
+        return "";
+    }
+    
+	@CrossOrigin
+    @PostMapping("/rest/file/{file}/albums/{album}/")
+    public String postAlbum(HttpSession session, Model model, @PathVariable("file")String filename, @PathVariable("album")String album) {
+
+		if(StringUtils.isBlank(album)) {
+			return "";
+		}
+		
+        File archiveFile = BiographyFileUtils.getArchiveFileFromShortFilename(archiveFolder, filename);
+        
+        archiveMetadataService.addAlbum(archiveFile, new Album(album.trim()));
+
+        indexingService.reIndex(archiveFile);
+        
+        return "";
+    }
+    
+	@CrossOrigin
+    @DeleteMapping("/rest/file/{file}/albums/{album}/")
+    public String deleteAlbum(HttpSession session, Model model, @PathVariable("file")String filename, @PathVariable("album")String album) {
+
+		if(StringUtils.isBlank(album)) {
+			return "";
+		}
+		
+        File archiveFile = BiographyFileUtils.getArchiveFileFromShortFilename(archiveFolder, filename);
+        
+        archiveMetadataService.removeAlbum(archiveFile, new Album(album.trim()));
 
         indexingService.reIndex(archiveFile);
         
