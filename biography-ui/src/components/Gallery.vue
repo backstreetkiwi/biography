@@ -14,7 +14,7 @@
             <div v-if="this.mediaFile!=null" class="albums-overlay-large-image" v-bind:class="{'albums-overlay-hidden' : !galleryShowAlbums}">
                 <div class="albums" v-for="album in this.mediaFile.albums" v-bind:key="album">
                     {{album}}
-                    <a href="#" v-on:click="removeAlbum(album)">[X]</a>
+                    <a href="#" v-on:click="removeAlbum(album)">x</a>
                 </div>
                 <div class="albums" v-on:click="addAlbum()">+</div>
             </div>
@@ -299,8 +299,8 @@ div.albums-overlay div.albums {
 
 div.albums-overlay-large-image {
     position: absolute;
-    top: 0px;
-    right: 0px;
+    top: 10px;
+    right: 10px;
     width: auto;
     height: auto;
     overflow: hidden;
@@ -312,8 +312,8 @@ div.albums-overlay-large-image {
 div.albums-overlay-large-image div.albums {
     float: right;
     color: rgb(240,240,240);
-    font-size: 20px;
-    padding: 10px 20px;
+    font-size: 18px;
+    padding: 8px 12px;
     margin: 10px;
     text-align: center;
     background-color: rgb(43, 84, 197);
@@ -321,9 +321,9 @@ div.albums-overlay-large-image div.albums {
 }
 
 div.albums-overlay-large-image div.albums a {
-    color: lightsalmon;
-    font-size: 20px;
-    padding: 10px;
+    color: gray;
+    font-size: 18px;
+    padding: 0px 0px 0px 10px;
     text-align: center;
     text-decoration: none;
 }
