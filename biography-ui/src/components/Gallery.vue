@@ -1,7 +1,7 @@
 <template>
     <div id="gallery">
-        <div class="large-image" v-bind:class="{'large-image-hidden' : !showImage}" v-on:click="closeImagePopup()">
-            <img v-if="this.mediaFile!=null" v-bind:src="this.mediaFile.fileUrl" />
+        <div class="large-image" v-bind:class="{'large-image-hidden' : !showImage}" v-on:click.self="closeImagePopup()">
+            <img v-if="this.mediaFile!=null" v-bind:src="this.mediaFile.fileUrl" v-on:click.self="closeImagePopup()"/>
             <div v-if="this.mediaFile!=null" class="description-overlay-large-image" v-bind:class="{'description-overlay-hidden' : !galleryShowDescription}">
                 <div class="description">
                     {{this.mediaFile!=null ? this.mediaFile.description: ''}}
