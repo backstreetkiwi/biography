@@ -18,7 +18,7 @@ export default {
   name: "Query",
   data() {
     return {
-      queryString: 'schwimmen',
+      queryString: '',
       queryModifier: 'ALL'
     };
   },
