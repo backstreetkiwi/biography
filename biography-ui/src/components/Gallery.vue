@@ -3,12 +3,15 @@
         <div class="add-album-box" v-bind:class="{'add-album-box-hidden' : !showAddAlbumBox}">
             <input ref="inputNewAlbumName" v-on:keyup.enter="submitAddAlbum()" v-on:keyup.esc="cancelAddAlbum()" v-model="newAlbumName"/>
         </div>
+        <div class="edit-description-box" v-bind:class="{'edit-description-box-hidden' : !showEditDescriptionBox}">
+            <input ref="inputDescription" v-on:keyup.enter="submitEditDescription()" v-on:keyup.esc="cancelEditDescription()" v-model="newDescription"/>
+        </div>
         <div class="large-image" v-bind:class="{'large-image-hidden' : !showImage}" v-on:click.self="closeImagePopup()">
             <img v-if="this.mediaFile!=null" v-bind:src="this.mediaFile.fileUrl" v-on:click.self="closeImagePopup()"/>
             <div v-if="this.mediaFile!=null" class="description-overlay-large-image" v-bind:class="{'description-overlay-hidden' : !galleryShowDescription}">
                 <div class="description">
                     {{this.mediaFile!=null ? this.mediaFile.description: ''}}
-                    <a href="#" v-on:click="editDescription()">[edit]</a>
+                    <a href="#" v-on:click="editDescription()">edit</a>
                 </div>
             </div>
             <div v-if="this.mediaFile!=null" class="albums-overlay-large-image" v-bind:class="{'albums-overlay-hidden' : !galleryShowAlbums}">
@@ -58,7 +61,9 @@
                 galleryShowAlbums: false,
                 showImage: false,
                 showAddAlbumBox: false,
-                newAlbumName: ""
+                newAlbumName: "",
+                showEditDescriptionBox: false,
+                newDescription: ""
             };
         },  
         props: {
@@ -83,16 +88,25 @@
                 this.mediaFile = null;
             },
             editDescription: function() {
-                var newDescription = prompt("new description", this.mediaFile.description);
-                if(newDescription) {
-                    var currentMediaFile = this.mediaFile;
-                    var restUrl = this.baseUrl + "rest/file/" + currentMediaFile.fileName + "?description=" + encodeURIComponent(newDescription);    
-                    axios({ method: "PUT", "url": restUrl }).then(result => {
-                        currentMediaFile.description = newDescription;
-                    }, error => {
-                        alert('Error')
-                    });
-                }
+                this.newDescription = this.mediaFile.description;
+                this.showEditDescriptionBox = true;
+                this.$nextTick(() => {
+                    this.$refs.inputDescription.focus();
+                });
+            },
+            submitEditDescription: function() {
+                var currentMediaFile = this.mediaFile;
+                var restUrl = this.baseUrl + "rest/file/" + currentMediaFile.fileName + "?description=" + encodeURIComponent(this.newDescription);    
+                this.showEditDescriptionBox = false;
+                axios({ method: "PUT", "url": restUrl }).then(result => {
+                    currentMediaFile.description = this.newDescription;
+                }, error => {
+                    alert('Error');
+                });
+            },
+            cancelEditDescription: function() {
+                this.showEditDescriptionBox = false;
+                this.newDescription = "";
             },
             addAlbum: function() {
                 this.newAlbumName = "";
@@ -101,10 +115,6 @@
                     this.$refs.inputNewAlbumName.focus();
                 });
             },
-            cancelAddAlbum: function() {
-                this.showAddAlbumBox = false;
-                this.newAlbumName = "";
-            },
             submitAddAlbum: function() {
                 var currentMediaFile = this.mediaFile;
                 var restUrl = this.baseUrl + "rest/file/" + currentMediaFile.fileName + "/albums/" + encodeURIComponent(this.newAlbumName) + "/";    
@@ -112,8 +122,12 @@
                 axios({ method: "POST", "url": restUrl }).then(result => {
                     currentMediaFile.albums.push(this.newAlbumName);
                 }, error => {
-                    alert('Error')
+                    alert('Error');
                 });
+            },
+            cancelAddAlbum: function() {
+                this.showAddAlbumBox = false;
+                this.newAlbumName = "";
             },
             removeAlbum: function(album) {
                 var currentMediaFile = this.mediaFile;
@@ -125,7 +139,7 @@
                         }
                     }
                 }, error => {
-                    alert('Error')
+                    alert('Error');
                 });
             }
         }
@@ -155,6 +169,31 @@ div.add-album-box input {
 }
 
 div.add-album-box-hidden {
+    display: none;
+}
+
+div.edit-description-box {
+    position: fixed;
+    top: 40%;
+    left: 20%;
+    right: 20%;
+    width: 60%;
+    padding: 20px;
+    border-radius: 8px;
+    background-color: black;
+    z-index: 30;
+    text-align: center;
+}
+
+div.edit-description-box input {
+    width: 90%;
+    font-size: 25px;
+    color: white;
+    border: none;
+    background-color: black;
+}
+
+div.edit-description-box-hidden {
     display: none;
 }
 
@@ -260,7 +299,7 @@ div.description-overlay-large-image div.description {
 }
 
 div.description-overlay-large-image div.description a {
-    color: lightsalmon;
+    color: gray;
     font-size: 20px;
     padding: 10px;
     text-align: center;
