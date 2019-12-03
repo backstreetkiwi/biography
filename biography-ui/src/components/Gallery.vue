@@ -1,5 +1,8 @@
 <template>
     <div id="gallery">
+        <div class="add-album-box" v-bind:class="{'add-album-box-hidden' : !showAddAlbumBox}">
+            <input ref="inputNewAlbumName" v-on:keyup.enter="submitAddAlbum()" v-on:keyup.esc="cancelAddAlbum()" v-model="newAlbumName"/>
+        </div>
         <div class="large-image" v-bind:class="{'large-image-hidden' : !showImage}" v-on:click.self="closeImagePopup()">
             <img v-if="this.mediaFile!=null" v-bind:src="this.mediaFile.fileUrl" v-on:click.self="closeImagePopup()"/>
             <div v-if="this.mediaFile!=null" class="description-overlay-large-image" v-bind:class="{'description-overlay-hidden' : !galleryShowDescription}">
@@ -53,7 +56,9 @@
                 baseUrl: "http://localhost:8080/",
                 galleryShowDescription: true,
                 galleryShowAlbums: false,
-                showImage: false
+                showImage: false,
+                showAddAlbumBox: false,
+                newAlbumName: ""
             };
         },  
         props: {
@@ -90,16 +95,25 @@
                 }
             },
             addAlbum: function() {
-                var newAlbum = prompt("new album");
-                if(newAlbum) {
-                    var currentMediaFile = this.mediaFile;
-                    var restUrl = this.baseUrl + "rest/file/" + currentMediaFile.fileName + "/albums/" + encodeURIComponent(newAlbum) + "/";    
-                    axios({ method: "POST", "url": restUrl }).then(result => {
-                        currentMediaFile.albums.push(newAlbum);
-                    }, error => {
-                        alert('Error')
-                    });
-                }
+                this.newAlbumName = "";
+                this.showAddAlbumBox = true;
+                this.$nextTick(() => {
+                    this.$refs.inputNewAlbumName.focus();
+                });
+            },
+            cancelAddAlbum: function() {
+                this.showAddAlbumBox = false;
+                this.newAlbumName = "";
+            },
+            submitAddAlbum: function() {
+                var currentMediaFile = this.mediaFile;
+                var restUrl = this.baseUrl + "rest/file/" + currentMediaFile.fileName + "/albums/" + encodeURIComponent(this.newAlbumName) + "/";    
+                this.showAddAlbumBox = false;
+                axios({ method: "POST", "url": restUrl }).then(result => {
+                    currentMediaFile.albums.push(this.newAlbumName);
+                }, error => {
+                    alert('Error')
+                });
             },
             removeAlbum: function(album) {
                 var deleteAlbum = confirm("Do you want to remove the album?");
@@ -122,6 +136,31 @@
 </script>
 
 <style scoped>
+div.add-album-box {
+    position: fixed;
+    top: 40%;
+    left: 20%;
+    right: 20%;
+    width: 60%;
+    padding: 20px;
+    border-radius: 8px;
+    background-color:rgb(43, 84, 197);
+    z-index: 30;
+    text-align: center;
+}
+
+div.add-album-box input {
+    width: 90%;
+    font-size: 25px;
+    color: white;
+    border: none;
+    background-color: rgb(43, 84, 197);
+}
+
+div.add-album-box-hidden {
+    display: none;
+}
+
 div.large-image {
     position: fixed;
     top: 0px;
