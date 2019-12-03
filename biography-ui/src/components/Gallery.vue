@@ -116,20 +116,17 @@
                 });
             },
             removeAlbum: function(album) {
-                var deleteAlbum = confirm("Do you want to remove the album?");
-                if(deleteAlbum) {
-                    var currentMediaFile = this.mediaFile;
-                    var restUrl = this.baseUrl + "rest/file/" + currentMediaFile.fileName + "/albums/" + encodeURIComponent(album) + "/";    
-                    axios({ method: "DELETE", "url": restUrl }).then(result => {
-                        for(var i=currentMediaFile.albums.length; i--;) {
-                            if(currentMediaFile.albums[i]==album){
-                                currentMediaFile.albums.splice(i,1);
-                            }
+                var currentMediaFile = this.mediaFile;
+                var restUrl = this.baseUrl + "rest/file/" + currentMediaFile.fileName + "/albums/" + encodeURIComponent(album) + "/";    
+                axios({ method: "DELETE", "url": restUrl }).then(result => {
+                    for(var i=currentMediaFile.albums.length; i--;) {
+                        if(currentMediaFile.albums[i]==album){
+                            currentMediaFile.albums.splice(i,1);
                         }
-                    }, error => {
-                        alert('Error')
-                    });
-                }
+                    }
+                }, error => {
+                    alert('Error')
+                });
             }
         }
     }
