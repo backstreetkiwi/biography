@@ -7,6 +7,7 @@ import java.time.YearMonth;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
@@ -27,6 +28,7 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.stereotype.Component;
+import org.springframework.util.comparator.Comparators;
 
 /**
  * Search.
@@ -175,6 +177,13 @@ public class SearchService implements DisposableBean {
         }).map(count-> {
             return Pair.of(Index.longPointToYearMonth(count.getName()), Long.valueOf(count.getCount()));
         }).sorted(Comparator.comparing(Pair::getLeft));
+    }
+    
+	public Optional<YearMonth> getMostRecentYearMonth() {
+        return streamFacetCounts(Index.FIELD_YEAR_MONTH_LONG_POINT, query -> {
+        }).map(count-> {
+            return Index.longPointToYearMonth(count.getName());
+        }).max(Comparator.naturalOrder());
     }
     
     public Stream<Pair<Year, Long>> getYearCounts() {
