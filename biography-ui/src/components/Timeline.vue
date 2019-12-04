@@ -19,13 +19,19 @@ export default {
   data: function() {
     return {
       baseUrl: "http://localhost:8080/",
-      galleryMediaFiles: []
+      galleryMediaFiles: [],
+      currentYearMonth: null
     };
   },  
+  mounted: function() {
+    if(!this.galleryMediaFiles || this.galleryMediaFiles.length==0) {
+      this.fillGalleryWithMostRecentMonth();
+    }
+  },
   methods: {
     fillGalleryFromTimelline: function(yearMonth) {
       this.galleryMediaFiles = [];
-      if(yearMonth==null) {
+      if(!yearMonth) {
         return;
       }
       var restUrl = this.baseUrl + "rest/mediafiles/" + yearMonth.slice(0,4) + "/"+ yearMonth.slice(5,7) + "/";    
@@ -61,6 +67,16 @@ export default {
       }, error => {
         alert('Error')
       });
+    },
+    fillGalleryWithMostRecentMonth: function() {
+      // TODO: Set year/month picker accordingly
+      var restUrl = this.baseUrl + "rest/mediafiles/stats/";    
+      axios({ method: "GET", "url": restUrl }).then(result => {
+          this.fillGalleryFromTimelline(result.data.mostRecentYearMonth);
+      }, error => {
+        alert('Error')
+      });
+
     }
   }  
 }
