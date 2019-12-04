@@ -4,7 +4,7 @@
             <input ref="inputNewAlbumName" v-on:keyup.enter="submitAddAlbum()" v-on:keyup.esc="cancelAddAlbum()" v-model="newAlbumName"/>
         </div>
         <div class="edit-description-box" v-bind:class="{'edit-description-box-hidden' : !showEditDescriptionBox}">
-            <input ref="inputDescription" v-on:keyup.enter="submitEditDescription()" v-on:keyup.esc="cancelEditDescription()" v-model="newDescription"/>
+            <input ref="inputDescription" v-on:keyup.enter="submitEditDescription" v-on:keyup.esc="cancelEditDescription" v-on:keyup.up ="browseDescriptionHistoryUp" v-on:keyup.down ="browseDescriptionHistoryDown" v-model="newDescription"/>
         </div>
         <div class="large-image" v-bind:class="{'large-image-hidden' : !showImage}" v-on:click.self="closeImagePopup()">
             <a class="shortcut-link" ref="shortcutLink" href="#" v-on:keyup="shortcutEvent"></a>
@@ -65,7 +65,10 @@
                 newAlbumName: "",
                 showEditDescriptionBox: false,
                 newDescription: "",
-                currentFileUrl: ""
+                currentFileUrl: "",
+                descriptionHistory: [],
+                currentPosInDescriptionHistory: -1,
+                stashedDescription: ""
             };
         },  
         props: {
@@ -98,14 +101,47 @@
             editDescription: function() {
                 this.newDescription = this.mediaFile.description;
                 this.showEditDescriptionBox = true;
+                this.currentPosInDescriptionHistory = -1;
                 this.$nextTick(() => {
                     this.$refs.inputDescription.focus();
                 });
+            },
+            browseDescriptionHistoryUp() {
+                if(this.descriptionHistory.length==0) {
+                    return;
+                }
+                if(this.currentPosInDescriptionHistory==0) {
+                    return;
+                }
+                if(this.currentPosInDescriptionHistory>0) {
+                    this.currentPosInDescriptionHistory--;
+                }
+                if(this.currentPosInDescriptionHistory==-1) {  // -1 means 'currently not browsing history'
+                    this.currentPosInDescriptionHistory = this.descriptionHistory.length-1;
+                    this.stashedDescription = this.newDescription;
+                }
+                this.newDescription = this.descriptionHistory[this.currentPosInDescriptionHistory];
+            },
+            browseDescriptionHistoryDown(event) {
+                if(this.descriptionHistory.length==0) {
+                    return;
+                }
+                if(this.currentPosInDescriptionHistory==-1) {
+                    return;
+                }
+                if(event.ctrlKey || this.currentPosInDescriptionHistory==this.descriptionHistory.length-1) { 
+                    this.currentPosInDescriptionHistory = -1; // -1 means 'currently not browsing history'
+                    this.newDescription = this.stashedDescription;
+                    return;
+                }
+                this.currentPosInDescriptionHistory++;
+                this.newDescription = this.descriptionHistory[this.currentPosInDescriptionHistory];
             },
             submitEditDescription: function() {
                 var currentMediaFile = this.mediaFile;
                 var restUrl = this.baseUrl + "rest/file/" + currentMediaFile.fileName + "?description=" + encodeURIComponent(this.newDescription);    
                 this.showEditDescriptionBox = false;
+                this.addDescriptionToHistory(this.newDescription);
                 this.setFocusOnShortcutLink();   
                 axios({ method: "PUT", "url": restUrl }).then(result => {
                     currentMediaFile.description = this.newDescription;
@@ -154,6 +190,14 @@
                 }, error => {
                     alert('Error');
                 });
+            },
+            addDescriptionToHistory(description) {
+                for(var i=this.descriptionHistory.length; i--;) {
+                    if(this.descriptionHistory[i]==description) {
+                        return; // duplicate
+                    }
+                }
+                this.descriptionHistory.push(description);
             },
             shortcutEvent(event) {
                 switch(event.code) {
