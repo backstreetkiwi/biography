@@ -8,7 +8,7 @@
         </div>
         <div class="large-image" v-bind:class="{'large-image-hidden' : !showImage}" v-on:click.self="closeImagePopup()">
             <a class="shortcut-link" ref="shortcutLink" href="#" v-on:keyup="shortcutEvent"></a>
-            <img v-if="this.mediaFile!=null" v-bind:src="this.mediaFile.fileUrl" v-on:click.self="closeImagePopup()"/>
+            <img v-bind:src="this.currentFileUrl" v-on:click.self="closeImagePopup()"/>
             <div v-if="this.mediaFile!=null" class="description-overlay-large-image" v-bind:class="{'description-overlay-hidden' : !galleryShowDescription}">
                 <div class="description">
                     {{this.mediaFile!=null ? this.mediaFile.description: ''}}
@@ -29,7 +29,7 @@
         </div>
         <div class="chapter" v-for="chapter in mediaFiles" v-bind:key="chapter.title">
             <div class="chapter-title">{{chapter.title}}</div>
-            <div class="gallery-item" v-for="mediaFile in chapter.mediaFiles" v-bind:key="mediaFile.fileName" v-on:click="showImagePopup(mediaFile)">
+            <div class="gallery-item" v-for="(mediaFile, mfIndex) in chapter.mediaFiles" v-bind:key="mediaFile.fileName" v-on:click="showImagePopup(mediaFile, chapter, mfIndex)">
                 <div class="gallery-thumbnail">
                     <img v-bind:src="mediaFile.thumbnailUrl"/>
                     <div class="description-overlay" v-bind:class="{'description-overlay-hidden' : !galleryShowDescription}">
@@ -64,7 +64,8 @@
                 showAddAlbumBox: false,
                 newAlbumName: "",
                 showEditDescriptionBox: false,
-                newDescription: ""
+                newDescription: "",
+                currentFileUrl: ""
             };
         },  
         props: {
@@ -80,14 +81,18 @@
             albumsToggled: function(albumsOn) {
                 this.galleryShowAlbums = albumsOn;
             },
-            showImagePopup: function(mediaFile) {
+            showImagePopup: function(mediaFile, chapter, mfIndex) {
                 this.mediaFile = mediaFile;
+                this.currentFileUrl = mediaFile.fileUrl;
                 this.showImage = true;
+                this.chapter = chapter;
+                this.indexOfCurrentMediaFileInChapter = mfIndex;
                 this.setFocusOnShortcutLink();   
             },
             closeImagePopup: function() {
                 this.showImage = false;
                 this.mediaFile = null;
+                this.currentFileUrl = "";
             },
             editDescription: function() {
                 this.newDescription = this.mediaFile.description;
@@ -164,6 +169,24 @@
                     case "BracketRight": {
                         if(this.galleryShowAlbums) {
                             this.addAlbum();
+                        }
+                        break;
+                    }
+                    case "ArrowLeft": {
+                        // TODO jump chapter
+                        if(this.indexOfCurrentMediaFileInChapter > 0) {
+                            this.indexOfCurrentMediaFileInChapter--;
+                            this.mediaFile = this.chapter.mediaFiles[this.indexOfCurrentMediaFileInChapter];
+                            this.currentFileUrl = this.mediaFile.fileUrl;
+                        }
+                        break;
+                    }
+                    case "ArrowRight": {
+                        // TODO jump chapter
+                        if(this.indexOfCurrentMediaFileInChapter < this.chapter.mediaFiles.length-1) {
+                            this.indexOfCurrentMediaFileInChapter++;
+                            this.mediaFile = this.chapter.mediaFiles[this.indexOfCurrentMediaFileInChapter];
+                            this.currentFileUrl = this.mediaFile.fileUrl;
                         }
                         break;
                     }
