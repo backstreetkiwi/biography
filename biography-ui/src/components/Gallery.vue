@@ -27,9 +27,9 @@
             <GalleryToggleDescription :descriptionOn="galleryShowDescription" @toggled="descriptionToggled"/>
             <GalleryToggleAlbums :albumsOn="galleryShowAlbums" @toggled="albumsToggled"/>
         </div>
-        <div class="chapter" v-for="chapter in mediaFiles" v-bind:key="chapter.title">
+        <div class="chapter" v-for="(chapter, cIndex) in mediaFiles" v-bind:key="chapter.title">
             <div class="chapter-title">{{chapter.title}}</div>
-            <div class="gallery-item" v-for="(mediaFile, mfIndex) in chapter.mediaFiles" v-bind:key="mediaFile.fileName" v-on:click="showImagePopup(mediaFile, chapter, mfIndex)">
+            <div class="gallery-item" v-for="(mediaFile, mfIndex) in chapter.mediaFiles" v-bind:key="mediaFile.fileName" v-on:click="showImagePopup(mediaFile, mfIndex, chapter, cIndex)">
                 <div class="gallery-thumbnail">
                     <img v-bind:src="mediaFile.thumbnailUrl"/>
                     <div class="description-overlay" v-bind:class="{'description-overlay-hidden' : !galleryShowDescription}">
@@ -81,12 +81,13 @@
             albumsToggled: function(albumsOn) {
                 this.galleryShowAlbums = albumsOn;
             },
-            showImagePopup: function(mediaFile, chapter, mfIndex) {
+            showImagePopup: function(mediaFile, mfIndex, chapter, cIndex) {
                 this.mediaFile = mediaFile;
                 this.currentFileUrl = mediaFile.fileUrl;
                 this.showImage = true;
                 this.chapter = chapter;
                 this.indexOfCurrentMediaFileInChapter = mfIndex;
+                this.indexOfCurrentChapter = cIndex;
                 this.setFocusOnShortcutLink();   
             },
             closeImagePopup: function() {
@@ -173,20 +174,34 @@
                         break;
                     }
                     case "ArrowLeft": {
-                        // TODO jump chapter
                         if(this.indexOfCurrentMediaFileInChapter > 0) {
                             this.indexOfCurrentMediaFileInChapter--;
                             this.mediaFile = this.chapter.mediaFiles[this.indexOfCurrentMediaFileInChapter];
                             this.currentFileUrl = this.mediaFile.fileUrl;
+                        } else {
+                            if(this.indexOfCurrentChapter > 0) {
+                                this.indexOfCurrentChapter--;
+                                this.chapter = this.mediaFiles[this.indexOfCurrentChapter];
+                                this.indexOfCurrentMediaFileInChapter = this.chapter.mediaFiles.length-1;
+                                this.mediaFile = this.chapter.mediaFiles[this.indexOfCurrentMediaFileInChapter];
+                                this.currentFileUrl = this.mediaFile.fileUrl;
+                            }
                         }
                         break;
                     }
                     case "ArrowRight": {
-                        // TODO jump chapter
                         if(this.indexOfCurrentMediaFileInChapter < this.chapter.mediaFiles.length-1) {
                             this.indexOfCurrentMediaFileInChapter++;
                             this.mediaFile = this.chapter.mediaFiles[this.indexOfCurrentMediaFileInChapter];
                             this.currentFileUrl = this.mediaFile.fileUrl;
+                        } else {
+                            if(this.indexOfCurrentChapter < this.mediaFiles.length-1) {
+                                this.indexOfCurrentChapter++;
+                                this.chapter = this.mediaFiles[this.indexOfCurrentChapter];
+                                this.indexOfCurrentMediaFileInChapter = 0;
+                                this.mediaFile = this.chapter.mediaFiles[this.indexOfCurrentMediaFileInChapter];
+                                this.currentFileUrl = this.mediaFile.fileUrl;
+                            }
                         }
                         break;
                     }
