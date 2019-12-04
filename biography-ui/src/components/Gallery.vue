@@ -7,6 +7,7 @@
             <input ref="inputDescription" v-on:keyup.enter="submitEditDescription()" v-on:keyup.esc="cancelEditDescription()" v-model="newDescription"/>
         </div>
         <div class="large-image" v-bind:class="{'large-image-hidden' : !showImage}" v-on:click.self="closeImagePopup()">
+            <a class="shortcut-link" ref="shortcutLink" href="#" v-on:keyup="shortcutEvent"></a>
             <img v-if="this.mediaFile!=null" v-bind:src="this.mediaFile.fileUrl" v-on:click.self="closeImagePopup()"/>
             <div v-if="this.mediaFile!=null" class="description-overlay-large-image" v-bind:class="{'description-overlay-hidden' : !galleryShowDescription}">
                 <div class="description">
@@ -82,6 +83,7 @@
             showImagePopup: function(mediaFile) {
                 this.mediaFile = mediaFile;
                 this.showImage = true;
+                this.setFocusOnShortcutLink();   
             },
             closeImagePopup: function() {
                 this.showImage = false;
@@ -98,6 +100,7 @@
                 var currentMediaFile = this.mediaFile;
                 var restUrl = this.baseUrl + "rest/file/" + currentMediaFile.fileName + "?description=" + encodeURIComponent(this.newDescription);    
                 this.showEditDescriptionBox = false;
+                this.setFocusOnShortcutLink();   
                 axios({ method: "PUT", "url": restUrl }).then(result => {
                     currentMediaFile.description = this.newDescription;
                 }, error => {
@@ -107,6 +110,7 @@
             cancelEditDescription: function() {
                 this.showEditDescriptionBox = false;
                 this.newDescription = "";
+                this.setFocusOnShortcutLink();   
             },
             addAlbum: function() {
                 this.newAlbumName = "";
@@ -119,6 +123,7 @@
                 var currentMediaFile = this.mediaFile;
                 var restUrl = this.baseUrl + "rest/file/" + currentMediaFile.fileName + "/albums/" + encodeURIComponent(this.newAlbumName) + "/";    
                 this.showAddAlbumBox = false;
+                this.setFocusOnShortcutLink();   
                 axios({ method: "POST", "url": restUrl }).then(result => {
                     currentMediaFile.albums.push(this.newAlbumName);
                 }, error => {
@@ -128,10 +133,12 @@
             cancelAddAlbum: function() {
                 this.showAddAlbumBox = false;
                 this.newAlbumName = "";
+                this.setFocusOnShortcutLink();   
             },
             removeAlbum: function(album) {
                 var currentMediaFile = this.mediaFile;
-                var restUrl = this.baseUrl + "rest/file/" + currentMediaFile.fileName + "/albums/" + encodeURIComponent(album) + "/";    
+                var restUrl = this.baseUrl + "rest/file/" + currentMediaFile.fileName + "/albums/" + encodeURIComponent(album) + "/"; 
+                this.setFocusOnShortcutLink();   
                 axios({ method: "DELETE", "url": restUrl }).then(result => {
                     for(var i=currentMediaFile.albums.length; i--;) {
                         if(currentMediaFile.albums[i]==album){
@@ -140,6 +147,32 @@
                     }
                 }, error => {
                     alert('Error');
+                });
+            },
+            shortcutEvent(event) {
+                switch(event.code) {
+                    case "KeyE": {
+                        if(this.galleryShowDescription) {
+                            this.editDescription();
+                        }
+                        break;
+                    }
+                    case "Escape": {
+                        this.closeImagePopup();
+                        break;
+                    }
+                    case "BracketRight": {
+                        if(this.galleryShowAlbums) {
+                            this.addAlbum();
+                        }
+                        break;
+                    }
+                }
+            },
+            // the edit link has all the key shortcuts in large image view mode
+            setFocusOnShortcutLink() {
+                this.$nextTick(() => {
+                    this.$refs.shortcutLink.focus();
                 });
             }
         }
@@ -225,6 +258,11 @@ div.large-image img {
     image-orientation: from-image;
 }
 
+div.large-image a.shortcut-link {
+    outline: none;
+    font-size: 100px;
+}
+
 div.large-image-hidden {
     display: none;
 }
@@ -304,6 +342,7 @@ div.description-overlay-large-image div.description a {
     padding: 10px;
     text-align: center;
     text-decoration: none;
+    outline: none;
 }
 
 div.description-overlay-hidden {
