@@ -1,9 +1,10 @@
 <template>
-  <div>
+  <div class="navigation">
     <nav>
-      <router-link class="spacing" v-for="routes in links" 
-      v-bind:key="routes.id"
-      :to="`${routes.page}`">{{routes.text}}</router-link>
+      <router-link class="router-link" :to="`/Timeline`"><img src="./img/navigation/menu-calendar.png" /></router-link>
+      <router-link class="router-link" :to="`/Search`"><img src="./img/navigation/menu-search.png" /></router-link>
+      <router-link class="router-link" :to="`/Import`"><img src="./img/navigation/menu-import.png" /></router-link>
+      <router-link class="router-link" :to="`/Batches`"><img src="./img/navigation/menu-batches.png" /></router-link>
     </nav>
   </div>
 </template>
@@ -40,8 +41,12 @@ export default {
 }
 </script>
 <style>
-.spacing {
-  margin-right: 10px;
+div.navigation {
+  text-align: right;
+}
+.router-link {
+  margin-right: 50px;
+  outline: none;
 }
 </style>
 
