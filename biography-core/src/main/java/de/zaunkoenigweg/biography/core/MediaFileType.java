@@ -8,16 +8,18 @@ import org.apache.commons.lang3.StringUtils;
 
 public enum MediaFileType {
     
-    JPEG("jpg"),
-    QUICKTIME("mov"),
-    AVI("avi"),
-    MP4("mp4"),
-    MPEG("mpg");
+    JPEG("jpg", Kind.IMAGE),
+    QUICKTIME("mov", Kind.VIDEO),
+    AVI("avi", Kind.VIDEO),
+    MP4("mp4", Kind.VIDEO),
+    MPEG("mpg", Kind.VIDEO);
     
     private String fileExtension;
-
-    private MediaFileType(String fileExtension) {
+    private Kind kind;
+    
+    private MediaFileType(String fileExtension, Kind kind) {
         this.fileExtension = fileExtension;
+        this.kind = kind;
     }
 
     public static Stream<MediaFileType> all() {
@@ -46,5 +48,13 @@ public enum MediaFileType {
 
     public String getFileExtension() {
         return fileExtension;
+    }
+    
+    public Kind getKind() {
+		return kind;
+	}
+
+	public static enum Kind {
+    	IMAGE, VIDEO
     }
 }

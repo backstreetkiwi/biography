@@ -38,6 +38,9 @@
                     <div class="albums-overlay" v-bind:class="{'albums-overlay-hidden' : !galleryShowAlbums}">
                         <div class="albums" v-for="album in mediaFile.albums" v-bind:key="album">{{album}}</div>
                     </div>
+                    <div v-if="mediaFile.kind=='VIDEO'" class="video-icon-overlay">
+                        <img src="./img/gallery/video-overlay.png" />
+                    </div>
                 </div>
             </div>
         </div>
@@ -85,13 +88,20 @@
                 this.galleryShowAlbums = albumsOn;
             },
             showImagePopup: function(mediaFile, mfIndex, chapter, cIndex) {
-                this.mediaFile = mediaFile;
-                this.currentFileUrl = mediaFile.fileUrl;
+                this.setCurrentImage(mediaFile);
                 this.showImage = true;
                 this.chapter = chapter;
                 this.indexOfCurrentMediaFileInChapter = mfIndex;
                 this.indexOfCurrentChapter = cIndex;
                 this.setFocusOnShortcutLink();   
+            },
+            setCurrentImage: function(mediaFile) {
+                this.mediaFile = mediaFile;
+                if(this.mediaFile.kind=='VIDEO') {
+                    this.currentFileUrl = mediaFile.thumbnailUrl;
+                } else {
+                    this.currentFileUrl = mediaFile.fileUrl;
+                }
             },
             closeImagePopup: function() {
                 this.showImage = false;
@@ -220,15 +230,13 @@
                     case "ArrowLeft": {
                         if(this.indexOfCurrentMediaFileInChapter > 0) {
                             this.indexOfCurrentMediaFileInChapter--;
-                            this.mediaFile = this.chapter.mediaFiles[this.indexOfCurrentMediaFileInChapter];
-                            this.currentFileUrl = this.mediaFile.fileUrl;
+                            this.setCurrentImage(this.chapter.mediaFiles[this.indexOfCurrentMediaFileInChapter]);
                         } else {
                             if(this.indexOfCurrentChapter > 0) {
                                 this.indexOfCurrentChapter--;
                                 this.chapter = this.mediaFiles[this.indexOfCurrentChapter];
                                 this.indexOfCurrentMediaFileInChapter = this.chapter.mediaFiles.length-1;
-                                this.mediaFile = this.chapter.mediaFiles[this.indexOfCurrentMediaFileInChapter];
-                                this.currentFileUrl = this.mediaFile.fileUrl;
+                                this.setCurrentImage(this.chapter.mediaFiles[this.indexOfCurrentMediaFileInChapter]);
                             }
                         }
                         break;
@@ -236,15 +244,13 @@
                     case "ArrowRight": {
                         if(this.indexOfCurrentMediaFileInChapter < this.chapter.mediaFiles.length-1) {
                             this.indexOfCurrentMediaFileInChapter++;
-                            this.mediaFile = this.chapter.mediaFiles[this.indexOfCurrentMediaFileInChapter];
-                            this.currentFileUrl = this.mediaFile.fileUrl;
+                            this.setCurrentImage(this.chapter.mediaFiles[this.indexOfCurrentMediaFileInChapter]);
                         } else {
                             if(this.indexOfCurrentChapter < this.mediaFiles.length-1) {
                                 this.indexOfCurrentChapter++;
                                 this.chapter = this.mediaFiles[this.indexOfCurrentChapter];
                                 this.indexOfCurrentMediaFileInChapter = 0;
-                                this.mediaFile = this.chapter.mediaFiles[this.indexOfCurrentMediaFileInChapter];
-                                this.currentFileUrl = this.mediaFile.fileUrl;
+                                this.setCurrentImage(this.chapter.mediaFiles[this.indexOfCurrentMediaFileInChapter]);
                             }
                         }
                         break;
@@ -369,6 +375,7 @@ div.gallery-item {
     padding: 0px;
     height: 302px;
     border-radius: 5px;
+    cursor: pointer;    
 }
 
 div.gallery-thumbnail {
@@ -487,6 +494,18 @@ div.albums-overlay-large-image div.albums a {
 
 div.albums-overlay-hidden {
     display: none;
+}
+
+div.video-icon-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-top: -40px;
+    margin-left: -40px;
+    overflow: hidden;
+    z-index: 3;
+    cursor: pointer;    
+    padding: 0px;
 }
 
 div.footer {

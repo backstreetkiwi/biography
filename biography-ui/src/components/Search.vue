@@ -33,7 +33,7 @@ export default {
       var restUrl = this.baseUrl + "rest/search/?q=" + encodeURIComponent(queryString) + "&mode=" + queryModifier;    
       axios({ method: "GET", "url": restUrl }).then(result => {
           for (var key in result.data.mediaFiles) {
-              result.data.mediaFiles[key].thumbnailUrl = this.baseUrl + "file/" + result.data.mediaFiles[key].fileName + "/300";
+              result.data.mediaFiles[key].thumbnailUrl = this.baseUrl + "file/" + result.data.mediaFiles[key].thumbnailFileName + "/300";
               result.data.mediaFiles[key].fileUrl = this.baseUrl + "file/" + result.data.mediaFiles[key].fileName + "/raw";
           }
           result.data.mediaFiles.sort(function(a,b) { return a.fileName < b.fileName });

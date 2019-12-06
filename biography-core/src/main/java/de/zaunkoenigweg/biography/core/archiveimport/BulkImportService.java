@@ -105,6 +105,7 @@ public class BulkImportService {
     public void clearImportFolder() {
         try {
             FileUtils.cleanDirectory(importFolder);
+            FileUtils.forceMkdir(new File(this.importFolder, "thumbnails"));
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

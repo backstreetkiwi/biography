@@ -160,27 +160,6 @@ public class ToolsController {
 
     }
 
-    @RequestMapping("/tools/generate-all-thumbnails")
-    public String generateAllThumbnails(Model model) {
-
-        Console console = consoles.create("generate thumbnails");
-
-        new Thread(() -> {
-            List<File> mediaFiles = BiographyFileUtils.getMediaFiles(archiveFolder);
-
-            // TODO Thumbnails for every media file type
-            mediaFiles.stream().filter(MediaFileType.JPEG::isTypeOf).forEach(file -> {
-                console.println(
-                                String.format("File '%s' -> [%s]", file.getName(), archiveImportService.generateThumbnails(file, true)));
-            });
-
-            console.close();
-        }).start();
-
-        return "redirect:/console";
-
-    }
-
     @RequestMapping("/tools/generate-missing-thumbnails")
     public String generateMissingThumbnails(Model model) {
 
@@ -192,7 +171,7 @@ public class ToolsController {
             // TODO Thumbnails for every media file type
             mediaFiles.stream().filter(MediaFileType.JPEG::isTypeOf).forEach(file -> {
                 console.println(
-                                String.format("File '%s' -> [%s]", file.getName(), archiveImportService.generateThumbnails(file, false)));
+                                String.format("File '%s' -> [%s]", file.getName(), archiveImportService.generateThumbnails(file)));
             });
 
             console.close();

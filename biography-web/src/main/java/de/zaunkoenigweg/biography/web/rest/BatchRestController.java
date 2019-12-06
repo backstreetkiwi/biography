@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import de.zaunkoenigweg.biography.core.MediaFileType;
 import de.zaunkoenigweg.biography.core.archiveimport.ImportService;
 import de.zaunkoenigweg.biography.core.archivemetadata.ArchiveValidationService;
 import de.zaunkoenigweg.biography.core.index.IndexingService;
@@ -145,19 +144,8 @@ public class BatchRestController {
     public Map<String, String> generateAllThumbnails() {
 
         Console console = consoles.create("generate thumbnails");
-
-        new Thread(() -> {
-            List<File> mediaFiles = BiographyFileUtils.getMediaFiles(archiveFolder);
-
-            // TODO Thumbnails for every media file type
-            mediaFiles.stream().filter(MediaFileType.JPEG::isTypeOf).forEach(file -> {
-                console.println(
-                                String.format("File '%s' -> [%s]", file.getName(), archiveImportService.generateThumbnails(file, true)));
-            });
-
-            console.close();
-        }).start();
-        
+        console.println("This operation is no longer supported");
+        console.close();
         return toRest(console); 
     }
     
@@ -170,10 +158,8 @@ public class BatchRestController {
         new Thread(() -> {
             List<File> mediaFiles = BiographyFileUtils.getMediaFiles(archiveFolder);
 
-            // TODO Thumbnails for every media file type
-            mediaFiles.stream().filter(MediaFileType.JPEG::isTypeOf).forEach(file -> {
-                console.println(
-                                String.format("File '%s' -> [%s]", file.getName(), archiveImportService.generateThumbnails(file, false)));
+            mediaFiles.stream().forEach(file -> {
+                console.println(String.format("File '%s' -> [%s]", file.getName(), archiveImportService.generateThumbnails(file)));
             });
 
             console.close();

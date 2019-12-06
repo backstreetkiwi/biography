@@ -27,6 +27,8 @@ import de.zaunkoenigweg.biography.metadata.Album;
 import de.zaunkoenigweg.biography.metadata.BiographyMetadata;
 import de.zaunkoenigweg.biography.metadata.MetadataService;
 import de.zaunkoenigweg.biography.metadata.exif.ExifDataService;
+import de.zaunkoenigweg.lexi4j.thumbnails.ThumbnailGenerator;
+import de.zaunkoenigweg.lexi4j.thumbnails.ThumbnailGeneratorException;
 import de.zaunkoenigweg.biography.metadata.exif.ExifData;
 
 @SuppressWarnings("deprecation")
@@ -35,9 +37,6 @@ public class ImportService {
 
     private final static Log LOG = LogFactory.getLog(ImportService.class);
 
-    private final static File THUMB_200 = new File(ImportService.class.getResource("/thumb200.jpg").getFile());
-    private final static File THUMB_300 = new File(ImportService.class.getResource("/thumb300.jpg").getFile());
-    
     private MetadataService metadataService;
     private IndexingService indexingService;
     private ExifDataService exifDataService;
@@ -124,7 +123,7 @@ public class ImportService {
             return ImportResult.FILE_CANNOT_BE_STORED;
         }
         
-        this.generateThumbnails(archiveFile, true);
+        this.generateThumbnails(archiveFile);
         
         indexingService.reIndex(archiveFile);
 
@@ -152,18 +151,20 @@ public class ImportService {
         metadataService.writeMetadataToJsonFile(jsonFile, metadata);
     }
     
-    public boolean generateThumbnails(File file, boolean force) {
+    public boolean generateThumbnails(File file) {
     	
     	File thumbnailsFolder = new File(this.archiveFolder, "thumbnails");
     	
     	File thumbsFolder200 = new File(thumbnailsFolder, ThumbnailSize.t200.folderName);
     	File thumbsFolder300 = new File(thumbnailsFolder, ThumbnailSize.t300.folderName);
 
-		File file200 = BiographyFileUtils.getArchiveFileFromShortFilename(thumbsFolder200, file.getName());
-		File file300 = BiographyFileUtils.getArchiveFileFromShortFilename(thumbsFolder300, file.getName());
+    	String thumbnailFileName = StringUtils.substringBeforeLast(file.getName(), ".") + ".jpg";
+    	
+		File file200 = BiographyFileUtils.getArchiveFileFromShortFilename(thumbsFolder200, thumbnailFileName);
+		File file300 = BiographyFileUtils.getArchiveFileFromShortFilename(thumbsFolder300, thumbnailFileName);
 
-		if(!force && file200.exists() && file300.exists()) {
-			return true;
+		if(file200.exists() && file300.exists()) {
+			return false;
 		}
     	
         generateThumbnail(file, this.archiveFolder, "archive/", ThumbnailSize.t200, file200);
@@ -185,14 +186,14 @@ public class ImportService {
             return;
         }
         
-        if(mediaFileType.get()!=MediaFileType.JPEG) {
-            try {
-                FileUtils.copyFile(THUMB_200, targetFile);
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            return;
+        if(mediaFileType.get().getKind() == MediaFileType.Kind.VIDEO) {
+        	try {
+				ThumbnailGenerator.generateThumbnailFromVideo(sourceFile, targetFile, size.height);
+			} catch (ThumbnailGeneratorException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+        	return;
         }
         
 		try (DefaultHttpClient client = new DefaultHttpClient()) {
@@ -218,15 +219,17 @@ public class ImportService {
     
     static enum ThumbnailSize {
     	
-    	t200("200", "0x200/"), 
-    	t300("300", "0x300/");
+    	t200("200", "0x200/", 200), 
+    	t300("300", "0x300/", 300);
     	
     	private String folderName;
     	private String thumborUrlFragment;
+    	private int height;
     	
-		private ThumbnailSize(String folderName, String thumborUrlFragment) {
+		private ThumbnailSize(String folderName, String thumborUrlFragment, int height) {
 			this.folderName = folderName;
 			this.thumborUrlFragment = thumborUrlFragment;
+			this.height = height;
 		}
     }
 

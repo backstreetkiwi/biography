@@ -35,6 +35,8 @@ import de.zaunkoenigweg.biography.core.MediaFileType;
  */
 public class BiographyFileUtils {
 
+	// TODO use enum values !!!
+	// TODO build value object !!!
     private final static Pattern ARCHIVE_FILENAME_FORMAT = Pattern.compile("(\\d{4})-(\\d{2})-(\\d{2})--(\\d{2})-(\\d{2})-(\\d{2})---(\\p{XDigit}{40}).(jpg|mov|mpg|avi|mp4)");
 
     /**
