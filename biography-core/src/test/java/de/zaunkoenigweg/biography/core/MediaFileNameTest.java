@@ -1,5 +1,8 @@
 package de.zaunkoenigweg.biography.core;
 
+import java.io.File;
+import java.time.LocalDateTime;
+
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -44,4 +47,37 @@ public class MediaFileNameTest {
 		MediaFileName.of("hurz");
 	}
 
+	@Test
+	public void testGetType() {
+		String filename = "2019-02-28--17-31-33---c69239ffcc01886f9d73ecd1076271bb65c26ba4.jpg";
+		MediaFileName mediaFileName = MediaFileName.of(filename);
+		assertEquals(MediaFileType.JPEG, mediaFileName.getType());
+	}
+
+	@Test
+	public void testGetDateTimeOriginal() {
+		String filename = "2019-02-28--17-31-33---c69239ffcc01886f9d73ecd1076271bb65c26ba4.jpg";
+		MediaFileName mediaFileName = MediaFileName.of(filename);
+		assertEquals(LocalDateTime.of(2019, 2, 28, 17, 31, 33), mediaFileName.getDateTimeOriginal());
+	}
+
+	@Test
+	public void testGetSha1() {
+		String filename = "2019-02-28--17-31-33---c69239ffcc01886f9d73ecd1076271bb65c26ba4.jpg";
+		MediaFileName mediaFileName = MediaFileName.of(filename);
+		assertEquals("c69239ffcc01886f9d73ecd1076271bb65c26ba4", mediaFileName.getSha1());
+	}
+
+	@Test(expected=NullPointerException.class)
+	public void testArchiveFileNull() {
+		MediaFileName mediaFileName = MediaFileName.of("2019-02-28--17-31-33---c69239ffcc01886f9d73ecd1076271bb65c26ba4.jpg");
+		mediaFileName.archiveFile(null);
+	}
+
+	@Test
+	public void testArchiveFile() {
+		MediaFileName mediaFileName = MediaFileName.of("2019-02-28--17-31-33---c69239ffcc01886f9d73ecd1076271bb65c26ba4.jpg");
+		mediaFileName.archiveFile(new File("/home/biography/archive"));
+		assertEquals(new File("/home/biography/archive/2019/02/2019-02-28--17-31-33---c69239ffcc01886f9d73ecd1076271bb65c26ba4.jpg"), mediaFileName.archiveFile(new File("/home/biography/archive")));
+	}
 }

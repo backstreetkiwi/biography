@@ -83,20 +83,6 @@ public class BiographyFileUtils {
         return ARCHIVE_FILENAME_FORMAT.matcher(file.getName()).matches();
     };
 
-    public static LocalDateTime getDatetimeOriginalFromArchiveFilename(File file) {
-        
-        if (file == null || file.isDirectory()) {
-            return null;
-        }
-
-        Matcher matcher = ARCHIVE_FILENAME_FORMAT.matcher(file.getName());
-        if(!matcher.matches()) {
-            return null;
-        }
-        
-        return LocalDateTime.of(Integer.parseInt(matcher.group(1)), Integer.parseInt(matcher.group(2)), Integer.parseInt(matcher.group(3)), Integer.parseInt(matcher.group(4)), Integer.parseInt(matcher.group(5)), Integer.parseInt(matcher.group(6)));
-    }
-    
     public static String getSha1FromArchiveFilename(File file) {
         
         if (file == null || file.isDirectory()) {

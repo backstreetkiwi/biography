@@ -1,7 +1,9 @@
 package de.zaunkoenigweg.biography.core;
 
+import java.io.File;
 import java.time.DateTimeException;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -21,13 +23,22 @@ public class MediaFileName {
 		ARCHIVE_FILENAME_FORMAT = Pattern.compile(regex);
 	}
 
-	/**
-	 * the filename
-	 */
 	private String filename;
-
+	private MediaFileType type;
+	private LocalDateTime dateTimeOriginal;
+	private String sha1;
+	
 	private MediaFileName(String filename) {
+		Matcher matcher = ARCHIVE_FILENAME_FORMAT.matcher(filename);
+		if (!matcher.matches()) {
+			throw new IllegalArgumentException(String.format("Invalid media file name '%s'", filename));
+		}
 		this.filename = filename;
+		this.type = MediaFileType.of(filename).get();
+		this.dateTimeOriginal = LocalDateTime.of(Integer.valueOf(matcher.group(2)), Integer.valueOf(matcher.group(3)),
+				Integer.valueOf(matcher.group(4)), Integer.valueOf(matcher.group(5)),
+				Integer.valueOf(matcher.group(6)), Integer.valueOf(matcher.group(7)));
+		this.sha1 = matcher.group(8);
 	}
 
 	/**
@@ -66,13 +77,34 @@ public class MediaFileName {
 	 */
 	public static MediaFileName of(String filename) {
 		if (!isValid(filename)) {
-			throw new IllegalArgumentException(
-					String.format("'%s' is not a valid Biography media file format.", filename));
+			throw new IllegalArgumentException(String.format("'%s' is not a valid Biography media file format.", filename));
 		}
 		return new MediaFileName(filename);
 	}
 
+	/**
+	 * Determines the fully qualified {@link File} of a Biography media file with this name.
+	 * @param archiveBaseFolder base folder of the Biography archive
+	 * @return Biography archive file
+	 */
+	public File archiveFile(File archiveBaseFolder) {
+		Objects.requireNonNull(archiveBaseFolder, "The archive base folder must not be null.");
+		return new File(archiveBaseFolder, filename.substring(0, 4) + "/" + filename.substring(5,7) + "/" + filename);
+	}
+	
 	public String getFilename() {
 		return filename;
+	}
+	
+	public MediaFileType getType() {
+		return this.type;
+	}
+	
+	public LocalDateTime getDateTimeOriginal() {
+		return this.dateTimeOriginal;
+	}
+	
+	public String getSha1() {
+		return this.sha1;
 	}
 }

@@ -1,46 +1,22 @@
 package de.zaunkoenigweg.biography.core.archivemetadata;
 
 import java.io.File;
-import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Component;
 
-import de.zaunkoenigweg.biography.core.MediaFileType;
-import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
+import de.zaunkoenigweg.biography.core.MediaFileName;
 import de.zaunkoenigweg.biography.metadata.BiographyMetadata;
 import de.zaunkoenigweg.biography.metadata.MetadataService;
 import de.zaunkoenigweg.biography.metadata.exif.ExifData;
 import de.zaunkoenigweg.biography.metadata.exif.ExifDataService;
 
 /**
- * This service offers methods to validate archived media files.
- * 
- * The validating methods are ordered by the strength of the validation criteria. They call each other in a kind of
- * cascade.
- * 
- * Methods ordered by criteria strength:
- * 
- * <ul>
- * <li>{@link #hasMediaFileName(File)}</li>
- * <li>{@link #isInCorrectArchiveFolder(File)}</li>
- * <li>{@link #hasMetadata(File)}</li>
- * <li>{@link #doesMetadataDatetimeOriginalMatchFilename(File)}</li>
- * <li>{@link #doesMetadataMatchExifData(File)}</li>
- * </ul>
- * 
- * The method {@link #check(File)} performs all validations sequentially until the first one fails and provides a
- * protocol of the validations.
- * 
- * @author mail@nikolaus-winter.de
- *
+ * Validate archived media files.
  */
 @Component
 public class ArchiveValidationService {
@@ -48,15 +24,13 @@ public class ArchiveValidationService {
     private final static Log LOG = LogFactory.getLog(ArchiveValidationService.class);
 
     private ExifDataService exifDataService;
-    
     private MetadataService metadataService;
-
     private File archiveFolder;
 
     public ArchiveValidationService(MetadataService metadataService, ExifDataService exifDataService, File archiveFolder) {
         this.metadataService = metadataService;
-        this.archiveFolder = archiveFolder;
         this.exifDataService = exifDataService;
+        this.archiveFolder = archiveFolder;
         LOG.info("ArchiveValidationService started.");
         LOG.info(String.format("archiveFolder=%s", this.archiveFolder));
     }
@@ -64,290 +38,97 @@ public class ArchiveValidationService {
     /**
      * Is the archive file valid?
      * 
-     * The check is performed by using just the method {@link #isHashcodeCorrect(File)} because that validation method
-     * is the strongest in the cascade of validations.
-     * 
-     * Exceptions are swallowed and result in a false value because this method does not provide further information
-     * about the reasons of a failure.
-     * 
-     * If you need further information, use {@link #check(File)}.
-     * 
-     * @param file
-     *            archive file
+     * @param file Biography media file, must not be {@code null}
      * @return Is the archive file valid?
      */
     public boolean isValid(File file) {
-        try {
-            return isHashcodeCorrect(file);
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    public Pair<Boolean, List<Pair<String, Boolean>>> check(File file) {
-        List<Pair<String, Boolean>> checks = new ArrayList<>();
-
-        if (file == null) {
-            checks.add(Pair.of("File is null.", Boolean.FALSE));
-            return Pair.of(Boolean.FALSE, checks);
-        }
-        checks.add(Pair.of("File is not null.", Boolean.TRUE));
-
-        if (!file.exists() || file.isDirectory()) {
-            checks.add(Pair.of("File does not exist.", Boolean.FALSE));
-            return Pair.of(Boolean.FALSE, checks);
-        }
-        checks.add(Pair.of("File exists.", Boolean.TRUE));
-
-        if (!hasMediaFileName(file)) {
-            checks.add(Pair.of("File does not have a valid media file name.", Boolean.FALSE));
-            return Pair.of(Boolean.FALSE, checks);
-        }
-        checks.add(Pair.of("File has a valid media file name.", Boolean.TRUE));
-
-        if (!isInCorrectArchiveFolder(file)) {
-            checks.add(Pair.of("File is not in correct archive folder!", Boolean.FALSE));
-            return Pair.of(Boolean.FALSE, checks);
-        }
-        checks.add(Pair.of("File is in correct archive folder.", Boolean.TRUE));
-
-        if (!hasMetadata(file)) {
-            checks.add(Pair.of("File has no metadata", Boolean.FALSE));
-            return Pair.of(Boolean.FALSE, checks);
-        }
-        checks.add(Pair.of("File has metadata", Boolean.TRUE));
-
-        if (!doesMetadataDatetimeOriginalMatchFilename(file)) {
-            checks.add(Pair.of("DatetimeOriginal in filename does not match the corresponding value in metadata.",
-                    Boolean.FALSE));
-            return Pair.of(Boolean.FALSE, checks);
-        }
-        checks.add(
-                Pair.of("DatetimeOriginal in filename does match the corresponding value in metadata.", Boolean.TRUE));
-
-        if (!doesMetadataMatchExifData(file)) {
-            checks.add(Pair.of("EXIF metadata does not match BiographyMetadata", Boolean.FALSE));
-            return Pair.of(Boolean.FALSE, checks);
-        }
-        checks.add(Pair.of("No mismatch between EXIF metadata and BiographyMetadata", Boolean.TRUE));
-
-        if (!isHashcodeCorrect(file)) {
-            checks.add(Pair.of("SHA-1 hashcode in the filename does not match the hashcode in the BiographyMetadata", Boolean.FALSE));
-            return Pair.of(Boolean.FALSE, checks);
-        }
-        checks.add(Pair.of("SHA-1 hashcode in the filename does matches the hashcode in the BiographyMetadata", Boolean.TRUE));
-
-        return Pair.of(Boolean.TRUE, checks);
+    	return ValidationResult.OK == validate(file);
     }
 
     /**
-     * Has the given file a correct media file name?
+     * Validate Biography media file in archive.
      * 
-     * @param file
-     *            media file
-     * @return Has the given file a correct media file name?
-     * @throws {@link
-     *             NullPointerException} if the file object is <code>null</code>
-     * @throws {@link
-     *             IllegalArgumentException} if the file does not exist (or is a directory)
+     * @param file Biography media file, must not be {@code null}
+     * @return validation result
      */
-    public boolean hasMediaFileName(File file) {
-        if (file == null) {
-            throw new NullPointerException("Parameter 'file' must not be null");
-        }
-        if (!file.exists() || file.isDirectory()) {
-            throw new IllegalArgumentException(file.getAbsolutePath());
-        }
-        return BiographyFileUtils.isMediaFileName(file);
-    }
+    public ValidationResult validate(File file) {
+    	
+    	Objects.requireNonNull(file, "The archive file must not be null.");
 
-    /**
-     * Is the given file a media file correctly placed in the archive folder?
-     *
-     * @param file
-     *            media file
-     * @return Is the given file a media file correctly placed in the archive folder?
-     * @throws {@link
-     *             NullPointerException} if the file object is <code>null</code>
-     * @throws {@link
-     *             IllegalArgumentException} if the file does not exist (or is a directory)
-     * @throws {@link
-     *             IllegalArgumentException} if the file does not pass {@link #hasMediaFileName(File)}!
-     */
-    public boolean isInCorrectArchiveFolder(File file) {
-        if (!hasMediaFileName(file)) {
-            throw new IllegalArgumentException(
-                    String.format("File '%s' has no valid media file name.", file.getAbsolutePath()));
-        }
-        LocalDateTime datetimeOriginalFromArchiveFilename = BiographyFileUtils
-                .getDatetimeOriginalFromArchiveFilename(file);
-        File expectedFolder = new File(archiveFolder, String.format("%04d/%02d",
-                datetimeOriginalFromArchiveFilename.getYear(), datetimeOriginalFromArchiveFilename.getMonthValue()));
-        return expectedFolder.equals(file.getParentFile());
-    }
-
-    /**
-     * Has the given media file metadata information?
-     *
-     * @param file
-     *            media file
-     * @return Has the given media file metadata information?
-     * @throws {@link
-     *             NullPointerException} if the file object is <code>null</code>
-     * @throws {@link
-     *             IllegalArgumentException} if the file does not exist (or is a directory)
-     * @throws {@link
-     *             IllegalArgumentException} if the file does not pass {@link #isInCorrectArchiveFolder(File)}!
-     */
-    public boolean hasMetadata(File file) {
-        if (!isInCorrectArchiveFolder(file)) {
-            throw new IllegalArgumentException(
-                    String.format("File '%s' is no valid media file in archive.", file.getAbsolutePath()));
-        }
-
-        Optional<MediaFileType> mediaFileType = MediaFileType.of(file);
-        if (!mediaFileType.isPresent()) {
-            LOG.warn("Unknown Media File Type."); // should never happen due to filename check
-            return false;
-        }
-
+    	if(!file.exists() || file.isDirectory()) {
+    		return ValidationResult.FILE_DOES_NOT_EXIST;
+    	}
+    	
+    	if(!MediaFileName.isValid(file.getName())) {
+    		return ValidationResult.FILENAME_NOT_VALID;
+    	}
+    	
+    	MediaFileName mediaFileName = MediaFileName.of(file.getName());
+    	
+    	if(!file.equals(mediaFileName.archiveFile(archiveFolder))) {
+    		return ValidationResult.FILE_IS_NOT_IN_CORRECT_ARCHIVE_FILDER;
+    	}
+    	
         BiographyMetadata metadata;
 
-        if (ExifDataService.supports(mediaFileType.get())) {
+        if (ExifDataService.supports(mediaFileName.getType())) {
             metadata = metadataService.readMetadataFromExif(file);
         } else {
-            metadata = metadataService.readMetadataFromJsonFile(getMetadataJsonFile(file));
+            metadata = metadataService.readMetadataFromJsonFile(getMetadataJsonFile(file, mediaFileName));
         }
 
-        return metadata != null;
+        if(metadata==null) {
+        	return ValidationResult.FILE_HAS_NO_METADATA;
+        }
+    	
+        if(!mediaFileName.getDateTimeOriginal().equals(metadata.getDateTimeOriginal().truncatedTo(ChronoUnit.SECONDS))) {
+        	return ValidationResult.DATETIME_ORIGINAL_INCONSISTENT;
+        }
+    	
+        if (ExifDataService.supports(mediaFileName.getType())) {
+        	ExifData exifData = exifDataService.readExifData(file);
+        	
+        	if (!metadata.getDateTimeOriginal().equals(exifData.getDateTimeOriginal())) {
+        		return ValidationResult.METADATA_INCONSISTENT;
+        	}
+        	
+        	String metadataDescription = StringUtils.trimToEmpty(metadata.getDescription());
+        	String exifDataDescription = StringUtils.trimToEmpty(exifData.getDescription().orElse(""));
+        	
+        	if (!metadataDescription.equals(exifDataDescription)) {
+        		return ValidationResult.METADATA_INCONSISTENT;
+        	}
+        }
+
+        if(!mediaFileName.getSha1().equals(metadata.getSha1())) {
+        	return ValidationResult.HASHCODE_INCONSISTENT;
+        }
+        
+    	return ValidationResult.OK;
     }
 
-    /**
-     * Does the Datetime Original field in the metadata match the Datetime in the archive file name?
-     *
-     * @param file
-     *            media file
-     * @return Does the Datetime Original field in the metadata match the Datetime in the archive file name?
-     * @throws {@link
-     *             NullPointerException} if the file object is <code>null</code>
-     * @throws {@link
-     *             IllegalArgumentException} if the file does not exist (or is a directory)
-     * @throws {@link
-     *             IllegalArgumentException} if the file does not pass {@link #hasMetadata(File)}!
-     */
-    public boolean doesMetadataDatetimeOriginalMatchFilename(File file) {
-        if (!hasMetadata(file)) {
-            throw new IllegalArgumentException(
-                    String.format("File '%s' does not have biography metadata attached.", file.getAbsolutePath()));
-        }
-
-        Optional<MediaFileType> mediaFileType = MediaFileType.of(file);
-        if (!mediaFileType.isPresent()) {
-            LOG.warn("Unknown Media File Type."); // should never happen due to filename check
-            return false;
-        }
-
-        BiographyMetadata metadata;
-
-        if (ExifDataService.supports(mediaFileType.get())) {
-            metadata = metadataService.readMetadataFromExif(file);
-        } else {
-            metadata = metadataService.readMetadataFromJsonFile(getMetadataJsonFile(file));
-        }
-
-        LocalDateTime timestampFromArchiveFileName = BiographyFileUtils.getDatetimeOriginalFromArchiveFilename(file);
-
-        return timestampFromArchiveFileName.equals(metadata.getDateTimeOriginal().truncatedTo(ChronoUnit.SECONDS));
-    }
-
-    /**
-     * Does the EXIF data (if applicable) match the BiographyMetadata?
-     * 
-     * This method covers the DateTimeOriginal and the description fields.
-     * 
-     * @param file
-     *            media file
-     * @return Does the EXIF data (if applicable) match the BiographyMetadata?
-     * @throws {@link
-     *             NullPointerException} if the file object is <code>null</code>
-     * @throws {@link
-     *             IllegalArgumentException} if the file does not exist (or is a directory)
-     * @throws {@link
-     *             IllegalArgumentException} if the file does not pass
-     *             {@link #doesMetadataDatetimeOriginalMatchFilename(File)}!
-     */
-    public boolean doesMetadataMatchExifData(File file) {
-        if (!doesMetadataDatetimeOriginalMatchFilename(file)) {
-            throw new IllegalArgumentException(
-                    String.format("File '%s' does not have biography metadata attached.", file.getAbsolutePath()));
-        }
-
-        Optional<MediaFileType> mediaFileType = MediaFileType.of(file);
-        if (!mediaFileType.isPresent()) {
-            LOG.warn("Unknown Media File Type."); // should never happen due to filename check
-            return false;
-        }
-
-        if (!ExifDataService.supports(mediaFileType.get())) {
-            return true;
-        }
-
-        BiographyMetadata metadata = metadataService.readMetadataFromExif(file);
-        ExifData exifData = exifDataService.readExifData(file);
-
-        if (!metadata.getDateTimeOriginal().equals(exifData.getDateTimeOriginal())) {
-            return false;
-        }
-
-        String metadataDescription = StringUtils.trimToEmpty(metadata.getDescription());
-        String exifDataDescription = StringUtils.trimToEmpty(exifData.getDescription().orElse(""));
-
-        if (!metadataDescription.equals(exifDataDescription)) {
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Is the hashcode in the filename matching the hashcode in the metadata?
-     * 
-     * @param file
-     *            media file
-     * @return Is the hashcode in the filename matching the hashcode in the metadata?
-     * @throws {@link
-     *             NullPointerException} if the file object is <code>null</code>
-     * @throws {@link
-     *             IllegalArgumentException} if the file does not exist (or is a directory)
-     * @throws {@link
-     *             IllegalArgumentException} if the file does not pass {@link #doesMetadataMatchExifData(File)}!
-     */
-    public boolean isHashcodeCorrect(File file) {
-        if (!doesMetadataMatchExifData(file)) {
-            throw new IllegalArgumentException(
-                    String.format("File '%s' does not have biography metadata attached.", file.getAbsolutePath()));
-        }
-
-        Optional<MediaFileType> mediaFileType = MediaFileType.of(file);
-        if (!mediaFileType.isPresent()) {
-            LOG.warn("Unknown Media File Type."); // should never happen due to filename check
-            return false;
-        }
-
-        BiographyMetadata metadata;
-
-        if (ExifDataService.supports(mediaFileType.get())) {
-            metadata = metadataService.readMetadataFromExif(file);
-        } else {
-            metadata = metadataService.readMetadataFromJsonFile(getMetadataJsonFile(file));
-        }
-
-        return BiographyFileUtils.getSha1FromArchiveFilename(file).equals(metadata.getSha1());
-    }
-
-    private File getMetadataJsonFile(File file) {
+    private File getMetadataJsonFile(File file, MediaFileName mediaFileName) {
         return new File(file.getParent(),
-                String.format("b%s.json", BiographyFileUtils.getSha1FromArchiveFilename(file)));
+                String.format("b%s.json", mediaFileName.getSha1()));
     }
 
+    public static enum ValidationResult {
+    	FILE_DOES_NOT_EXIST("The file does not exist (or is a directory)."),
+    	FILENAME_NOT_VALID("The filename is not a valid Biography archived media file name."),
+    	FILE_IS_NOT_IN_CORRECT_ARCHIVE_FILDER("The file is not located in the correct archive folder."),
+    	FILE_HAS_NO_METADATA("The file has no valid Biography metadata."),
+    	DATETIME_ORIGINAL_INCONSISTENT("The datetime/original date is inconsistent between filename and Biography metadata."),
+    	METADATA_INCONSISTENT("The data inconsistent between EXIF metadata and Biography metadata."),
+    	HASHCODE_INCONSISTENT("The hashcode is inconsistent between filename and Biography metadata."),
+    	OK("OK");
+    	
+    	private String message;
+		private ValidationResult(String message) {
+			this.message = message;
+		}
+		public String getMessage() {
+			return message;
+		}
+    }
+    
 }

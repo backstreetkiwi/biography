@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -17,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import de.zaunkoenigweg.biography.core.archiveimport.ImportService;
 import de.zaunkoenigweg.biography.core.archivemetadata.ArchiveValidationService;
+import de.zaunkoenigweg.biography.core.archivemetadata.ArchiveValidationService.ValidationResult;
 import de.zaunkoenigweg.biography.core.index.IndexingService;
 import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
 import de.zaunkoenigweg.biography.metadata.exif.ExifDataService;
@@ -97,17 +97,12 @@ public class BatchRestController {
 
             mediaFiles.stream().forEach(file -> {
 
-                Pair<Boolean, List<Pair<String, Boolean>>> check = archiveValidationService.check(file);
-                if (check.getLeft()) {
+                ValidationResult result = archiveValidationService.validate(file);
+                if (ValidationResult.OK==result) {
                     console.println(String.format("File '%s' -> [OK]", file.getAbsolutePath()));
                 } else {
                     numberOfCorruptFiles.incrementAndGet();
-                    ;
-                    console.println(String.format("ERROR in file '%s'", file.getAbsolutePath()));
-                    check.getRight().stream().forEach(pair -> {
-                        console.println(String.format("%-100s [%s]", pair.getLeft(), pair.getRight() ? "OK" : "ERROR"));
-                    });
-                    console.println("");
+                    console.println(String.format("ERROR in file '%s': %s", file.getAbsolutePath(), result.getMessage()));
                 }
 
             });
