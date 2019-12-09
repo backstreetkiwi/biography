@@ -115,27 +115,6 @@ public class ArchiveMetadataService {
     	addAlbums(file, Collections.singleton(album));
     }
     
-    public String fixSha1InMetadata(File file) {
-    	Optional<MediaFileType> mediaFileType = MediaFileType.of(file);
-    	if(!mediaFileType.isPresent()) {
-    		throw new IllegalStateException(String.format("The file type '%s' is not known.", file.getAbsolutePath()));
-    	}
-    	BiographyMetadata metadata = null;
-		if(ExifDataService.supports(mediaFileType.get())) {
-			metadata = metadataService.readMetadataFromExif(file);
-    	} else {
-    		metadata = metadataService.readMetadataFromJsonFile(getMetadataJsonFile(file));
-    	}
-    	BiographyMetadata newMetadata = new BiographyMetadata(metadata.getDateTimeOriginal(), BiographyFileUtils.getSha1FromArchiveFilename(file), metadata.getDescription(), metadata.getAlbums());
-		if(ExifDataService.supports(mediaFileType.get())) {
-			metadataService.writeMetadataIntoExif(file, newMetadata);
-    	} else {
-    		metadataService.writeMetadataToJsonFile(getMetadataJsonFile(file), newMetadata);
-    	}
-    	
-    	return StringUtils.trimToEmpty(metadata.getDescription());
-    }
-    
     private File getMetadataJsonFile(File file) {
     	return new File(file.getParent(), String.format("b%s.json", BiographyFileUtils.getSha1FromArchiveFilename(file)));
     }
