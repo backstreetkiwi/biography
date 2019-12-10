@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -35,8 +34,6 @@ import de.zaunkoenigweg.biography.core.MediaFileType;
  */
 public class BiographyFileUtils {
 
-	// TODO use enum values !!!
-	// TODO build value object !!!
     private final static Pattern ARCHIVE_FILENAME_FORMAT = Pattern.compile("(\\d{4})-(\\d{2})-(\\d{2})--(\\d{2})-(\\d{2})-(\\d{2})---(\\p{XDigit}{40}).(jpg|mov|mpg|avi|mp4)");
 
     /**
@@ -83,34 +80,6 @@ public class BiographyFileUtils {
         return ARCHIVE_FILENAME_FORMAT.matcher(file.getName()).matches();
     };
 
-    public static String getSha1FromArchiveFilename(File file) {
-        
-        if (file == null || file.isDirectory()) {
-            return null;
-        }
-
-        Matcher matcher = ARCHIVE_FILENAME_FORMAT.matcher(file.getName());
-        if(!matcher.matches()) {
-            return null;
-        }
-        
-        return matcher.group(7);
-    }
-    
-    public static File getArchiveFileFromShortFilename(File archiveFolder, String shortFileName) {
-    		// FIXME write test!
-    		if (StringUtils.isBlank(shortFileName)) {
-    			return null;
-    		}
- 
-		Matcher matcher = ARCHIVE_FILENAME_FORMAT.matcher(shortFileName);
-		if (!matcher.matches()) {
-			return null;
-		}
-    		
-    		return new File(archiveFolder, String.format("%s/%s/%s", matcher.group(1), matcher.group(2), shortFileName));
-    }
-    
     /**
      * Reads all media folders in baseFolder and returns a list containing all
      * media folders ordered by date, oldest folders first.
@@ -155,18 +124,6 @@ public class BiographyFileUtils {
                 .filter(IS_MEDIA_FILE_NAME)
                 .sorted()
                 .collect(Collectors.toList());
-    }
-
-    /**
-     * Has the given file a valid (archived) media file name?
-     * 
-     * @param file
-     *            media file to test
-     * @return Has the given file a valid (archived) media file name? (false if
-     *         null)
-     */
-    public static boolean isMediaFileName(File file) {
-        return IS_MEDIA_FILE_NAME.test(file);
     }
 
     /**

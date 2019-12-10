@@ -16,9 +16,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import de.zaunkoenigweg.biography.core.MediaFileName;
 import de.zaunkoenigweg.biography.core.archivemetadata.ArchiveMetadataService;
 import de.zaunkoenigweg.biography.core.index.IndexingService;
-import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
 
 @CrossOrigin
 @Controller
@@ -26,7 +26,6 @@ public class FileController {
 
 	private final static Log LOG = LogFactory.getLog(FileController.class);
 	
-    private final static byte[] PLACEHOLDER = {-1, -40, -1, -32, 0, 16, 74, 70, 73, 70, 0, 1, 1, 1, 0, 72, 0, 72, 0, 0, -1, -37, 0, 67, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -62, 0, 11, 8, 0, 1, 0, 1, 1, 1, 17, 0, -1, -60, 0, 20, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, -1, -38, 0, 8, 1, 1, 0, 0, 0, 1, 95, -1, -60, 0, 20, 16, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -38, 0, 8, 1, 1, 0, 1, 5, 2, 127, -1, -60, 0, 20, 16, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -38, 0, 8, 1, 1, 0, 6, 63, 2, 127, -1, -60, 0, 20, 16, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -38, 0, 8, 1, 1, 0, 1, 63, 33, 127, -1, -38, 0, 8, 1, 1, 0, 0, 0, 16, 127, -1, -60, 0, 20, 16, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -38, 0, 8, 1, 1, 0, 1, 63, 16, 127, -1, -39 };
 	private File archiveFolder;
 	private File importFolder;
     private File thumbsFolder200;
@@ -43,39 +42,38 @@ public class FileController {
 
 	@ResponseBody
 	@RequestMapping(value = "/file/{file}/raw", method = RequestMethod.GET, produces = MediaType.IMAGE_JPEG_VALUE)
-	public byte[] rawFile(@PathVariable("file")String filename) throws IOException {
-		File archiveFile = BiographyFileUtils.getArchiveFileFromShortFilename(archiveFolder, filename);
-		return FileUtils.readFileToByteArray(archiveFile);
+	public ResponseEntity<byte[]> rawFile(@PathVariable("file")String filename) throws IOException {
+		return file(filename, this.archiveFolder);
 	}
 	
 	@ResponseBody
 	@RequestMapping(value = "/file/{file}/200", method = RequestMethod.GET, produces = MediaType.IMAGE_JPEG_VALUE)
-	public byte[] thumbnail200(@PathVariable("file")String filename) throws IOException {
-		File archiveFile = BiographyFileUtils.getArchiveFileFromShortFilename(thumbsFolder200, filename);
-        if(archiveFile.exists()) {
-            return FileUtils.readFileToByteArray(archiveFile);
-        }
-        return PLACEHOLDER;
+	public ResponseEntity<byte[]> thumbnail200(@PathVariable("file")String filename) throws IOException {
+		return file(filename, this.thumbsFolder200);
 	}
 	
     @ResponseBody
     @RequestMapping(value = "/file/{file}/300", method = RequestMethod.GET, produces = MediaType.IMAGE_JPEG_VALUE)
-    public byte[] thumbnail300(@PathVariable("file")String filename) throws IOException {
-        File archiveFile = BiographyFileUtils.getArchiveFileFromShortFilename(thumbsFolder300, filename);
-        if(archiveFile.exists()) {
-            return FileUtils.readFileToByteArray(archiveFile);
-        }
-        return PLACEHOLDER;
+    public ResponseEntity<byte[]> thumbnail300(@PathVariable("file")String filename) throws IOException {
+		return file(filename, this.thumbsFolder300);
     }
     
     @ResponseBody
     @RequestMapping(value = "/file/import/{file}/thumbnail", method = RequestMethod.GET, produces = MediaType.IMAGE_JPEG_VALUE)
     public ResponseEntity<byte[]> importThumbnail(@PathVariable("file")String filename) throws IOException {
-        File thumbnailFile = new File(new File(this.importFolder, "thumbnails"), filename + ".jpg");
-        if(thumbnailFile.exists()) {
-            return new ResponseEntity<byte[]>(FileUtils.readFileToByteArray(thumbnailFile), HttpStatus.OK);
-        }
-        return new ResponseEntity<byte[]>(HttpStatus.NOT_FOUND);
+		return file(filename + ".jpg", this.importFolder);
     }
     
+	private ResponseEntity<byte[]> file(String filename, File baseFolder) throws IOException {
+		if(!MediaFileName.isValid(filename)) {
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+		MediaFileName mediaFileName = MediaFileName.of(filename);
+		File file = mediaFileName.archiveFile(baseFolder);
+		if(!file.exists() || file.isDirectory()) {
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+		return new ResponseEntity<>(FileUtils.readFileToByteArray(file), HttpStatus.OK);
+	}
+	
 }

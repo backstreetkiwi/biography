@@ -8,6 +8,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * Value object for a Biography media file
  */
@@ -90,6 +92,17 @@ public class MediaFileName {
 	public File archiveFile(File archiveBaseFolder) {
 		Objects.requireNonNull(archiveBaseFolder, "The archive base folder must not be null.");
 		return new File(archiveBaseFolder, filename.substring(0, 4) + "/" + filename.substring(5,7) + "/" + filename);
+	}
+	
+	/**
+	 * Determines the fully qualified {@link File} of a Biography thumbnail file with this name.
+	 * @param thumbnailBaseFolder base folder of the Biography thumbnails
+	 * @return Biography archive file
+	 */
+	public File thumbnailFile(File thumbnailBaseFolder) {
+		Objects.requireNonNull(thumbnailBaseFolder, "The thumbnail base folder must not be null.");
+		String thumbnailFileName = StringUtils.substringBeforeLast(this.filename, ".") + ".jpg";
+		return new File(thumbnailBaseFolder, filename.substring(0, 4) + "/" + filename.substring(5,7) + "/" + thumbnailFileName);
 	}
 	
 	public String getFilename() {

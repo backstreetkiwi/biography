@@ -133,19 +133,6 @@ public class BiographyFileUtilsTest {
     }
 
     @Test
-    public void testIsValidFilename() {
-    	assertFalse(BiographyFileUtils.isMediaFileName(null));
-    	assertFalse(BiographyFileUtils.isMediaFileName(new File("")));
-    	assertFalse(BiographyFileUtils.isMediaFileName(new File(" ")));
-    	assertFalse(BiographyFileUtils.isMediaFileName(new File("cabbage")));
-    	assertFalse(BiographyFileUtils.isMediaFileName(new File("2016-05-11--12-40-14---335g45c087c9937a772a45a8e5bc755d705a5ab5.jpg")));
-    	assertFalse(BiographyFileUtils.isMediaFileName(new File("2016-05-11--12-40-14---335f45c087c9937a772a45a8e5bc755d705a5ab5.abc")));
-    	assertTrue(BiographyFileUtils.isMediaFileName(new File("2016-05-11--12-40-14---335f45c087c9937a772a45a8e5bc755d705a5ab5.jpg")));
-        assertTrue(BiographyFileUtils.isMediaFileName(new File("2016-05-11--12-40-14---335f45c087c9937a772a45a8e5bc755d705a5ab5.mov")));
-        assertTrue(BiographyFileUtils.isMediaFileName(new File("2016-05-11--12-40-14---335f45c087c9937a772a45a8e5bc755d705a5ab5.mpg")));
-    }
-    
-    @Test
     public void testSha1NoFile() {
     	assertNull(BiographyFileUtils.sha1(null));
     }

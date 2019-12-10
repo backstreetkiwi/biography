@@ -10,6 +10,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Component;
 
+import de.zaunkoenigweg.biography.core.MediaFileName;
 import de.zaunkoenigweg.biography.core.MediaFileType;
 import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
 import de.zaunkoenigweg.biography.metadata.Album;
@@ -29,8 +30,6 @@ import de.zaunkoenigweg.biography.metadata.exif.ExifDataService;
  * After a change, the editing methods test the files again. They throw an Exception
  * if the validity was damaged (unlikely).
  * 
- * @author mail@nikolaus-winter.de
- *
  */
 @Component
 public class ArchiveMetadataService {
@@ -38,7 +37,6 @@ public class ArchiveMetadataService {
     private final static Log LOG = LogFactory.getLog(ArchiveMetadataService.class);
 
     private MetadataService metadataService;
-
     private ArchiveValidationService archiveValidationService;
 
     public ArchiveMetadataService(MetadataService metadataService, ArchiveValidationService archiveValidationService) {
@@ -116,7 +114,7 @@ public class ArchiveMetadataService {
     }
     
     private File getMetadataJsonFile(File file) {
-    	return new File(file.getParent(), String.format("b%s.json", BiographyFileUtils.getSha1FromArchiveFilename(file)));
+    	return new File(file.getParent(), String.format("b%s.json", MediaFileName.of(file.getName()).getSha1()));
     }
     
     private void throwIfUnvalid(File file) {

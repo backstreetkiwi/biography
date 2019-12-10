@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -20,16 +21,17 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.springframework.stereotype.Component;
 
+import de.zaunkoenigweg.biography.core.MediaFileName;
 import de.zaunkoenigweg.biography.core.MediaFileType;
 import de.zaunkoenigweg.biography.core.index.IndexingService;
 import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
 import de.zaunkoenigweg.biography.metadata.Album;
 import de.zaunkoenigweg.biography.metadata.BiographyMetadata;
 import de.zaunkoenigweg.biography.metadata.MetadataService;
+import de.zaunkoenigweg.biography.metadata.exif.ExifData;
 import de.zaunkoenigweg.biography.metadata.exif.ExifDataService;
 import de.zaunkoenigweg.lexi4j.thumbnails.ThumbnailGenerator;
 import de.zaunkoenigweg.lexi4j.thumbnails.ThumbnailGeneratorException;
-import de.zaunkoenigweg.biography.metadata.exif.ExifData;
 
 @SuppressWarnings("deprecation")
 @Component
@@ -147,21 +149,27 @@ public class ImportService {
         }
 
         File jsonFile = new File(file.getParentFile(),
-                "b" + BiographyFileUtils.getSha1FromArchiveFilename(file) + ".json");
+                "b" + MediaFileName.of(file.getName()).getSha1() + ".json");
         metadataService.writeMetadataToJsonFile(jsonFile, metadata);
     }
     
+    /**
+     * Generate thumbnail files for given archive file if they don't exist.
+     * @param archive file, must have a valid {@code MediaFileName}.
+     * @return Have the thumbnails been created?
+     */
     public boolean generateThumbnails(File file) {
+    	
+    	Objects.requireNonNull(file);
+    	MediaFileName mediaFileName = MediaFileName.of(file.getName());
     	
     	File thumbnailsFolder = new File(this.archiveFolder, "thumbnails");
     	
     	File thumbsFolder200 = new File(thumbnailsFolder, ThumbnailSize.t200.folderName);
     	File thumbsFolder300 = new File(thumbnailsFolder, ThumbnailSize.t300.folderName);
 
-    	String thumbnailFileName = StringUtils.substringBeforeLast(file.getName(), ".") + ".jpg";
-    	
-		File file200 = BiographyFileUtils.getArchiveFileFromShortFilename(thumbsFolder200, thumbnailFileName);
-		File file300 = BiographyFileUtils.getArchiveFileFromShortFilename(thumbsFolder300, thumbnailFileName);
+		File file200 = mediaFileName.archiveFile(thumbsFolder200);
+		File file300 = mediaFileName.archiveFile(thumbsFolder300);
 
 		if(file200.exists() && file300.exists()) {
 			return false;
