@@ -13,6 +13,7 @@ import java.nio.file.StandardCopyOption;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.zaunkoenigweg.biography.core.archive.Archive;
 import de.zaunkoenigweg.biography.metadata.exif.ExifData;
 import de.zaunkoenigweg.biography.metadata.exif.ExifDataService;
 
@@ -29,7 +30,7 @@ public class MetadataServiceTest {
     public void setUp() throws IOException {
         someFolder = Files.createTempDirectory("someFolder").toFile();
         someFolder.deleteOnExit();
-        exifDataService = new ExifDataService(this.someFolder);
+        exifDataService = new ExifDataService(new Archive(this.someFolder));
         this.sut = new MetadataService(exifDataService);
     }
 

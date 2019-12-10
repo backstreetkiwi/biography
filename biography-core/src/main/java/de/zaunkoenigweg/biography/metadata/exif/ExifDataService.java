@@ -10,7 +10,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Component;
 
 import de.zaunkoenigweg.biography.core.MediaFileType;
-import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
+import de.zaunkoenigweg.biography.core.archive.Archive;
 import de.zaunkoenigweg.lexi4j.exiftool.Exiftool;
 
 /**
@@ -29,16 +29,14 @@ public class ExifDataService {
     private Exiftool exiftool;
 
     /**
-     * Biography archive folder
-     * TODO do not store permanently, let it be handed over for the call!
+     * Biography archive
      */
-    private File archiveFolder;
+    private Archive archive;
 
-    public ExifDataService(File archiveFolder) {
+    public ExifDataService(Archive archive) {
         this.exiftool = new Exiftool();
-        this.archiveFolder = archiveFolder;
+        this.archive = archive;
         LOG.info("ExifDataService started.");
-        LOG.info(String.format("archiveFolder=%s", this.archiveFolder));
 	}
     
     /**
@@ -81,7 +79,7 @@ public class ExifDataService {
      * @param console console output stream
      */
     public void fillCacheFromArchive(Consumer<String> console) {
-        BiographyFileUtils.getMediaFolders(this.archiveFolder).stream().forEach(mediaFolder -> {
+        archive.mediaFolders().stream().forEach(mediaFolder -> {
             this.exiftool.fillCache(mediaFolder + "/*.jpg");
             console.accept(String.format("Cached EXIF data from %s", mediaFolder));
         });

@@ -16,9 +16,9 @@ import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrInputDocument;
 import org.springframework.stereotype.Component;
 
+import de.zaunkoenigweg.biography.core.archive.Archive;
 import de.zaunkoenigweg.biography.core.archivemetadata.ArchiveMetadataService;
 import de.zaunkoenigweg.biography.core.archivemetadata.ArchiveValidationService;
-import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
 import de.zaunkoenigweg.biography.metadata.Album;
 import de.zaunkoenigweg.biography.metadata.BiographyMetadata;
 
@@ -31,17 +31,16 @@ public class IndexingService {
 	private final static Log LOG = LogFactory.getLog(IndexingService.class);
 
     private String solrIndexUrl;
-    private File archiveFolder;
+    private Archive archive;
 	private ArchiveMetadataService archiveMetadataService;
 	private ArchiveValidationService archiveValidationService;
 
-	public IndexingService(String solrIndexUrl, File archiveFolder, ArchiveMetadataService archiveMetadataService, ArchiveValidationService archiveValidationService) {
+	public IndexingService(String solrIndexUrl, Archive archive, ArchiveMetadataService archiveMetadataService, ArchiveValidationService archiveValidationService) {
 		this.solrIndexUrl = solrIndexUrl;
-		this.archiveFolder = archiveFolder;
+		this.archive = archive;
 		this.archiveMetadataService = archiveMetadataService;
 		this.archiveValidationService = archiveValidationService;
 		LOG.info("IndexingService started.");
-		LOG.info(String.format("archiveFolder=%s", this.archiveFolder));
 		LOG.info(String.format("solrIndexUrl=%s", this.solrIndexUrl));
 	}
 
@@ -90,7 +89,7 @@ public class IndexingService {
 			LOG.info(String.format("Deleted all rows in %s -> Status %d", solrIndexUrl,
 					deleteByQuery.getStatus()));
 
-			List<File> mediaFiles = BiographyFileUtils.getMediaFiles(archiveFolder);
+			List<File> mediaFiles = archive.mediaFiles();
 
 			List<SolrInputDocument> documents = mediaFiles.stream().filter(archiveValidationService::isValid).map(this::toSolrDocument).collect(Collectors.toList());
 			

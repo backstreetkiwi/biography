@@ -2,6 +2,8 @@ package de.zaunkoenigweg.biography.metadata.exif;
 
 import static org.junit.Assert.*;
 
+import de.zaunkoenigweg.biography.core.archive.Archive;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -23,7 +25,7 @@ public class ExifDataServiceTest {
         tempFolder = Files.createTempDirectory("tempFolder").toFile();
         tempFolder.deleteOnExit();
         someEmptyFile = Files.createTempFile("someFile", null).toFile();
-        exifDataService = new ExifDataService(this.tempFolder);
+        exifDataService = new ExifDataService(new Archive(this.tempFolder));
     }
 
     @Test

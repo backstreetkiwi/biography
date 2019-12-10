@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.zaunkoenigweg.biography.core.archive.Archive;
 import de.zaunkoenigweg.biography.core.test.TestUtil;
 import de.zaunkoenigweg.biography.metadata.MetadataService;
 import de.zaunkoenigweg.biography.metadata.exif.ExifDataService;
@@ -22,8 +23,8 @@ public class ArchiveMetadataServiceTest {
   public void setUp() throws Exception {
     archiveFolder = Files.createTempDirectory("archiveFolder").toFile();
     archiveFolder.deleteOnExit();
-    metadataService = new MetadataService(new ExifDataService(this.archiveFolder));
-    sut = new ArchiveMetadataService(metadataService, new ArchiveValidationService(metadataService, new ExifDataService(this.archiveFolder), archiveFolder));
+    metadataService = new MetadataService(new ExifDataService(new Archive(this.archiveFolder)));
+    sut = new ArchiveMetadataService(metadataService, new ArchiveValidationService(metadataService, new ExifDataService(new Archive(this.archiveFolder)), archiveFolder));
   }
 
   /*

@@ -1,59 +1,53 @@
-package de.zaunkoenigweg.biography.core.util;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+package de.zaunkoenigweg.biography.core.archive;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import de.zaunkoenigweg.lexi4j.exiftool.Exiftool;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
-public class BiographyFileUtilsTest {
-    
+public class ArchiveTest {
+	
     private File biographyArchiveFolder;
     private File notExistingFolder;
-    private File notExistingFile;
     private File someFile;
     private File someFolder;
-    
-    @Before
-    public void setUp() throws IOException {
+	private Archive sut;
+
+	@Before
+	public void setUp() throws Exception {
         biographyArchiveFolder = Files.createTempDirectory("biographyArchiveFolder").toFile();
         biographyArchiveFolder.deleteOnExit();
         notExistingFolder = new File("./thisfolderdoesnotexist");
-        notExistingFile = new File(biographyArchiveFolder, "i-do-not-exist");
         someFile = new File(biographyArchiveFolder, "someFile.txt");
         someFile.createNewFile();
         someFolder = Files.createTempDirectory("someFolder").toFile();
         someFolder.deleteOnExit();
-    }
+		sut = new Archive(biographyArchiveFolder);
+	}
 
-    @Test
-    public void testGetMediaFoldersArchiveFolderIsNull() {
-    	List<File> mediaFolders = BiographyFileUtils.getMediaFolders(null);
-    	assertNotNull(mediaFolders);
-    	assertEquals(0, mediaFolders.size());
-    }
-
+	@Test(expected=NullPointerException.class)
+	public void testInitArchiveWithNull() {
+		new Archive(null);
+	}
+	
     @Test
     public void testGetMediaFoldersArchiveFolderIsNotExisting() {
-    	List<File> mediaFolders = BiographyFileUtils.getMediaFolders(notExistingFolder);
+    	Archive archiveInNotExistingFolder = new Archive(notExistingFolder);
+    	List<File> mediaFolders = archiveInNotExistingFolder.mediaFolders();
     	assertNotNull(mediaFolders);
     	assertEquals(0, mediaFolders.size());
     }
 
     @Test
     public void testGetMediaFoldersArchiveFolderIsNormalFile() {
-    	List<File> mediaFolders = BiographyFileUtils.getMediaFolders(someFile);
+    	Archive archiveInNotExistingFolder = new Archive(someFile);
+    	List<File> mediaFolders = archiveInNotExistingFolder.mediaFolders();
     	assertNotNull(mediaFolders);
     	assertEquals(0, mediaFolders.size());
     }
@@ -73,7 +67,7 @@ public class BiographyFileUtilsTest {
     	new File(biographyArchiveFolder, "2016/foo").mkdirs();    	
     	new File(biographyArchiveFolder, "bar/12").mkdirs();    	
     	new File(biographyArchiveFolder, "bar/foo").mkdirs();    	
-    	List<File> mediaFolders = BiographyFileUtils.getMediaFolders(biographyArchiveFolder);
+    	List<File> mediaFolders = this.sut.mediaFolders();
     	assertNotNull(mediaFolders);
     	assertEquals(7, mediaFolders.size());
     	assertEquals("2015", mediaFolders.get(0).getParentFile().getName());
@@ -106,7 +100,7 @@ public class BiographyFileUtilsTest {
     	new File(folder, "2016-04-11--12-41-14---335f45c087c9937a772a45a8e5bc755d705a5ab5.jpg").createNewFile();
     	new File(folder, "2016-04-11--12-42-14---335f45c087c9937a772a45a8e5bc755d705a5ab5.jpg").createNewFile();
     	new File(folder, "2016-04-11--12-43-14---335f45c087c9937a772a45a8e5bc755d705a5ab5.jpg").createNewFile();
-    	List<File> mediaFiles = BiographyFileUtils.getMediaFiles(biographyArchiveFolder);
+    	List<File> mediaFiles = this.sut.mediaFiles();
     	assertNotNull(mediaFiles);
     	assertEquals(7, mediaFiles.size());
     	assertEquals("2016", mediaFiles.get(0).getParentFile().getParentFile().getName());
@@ -131,34 +125,4 @@ public class BiographyFileUtilsTest {
     	assertEquals("04", mediaFiles.get(6).getParentFile().getName());
     	assertEquals("2016-04-11--12-43-14---335f45c087c9937a772a45a8e5bc755d705a5ab5.jpg", mediaFiles.get(6).getName());
     }
-
-    @Test
-    public void testSha1NoFile() {
-    	assertNull(BiographyFileUtils.sha1(null));
-    }
-    
-    @Test
-    public void testSha1NotExistingFile() {
-    	assertNull(BiographyFileUtils.sha1(notExistingFile));
-    }
-    
-    @Test
-    public void testSha1() {
-        assertEquals("7648bf4572edc4e71ed7992db4071e08b1a57597", BiographyFileUtils.sha1(new File(getClass().getResource("/exifdatatest/NikonD60.jpg").getFile())));
-    }
-
-    @Test
-    public void testSha1AfterExifChange() throws IOException {
-        File sourceFile = new File(getClass().getResource("/exifdatatest/NikonD60.jpg").getFile());
-        File targetFile = new File(someFolder, "ImageWithChangedDescription.jpg");
-        assertEquals("7648bf4572edc4e71ed7992db4071e08b1a57597", BiographyFileUtils.sha1(sourceFile));
-        Files.copy(sourceFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        assertEquals("7648bf4572edc4e71ed7992db4071e08b1a57597", BiographyFileUtils.sha1(targetFile));
-        new Exiftool().update(targetFile)
-            .withImageDescription("blablabla")
-            .withUserComment("blablabla")
-            .perform();
-        assertEquals("7648bf4572edc4e71ed7992db4071e08b1a57597", BiographyFileUtils.sha1(targetFile));
-    }
-
 }

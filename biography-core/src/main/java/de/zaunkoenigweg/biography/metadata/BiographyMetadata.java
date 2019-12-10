@@ -13,6 +13,8 @@ import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializer;
 import com.google.gson.JsonSyntaxException;
 
+import de.zaunkoenigweg.biography.core.Sha1;
+
 /**
  * Metadata for all Biography Media Files.
  * 
@@ -23,21 +25,33 @@ public class BiographyMetadata {
     private LocalDateTime dateTimeOriginal;
     private String description;
     private Set<Album> albums = new HashSet<>();
-    private String sha1;
+    private Sha1 sha1;
 
     private static final JsonSerializer<LocalDateTime> LOCAL_DATE_TIME_SERIALIZER = (localDateTime, type, context) -> {
         return new JsonPrimitive(DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(localDateTime));
     };
 
+    private static final JsonSerializer<Sha1> SHA1_SERIALIZER = (sha1, type, context) -> {
+        return new JsonPrimitive(sha1.value());
+    };
+
     private static final Gson SERIALIZER = new GsonBuilder()
-            .registerTypeAdapter(LocalDateTime.class, LOCAL_DATE_TIME_SERIALIZER).create();
+            .registerTypeAdapter(LocalDateTime.class, LOCAL_DATE_TIME_SERIALIZER)
+            .registerTypeAdapter(Sha1.class, SHA1_SERIALIZER)
+            .create();
 
     private static final JsonDeserializer<LocalDateTime> LOCAL_DATE_TIME_DESERIALIZER = (json, typeOfT, context) -> {
         return LocalDateTime.parse(json.getAsString());
     };
 
+    private static final JsonDeserializer<Sha1> SHA1_DESERIALIZER = (sha1, typeOfT, context) -> {
+        return Sha1.of(sha1.getAsString());
+    };
+
     private static final Gson DESERIALIZER = new GsonBuilder()
-            .registerTypeAdapter(LocalDateTime.class, LOCAL_DATE_TIME_DESERIALIZER).create();
+            .registerTypeAdapter(LocalDateTime.class, LOCAL_DATE_TIME_DESERIALIZER)
+            .registerTypeAdapter(Sha1.class, SHA1_DESERIALIZER)
+            .create();
 
     /**
      * This constructor is just used to create a Metadata object through Gson.
@@ -46,7 +60,7 @@ public class BiographyMetadata {
     private BiographyMetadata() {
     }
 
-    public BiographyMetadata(LocalDateTime dateTimeOriginal, String sha1, String description, Set<Album> albums) {
+    public BiographyMetadata(LocalDateTime dateTimeOriginal, Sha1 sha1, String description, Set<Album> albums) {
         this.dateTimeOriginal = dateTimeOriginal;
         this.sha1 = sha1;
         this.description = description;
@@ -80,7 +94,7 @@ public class BiographyMetadata {
         return dateTimeOriginal;
     }
 
-    public String getSha1() {
+    public Sha1 getSha1() {
 		return sha1;
 	}
 

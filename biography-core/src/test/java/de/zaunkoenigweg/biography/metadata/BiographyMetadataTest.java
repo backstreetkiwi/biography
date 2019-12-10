@@ -1,11 +1,5 @@
 package de.zaunkoenigweg.biography.metadata;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -16,13 +10,21 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import de.zaunkoenigweg.biography.core.Sha1;
+
 public class BiographyMetadataTest {
 
 	private static final Album ALBUM_1 = new Album("album_1_title_aksdfj");
     private static final Album ALBUM_2 = new Album("album_2_title_gdtfbf");
     private static final LocalDateTime DATE_TIME_ORIGINAL = LocalDateTime.of(2005, 02, 05, 15, 27, 33, 123000000);
 	private static final Set<Album> ALBUMS = new HashSet<>(Arrays.asList(ALBUM_1, ALBUM_2));
-	private static final String SHA_1 = "10dabe94c1b81e8b2186472f58b99755cf351166";
+	private static final Sha1 SHA_1 = Sha1.of("10dabe94c1b81e8b2186472f58b99755cf351166");
 	private static final String DESCRIPTION = "description";
 	private static final BiographyMetadata BIOGRAPHY_METADATA = new BiographyMetadata(DATE_TIME_ORIGINAL, SHA_1, DESCRIPTION, ALBUMS);
 	private String json;
@@ -35,7 +37,7 @@ public class BiographyMetadataTest {
 				+ "\"description\":\"%s\","
 				+ "\"albums\":[{\"title\":\"%s\"},"
 				+ "{\"title\":\"%s\"}]}", 
-				SHA_1,
+				SHA_1.value(),
 				DESCRIPTION,
 				ALBUM_1.getTitle(), 
 				ALBUM_2.getTitle());
@@ -52,7 +54,7 @@ public class BiographyMetadataTest {
     	String json = BIOGRAPHY_METADATA.toJson();
     	assertNotNull(json);
     	assertTrue(StringUtils.isNotBlank(json));
-    	assertTrue(StringUtils.contains(json, SHA_1));
+    	assertTrue(StringUtils.contains(json, SHA_1.value()));
     	assertTrue(StringUtils.contains(json, ALBUM_1.getTitle()));
     	assertTrue(StringUtils.contains(json, ALBUM_2.getTitle()));
     }

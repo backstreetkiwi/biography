@@ -3,6 +3,7 @@ package de.zaunkoenigweg.biography.core;
 import java.io.File;
 import java.time.DateTimeException;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -28,7 +29,7 @@ public class MediaFileName {
 	private String filename;
 	private MediaFileType type;
 	private LocalDateTime dateTimeOriginal;
-	private String sha1;
+	private Sha1 sha1;
 	
 	private MediaFileName(String filename) {
 		Matcher matcher = ARCHIVE_FILENAME_FORMAT.matcher(filename);
@@ -40,7 +41,14 @@ public class MediaFileName {
 		this.dateTimeOriginal = LocalDateTime.of(Integer.valueOf(matcher.group(2)), Integer.valueOf(matcher.group(3)),
 				Integer.valueOf(matcher.group(4)), Integer.valueOf(matcher.group(5)),
 				Integer.valueOf(matcher.group(6)), Integer.valueOf(matcher.group(7)));
-		this.sha1 = matcher.group(8);
+		this.sha1 = Sha1.of(matcher.group(8));
+	}
+
+	private MediaFileName(MediaFileType type, LocalDateTime dateTimeOriginal, Sha1 sha1) {
+		this.type = Objects.requireNonNull(type);
+		this.dateTimeOriginal = Objects.requireNonNull(dateTimeOriginal);
+		this.sha1 = Objects.requireNonNull(sha1);
+		this.filename = String.format("%s---%s.%s", this.dateTimeOriginal.format(DateTimeFormatter.ofPattern("yyyy-MM-dd--HH-mm-ss")), this.sha1.value(), this.type.getFileExtension());
 	}
 
 	/**
@@ -84,6 +92,10 @@ public class MediaFileName {
 		return new MediaFileName(filename);
 	}
 
+	public static MediaFileName of(MediaFileType mediaFileType, LocalDateTime dateTimeOriginal, Sha1 sha1) {
+		return new MediaFileName(mediaFileType, dateTimeOriginal, sha1);
+	}
+	
 	/**
 	 * Determines the fully qualified {@link File} of a Biography media file with this name.
 	 * @param archiveBaseFolder base folder of the Biography archive
@@ -117,7 +129,32 @@ public class MediaFileName {
 		return this.dateTimeOriginal;
 	}
 	
-	public String getSha1() {
+	public Sha1 getSha1() {
 		return this.sha1;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((filename == null) ? 0 : filename.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		MediaFileName other = (MediaFileName) obj;
+		if (filename == null) {
+			if (other.filename != null)
+				return false;
+		} else if (!filename.equals(other.filename))
+			return false;
+		return true;
 	}
 }

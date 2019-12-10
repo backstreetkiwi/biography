@@ -23,8 +23,9 @@ import org.springframework.stereotype.Component;
 
 import de.zaunkoenigweg.biography.core.MediaFileName;
 import de.zaunkoenigweg.biography.core.MediaFileType;
+import de.zaunkoenigweg.biography.core.Sha1;
+import de.zaunkoenigweg.biography.core.archive.Archive;
 import de.zaunkoenigweg.biography.core.index.IndexingService;
-import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
 import de.zaunkoenigweg.biography.metadata.Album;
 import de.zaunkoenigweg.biography.metadata.BiographyMetadata;
 import de.zaunkoenigweg.biography.metadata.MetadataService;
@@ -42,19 +43,18 @@ public class ImportService {
     private MetadataService metadataService;
     private IndexingService indexingService;
     private ExifDataService exifDataService;
-    private File archiveFolder;
+    private Archive archive;
     private File importFolder;
     private String thumborUrl;
 
-    public ImportService(MetadataService metadataService, IndexingService indexingService, ExifDataService exifDataService, File archiveFolder, File importFolder, String thumborUrl) {
+    public ImportService(MetadataService metadataService, IndexingService indexingService, ExifDataService exifDataService, Archive archive, File importFolder, String thumborUrl) {
         this.metadataService = metadataService;
         this.indexingService = indexingService;
         this.exifDataService = exifDataService;
-        this.archiveFolder = archiveFolder;
+        this.archive = archive;
         this.importFolder = importFolder;
         this.thumborUrl = thumborUrl;
         LOG.info("ArchiveImportService started.");
-        LOG.info(String.format("archiveFolder=%s", this.archiveFolder));
         LOG.info(String.format("importFolder=%s", this.importFolder));
     }
 
@@ -62,7 +62,7 @@ public class ImportService {
      * Imports given media file.
      * @param album
      */
-    public ImportResult importFile(File file, LocalDateTime dateTimeOriginalFallback, String album, String description) {
+    ImportResult importFile(File file, LocalDateTime dateTimeOriginalFallback, String album, String description) {
 
         if (!file.exists() || file.isDirectory()) {
             return ImportResult.FILE_NOT_FOUND;
@@ -102,10 +102,11 @@ public class ImportService {
             
         }
         
-        String sha1 = BiographyFileUtils.sha1(file);
+        Sha1 sha1 = Sha1.calculate(file);
+
+        MediaFileName mediaFileName = MediaFileName.of(mediaFileType.get(), dateTimeOriginal, sha1);        
         
-        File archiveFile = BiographyFileUtils.buildArchiveFilename(archiveFolder, file,
-                dateTimeOriginal, mediaFileType.get(), sha1).toFile();
+        File archiveFile = mediaFileName.archiveFile(archive.getArchiveFolder());
 
         if (archiveFile.exists()) {
             return ImportResult.FILE_ALREADY_ARCHIVED;
@@ -132,7 +133,7 @@ public class ImportService {
         return ImportResult.SUCCESS;
     }
 
-    private void setBiographyMetadata(File file, LocalDateTime dateTimeOriginal, String sha1,
+    private void setBiographyMetadata(File file, LocalDateTime dateTimeOriginal, Sha1 sha1,
             String album, String description) {
         MediaFileType mediaFileType = MediaFileType.of(file).get();
 
@@ -163,7 +164,7 @@ public class ImportService {
     	Objects.requireNonNull(file);
     	MediaFileName mediaFileName = MediaFileName.of(file.getName());
     	
-    	File thumbnailsFolder = new File(this.archiveFolder, "thumbnails");
+    	File thumbnailsFolder = new File(this.archive.getArchiveFolder(), "thumbnails");
     	
     	File thumbsFolder200 = new File(thumbnailsFolder, ThumbnailSize.t200.folderName);
     	File thumbsFolder300 = new File(thumbnailsFolder, ThumbnailSize.t300.folderName);
@@ -175,8 +176,8 @@ public class ImportService {
 			return false;
 		}
     	
-        generateThumbnail(file, this.archiveFolder, "archive/", ThumbnailSize.t200, file200);
-        generateThumbnail(file, this.archiveFolder, "archive/", ThumbnailSize.t300, file300);
+        generateThumbnail(file, this.archive.getArchiveFolder(), "archive/", ThumbnailSize.t200, file200);
+        generateThumbnail(file, this.archive.getArchiveFolder(), "archive/", ThumbnailSize.t300, file300);
     	
     	return true;
     }

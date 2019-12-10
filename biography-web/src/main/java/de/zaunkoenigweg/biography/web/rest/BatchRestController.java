@@ -14,11 +14,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import de.zaunkoenigweg.biography.core.archive.Archive;
 import de.zaunkoenigweg.biography.core.archiveimport.ImportService;
 import de.zaunkoenigweg.biography.core.archivemetadata.ArchiveValidationService;
 import de.zaunkoenigweg.biography.core.archivemetadata.ArchiveValidationService.ValidationResult;
 import de.zaunkoenigweg.biography.core.index.IndexingService;
-import de.zaunkoenigweg.biography.core.util.BiographyFileUtils;
 import de.zaunkoenigweg.biography.metadata.exif.ExifDataService;
 import de.zaunkoenigweg.biography.web.console.Console;
 import de.zaunkoenigweg.biography.web.console.Consoles;
@@ -29,17 +29,17 @@ public class BatchRestController {
     private final static Log LOG = LogFactory.getLog(BatchRestController.class);
 
     private Consoles consoles;
-    private File archiveFolder;
+    private Archive archive;
     private IndexingService indexingService;
     private ImportService archiveImportService;
     private ExifDataService exifDataService;
     private ArchiveValidationService archiveValidationService;
 
-    public BatchRestController(Consoles consoles, IndexingService indexingService, ImportService archiveImportService, ExifDataService exifDataService, ArchiveValidationService archiveValidationService, File archiveFolder) {
+    public BatchRestController(Consoles consoles, IndexingService indexingService, ImportService archiveImportService, ExifDataService exifDataService, ArchiveValidationService archiveValidationService, Archive archive) {
         this.consoles = consoles;
         this.indexingService = indexingService;
         this.archiveImportService = archiveImportService;
-        this.archiveFolder = archiveFolder;
+        this.archive = archive;
         this.exifDataService = exifDataService;
         this.archiveValidationService = archiveValidationService;
         LOG.info("BatchRestController started.");
@@ -90,7 +90,7 @@ public class BatchRestController {
         Console console = consoles.create("Inspect Archive");
 
         new Thread(() -> {
-            List<File> mediaFiles = BiographyFileUtils.getMediaFiles(archiveFolder);
+            List<File> mediaFiles = archive.mediaFiles();
 
             int totalNumberOfFiles = mediaFiles.size();
             AtomicInteger numberOfCorruptFiles = new AtomicInteger(0);
@@ -122,7 +122,8 @@ public class BatchRestController {
         Console console = consoles.create("Rebuild Solr index");
 
         new Thread(() -> {
-            List<File> mediaFiles = BiographyFileUtils.getMediaFiles(archiveFolder);
+        	// TODO use stats instead of count elements of huge list!!!
+            List<File> mediaFiles = archive.mediaFiles();
 
             console.println(mediaFiles.size() + " to index.");
             // TODO incremental output to console?
@@ -151,7 +152,7 @@ public class BatchRestController {
         Console console = consoles.create("generate thumbnails");
 
         new Thread(() -> {
-            List<File> mediaFiles = BiographyFileUtils.getMediaFiles(archiveFolder);
+            List<File> mediaFiles = archive.mediaFiles();
 
             mediaFiles.stream().forEach(file -> {
                 console.println(String.format("File '%s' -> [%s]", file.getName(), archiveImportService.generateThumbnails(file)));
