@@ -2,6 +2,7 @@ package de.zaunkoenigweg.biography.web.file;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
@@ -58,12 +59,6 @@ public class FileController {
 		return file(filename, this.thumbsFolder300);
     }
     
-    @ResponseBody
-    @RequestMapping(value = "/file/import/{file}/thumbnail", method = RequestMethod.GET, produces = MediaType.IMAGE_JPEG_VALUE)
-    public ResponseEntity<byte[]> importThumbnail(@PathVariable("file")String filename) throws IOException {
-		return file(filename + ".jpg", this.importFolder);
-    }
-    
 	private ResponseEntity<byte[]> file(String filename, File baseFolder) throws IOException {
 		if(!MediaFileName.isValid(filename)) {
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -76,4 +71,14 @@ public class FileController {
 		return new ResponseEntity<>(FileUtils.readFileToByteArray(file), HttpStatus.OK);
 	}
 	
+	@ResponseBody
+	@RequestMapping(value = "/file/import/{file}/thumbnail", method = RequestMethod.GET, produces = MediaType.IMAGE_JPEG_VALUE)
+	public ResponseEntity<byte[]> importThumbnail(@PathVariable("file")UUID file) throws IOException {
+		File thumbnailFile = new File(this.importFolder, "thumbnails/" + file + ".jpg");
+		if(!thumbnailFile.exists() || thumbnailFile.isDirectory()) {
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+		return new ResponseEntity<>(FileUtils.readFileToByteArray(thumbnailFile), HttpStatus.OK);
+	}
+		
 }
