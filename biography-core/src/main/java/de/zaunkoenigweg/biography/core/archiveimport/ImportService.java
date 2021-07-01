@@ -1,10 +1,8 @@
 package de.zaunkoenigweg.biography.core.archiveimport;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Objects;
@@ -16,9 +14,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.springframework.stereotype.Component;
 
 import de.zaunkoenigweg.biography.core.MediaFileName;
@@ -34,7 +29,6 @@ import de.zaunkoenigweg.biography.metadata.exif.ExifDataService;
 import de.zaunkoenigweg.lexi4j.thumbnails.ThumbnailGenerator;
 import de.zaunkoenigweg.lexi4j.thumbnails.ThumbnailGeneratorException;
 
-@SuppressWarnings("deprecation")
 @Component
 public class ImportService {
 
@@ -45,15 +39,13 @@ public class ImportService {
     private ExifDataService exifDataService;
     private Archive archive;
     private File importFolder;
-    private String thumborUrl;
 
-    public ImportService(MetadataService metadataService, IndexingService indexingService, ExifDataService exifDataService, Archive archive, File importFolder, String thumborUrl) {
+    public ImportService(MetadataService metadataService, IndexingService indexingService, ExifDataService exifDataService, Archive archive, File importFolder) {
         this.metadataService = metadataService;
         this.indexingService = indexingService;
         this.exifDataService = exifDataService;
         this.archive = archive;
         this.importFolder = importFolder;
-        this.thumborUrl = thumborUrl;
         LOG.info("ArchiveImportService started.");
         LOG.info(String.format("importFolder=%s", this.importFolder));
     }
@@ -176,8 +168,8 @@ public class ImportService {
 			return false;
 		}
     	
-        generateThumbnail(file, this.archive.getArchiveFolder(), "archive/", ThumbnailSize.t200, file200);
-        generateThumbnail(file, this.archive.getArchiveFolder(), "archive/", ThumbnailSize.t300, file300);
+        generateThumbnail(file, ThumbnailSize.t200, file200);
+        generateThumbnail(file, ThumbnailSize.t300, file300);
     	
     	return true;
     }
@@ -185,13 +177,21 @@ public class ImportService {
     public void generateImportThumbnails(File file, UUID uuid) {
         File thumbnailsFolder = new File(this.importFolder, "thumbnails");
         File thumbnailFile = new File(thumbnailsFolder, String.format("%s.jpg", uuid.toString()));
-        generateThumbnail(file, this.importFolder, "import/", ThumbnailSize.t200, thumbnailFile);
+        generateThumbnail(file, ThumbnailSize.t200, thumbnailFile);
     }
 
-    private void generateThumbnail(File sourceFile, File sourceBaseFolder, String thumborBaseFolder, ThumbnailSize size, File targetFile) {
+    private void generateThumbnail(File sourceFile, ThumbnailSize size, File targetFile) {
         
         Optional<MediaFileType> mediaFileType = MediaFileType.of(sourceFile);
         if(!mediaFileType.isPresent()) {
+            return;
+        }
+        
+        try {
+            Files.createDirectories(targetFile.getParentFile().toPath());
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
             return;
         }
         
@@ -205,39 +205,27 @@ public class ImportService {
         	return;
         }
         
-		try (DefaultHttpClient client = new DefaultHttpClient()) {
-
-            String thumborUri = this.thumborUrl + size.thumborUrlFragment + thumborBaseFolder + sourceBaseFolder.toPath().relativize(sourceFile.toPath()).toString();
-            HttpGet request = new HttpGet(thumborUri);
-            HttpResponse response = client.execute(request);
-            if(response.getStatusLine().getStatusCode()==200) {
-                BufferedInputStream bis = new BufferedInputStream(response.getEntity().getContent());
-                targetFile.getParentFile().mkdirs();
-                BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(targetFile));
-                int inByte;
-                while((inByte = bis.read()) != -1) bos.write(inByte);
-                bis.close();
-                bos.close();
+        if(mediaFileType.get().getKind() == MediaFileType.Kind.IMAGE) {
+            try {
+                ThumbnailGenerator.generateThumbnailFromImage(sourceFile, targetFile, size.height);
+            } catch (ThumbnailGeneratorException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
             }
-
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            return;
         }
     }
     
     static enum ThumbnailSize {
     	
-    	t200("200", "0x200/", 200), 
-    	t300("300", "0x300/", 300);
+    	t200("200", 200), 
+    	t300("300", 300);
     	
     	private String folderName;
-    	private String thumborUrlFragment;
     	private int height;
     	
-		private ThumbnailSize(String folderName, String thumborUrlFragment, int height) {
+		private ThumbnailSize(String folderName, int height) {
 			this.folderName = folderName;
-			this.thumborUrlFragment = thumborUrlFragment;
 			this.height = height;
 		}
     }

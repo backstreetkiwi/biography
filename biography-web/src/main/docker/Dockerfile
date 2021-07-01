@@ -7,6 +7,7 @@ COPY target/biography-web-*.jar /app.jar
 RUN apt-get update
 RUN apt-get install -y apt-transport-https
 RUN apt-get install -y libimage-exiftool-perl
+RUN apt-get install -y imagemagick
 RUN apt-get install -y ffmpeg
 
 # Run Java w/ SpringBoot application

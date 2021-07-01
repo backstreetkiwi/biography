@@ -47,13 +47,4 @@ public class Application {
     		}
     		return url;
     }
-
-    @Bean
-    public String thumborUrl(@Value("${thumbor.url}") String url) {
-    		if(StringUtils.isBlank(url)) {
-    			String msg = "The Solr index url must not be empty.";
-    			throw new RuntimeException(msg);
-    		}
-    		return url;
-    }
 }
