@@ -99,7 +99,25 @@ public class MediaFileNameTest {
 	@Test
 	public void testArchiveFile() {
 		MediaFileName mediaFileName = MediaFileName.of("2019-02-28--17-31-33---c69239ffcc01886f9d73ecd1076271bb65c26ba4.jpg");
-		mediaFileName.archiveFile(new File("/home/biography/archive"));
 		assertEquals(new File("/home/biography/archive/2019/02/2019-02-28--17-31-33---c69239ffcc01886f9d73ecd1076271bb65c26ba4.jpg"), mediaFileName.archiveFile(new File("/home/biography/archive")));
 	}
+
+	@Test(expected=NullPointerException.class)
+	public void testThumbnailFileNull() {
+		MediaFileName mediaFileName = MediaFileName.of("2019-02-28--17-31-33---c69239ffcc01886f9d73ecd1076271bb65c26ba4.jpg");
+		mediaFileName.thumbnailFile(null);
+	}
+
+	@Test
+	public void testThumbnailFile() {
+		MediaFileName mediaFileName = MediaFileName.of("2019-02-28--17-31-33---c69239ffcc01886f9d73ecd1076271bb65c26ba4.jpg");
+		assertEquals(new File("/home/biography/archive/thumbnails/300/2019/02/2019-02-28--17-31-33---c69239ffcc01886f9d73ecd1076271bb65c26ba4.jpg"), mediaFileName.thumbnailFile(new File("/home/biography/archive/thumbnails/300/")));
+	}
+
+	@Test
+	public void testThumbnailFileMov() {
+		MediaFileName mediaFileName = MediaFileName.of("2019-02-28--17-31-33---c69239ffcc01886f9d73ecd1076271bb65c26ba4.mov");
+		assertEquals(new File("/home/biography/archive/thumbnails/300/2019/02/2019-02-28--17-31-33---c69239ffcc01886f9d73ecd1076271bb65c26ba4.jpg"), mediaFileName.thumbnailFile(new File("/home/biography/archive/thumbnails/300")));
+	}
+	
 }

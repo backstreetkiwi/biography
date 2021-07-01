@@ -169,8 +169,8 @@ public class ImportService {
     	File thumbsFolder200 = new File(thumbnailsFolder, ThumbnailSize.t200.folderName);
     	File thumbsFolder300 = new File(thumbnailsFolder, ThumbnailSize.t300.folderName);
 
-		File file200 = mediaFileName.archiveFile(thumbsFolder200);
-		File file300 = mediaFileName.archiveFile(thumbsFolder300);
+		File file200 = mediaFileName.thumbnailFile(thumbsFolder200);
+		File file300 = mediaFileName.thumbnailFile(thumbsFolder300);
 
 		if(file200.exists() && file300.exists()) {
 			return false;
