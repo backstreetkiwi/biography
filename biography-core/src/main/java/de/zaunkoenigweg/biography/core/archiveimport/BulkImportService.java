@@ -142,7 +142,7 @@ public class BulkImportService {
         ExifData exifData = exifDataService.readExifData(file);
         if(exifData!=null) {
             importFile.setDatetimeOriginal(exifData.getDateTimeOriginal());
-            importFile.setDescription(exifData.getDescription().orElse(null));
+            importFile.setDescription(exifData.getDescription().orElse(exifData.getUserComment().orElse(null)));
         }
 
         this.importJob.put(importFile);
