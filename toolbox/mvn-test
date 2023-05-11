@@ -1,0 +1,2 @@
+#!/bin/bash
+mvn -Duser.home=/var/maven clean test
